@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      Role     @default(STAFF)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@map("users")
+}
+
+enum Role {
+  STAFF
+  ADMIN
+}
+
+model LaundryItem {
+  id            String  @id @default(cuid())
+  nameEn        String
+  nameFr        String
+  priceNormal   Int?
+  priceDryClean Int?
+  pricePressing Int?
+  isActive      Boolean @default(true)
+  sortOrder     Int     @default(0)
+  requestItems  RequestItem[]
+  @@map("laundry_items")
+}
+
+model Request {
+  id          String        @id @default(cuid())
+  seq         Int           @default(autoincrement())
+  roomNumber  String
+  guestName   String?
+  serviceType ServiceType   @default(NORMAL)
+  isExpress   Boolean       @default(false)
+  isHanger    Boolean       @default(false)
+  note        String?
+  status      RequestStatus @default(PENDING)
+  grossAmount Int
+  vatAmount   Int
+  totalAmount Int
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  collectedAt DateTime?
+  completedAt DateTime?
+  returnedAt  DateTime?
+  items       RequestItem[]
+  @@map("requests")
+}
+
+enum ServiceType {
+  NORMAL
+  DRY_CLEAN
+  PRESSING
+}
+
+enum RequestStatus {
+  PENDING
+  COLLECTED
+  IN_PROGRESS
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+model RequestItem {
+  id            String      @id @default(cuid())
+  requestId     String
+  laundryItemId String
+  quantity      Int
+  unitPrice     Int
+  subtotal      Int
+  request       Request     @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  laundryItem   LaundryItem @relation(fields: [laundryItemId], references: [id])
+  @@map("request_items")
+}
