@@ -1,6 +1,9 @@
+'use client'
+
 import Image from 'next/image'
 import { Shirt } from 'lucide-react'
 import { NavLink } from '@/components/ui/NavLink'
+import { StaffAccessLink } from '@/components/guest/StaffAccessLink'
 
 interface Props {
   active: 'new' | 'track'
@@ -21,6 +24,8 @@ export function GuestNav({ active }: Props) {
         <div className="flex items-center gap-2">
           <NavLink href="/" active={active === 'new'}>New request</NavLink>
           <NavLink href="/track" active={active === 'track'}>Track order</NavLink>
+          <div className="h-6 w-px bg-salt-border mx-1" />
+          <StaffAccessLink />
         </div>
       </div>
     </nav>

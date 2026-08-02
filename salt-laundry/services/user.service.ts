@@ -10,6 +10,7 @@ const PUBLIC_USER_SELECT = {
   name: true,
   role: true,
   isActive: true,
+  isAvailable: true,
   createdAt: true,
 } as const
 
@@ -44,5 +45,20 @@ export async function updateUser(id: string, data: UpdateUserInput) {
     where: { id },
     data: { ...data, email: data.email?.toLowerCase() },
     select: PUBLIC_USER_SELECT,
+  })
+}
+
+export async function getActiveHousekeepers() {
+  return prisma.user.findMany({
+    where: { role: 'HOUSEKEEPER', isActive: true, isAvailable: true },
+    select: { id: true, name: true, email: true },
+    orderBy: { name: 'asc' },
+  })
+}
+
+export async function getActiveHousekeeperById(id: string) {
+  return prisma.user.findFirst({
+    where: { id, role: 'HOUSEKEEPER', isActive: true, isAvailable: true },
+    select: { id: true, name: true },
   })
 }

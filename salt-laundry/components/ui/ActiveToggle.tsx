@@ -3,9 +3,10 @@
 interface Props {
   checked: boolean
   onChange: () => void
+  offColorClass?: string
 }
 
-export function ActiveToggle({ checked, onChange }: Props) {
+export function ActiveToggle({ checked, onChange, offColorClass = 'bg-salt-border' }: Props) {
   return (
     <button
       type="button"
@@ -13,7 +14,7 @@ export function ActiveToggle({ checked, onChange }: Props) {
       aria-checked={checked}
       onClick={onChange}
       className={`w-10 h-5 rounded-full relative transition-colors ${
-        checked ? 'bg-salt-green' : 'bg-salt-border'
+        checked ? 'bg-salt-green' : offColorClass
       }`}
     >
       <span

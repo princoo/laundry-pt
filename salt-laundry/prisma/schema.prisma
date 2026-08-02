@@ -7,20 +7,24 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String
-  role      Role     @default(STAFF)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                String              @id @default(cuid())
+  email             String              @unique
+  name              String?
+  password          String
+  role              Role                @default(HOUSEKEEPER)
+  isActive          Boolean             @default(true)
+  isAvailable       Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  assignedRequests  Request[]           @relation("AssignedRequests")
+  unassignedRequests Request[]          @relation("UnassignedRequests")
   @@map("users")
 }
 
 enum Role {
-  STAFF
   ADMIN
+  SUPERVISOR
+  HOUSEKEEPER
 }
 
 model LaundryItem {
@@ -37,25 +41,40 @@ model LaundryItem {
 }
 
 model Request {
-  id          String        @id @default(cuid())
-  seq         Int           @default(autoincrement())
-  roomNumber  String
-  guestName   String?
-  serviceType ServiceType   @default(NORMAL)
-  isExpress   Boolean       @default(false)
-  isHanger    Boolean       @default(false)
-  note        String?
-  status      RequestStatus @default(PENDING)
-  grossAmount Int
-  vatAmount   Int
-  totalAmount Int
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  collectedAt DateTime?
-  completedAt DateTime?
-  returnedAt  DateTime?
-  items       RequestItem[]
+  id                String              @id @default(cuid())
+  seq               Int                 @default(autoincrement())
+  roomNumber        String
+  guestName         String?
+  serviceType       ServiceType         @default(NORMAL)
+  isExpress         Boolean             @default(false)
+  isHanger          Boolean             @default(false)
+  note              String?
+  status            RequestStatus       @default(PENDING)
+  grossAmount       Int
+  vatAmount         Int
+  totalAmount       Int
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  collectedAt       DateTime?
+  completedAt       DateTime?
+  returnedAt        DateTime?
+  assignedToId      String?
+  assignedAt        DateTime?
+  acknowledgedAt    DateTime?
+  assignmentMethod  AssignmentMethod?
+  unassignedFromId  String?
+  unassignedAt      DateTime?
+  assignedTo        User?               @relation("AssignedRequests", fields: [assignedToId], references: [id])
+  unassignedFrom    User?               @relation("UnassignedRequests", fields: [unassignedFromId], references: [id])
+  items             RequestItem[]
+  notes             RequestNote[]
+  alertEvents       RequestAlertEvent[]
   @@map("requests")
+}
+
+enum AssignmentMethod {
+  AUTO
+  MANUAL
 }
 
 enum ServiceType {
@@ -83,4 +102,36 @@ model RequestItem {
   request       Request     @relation(fields: [requestId], references: [id], onDelete: Cascade)
   laundryItem   LaundryItem @relation(fields: [laundryItemId], references: [id])
   @@map("request_items")
+}
+
+model RequestNote {
+  id        String   @id @default(cuid())
+  requestId String
+  content   String
+  createdAt DateTime @default(now())
+
+  request   Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@map("request_notes")
+}
+
+// Frozen record of an SLA breach the moment it's first detected — kept even
+// after the request is delivered, so a rushed fix can't erase that it happened.
+model RequestAlertEvent {
+  id         String          @id @default(cuid())
+  requestId  String
+  level      AlertEventLevel
+  detectedAt DateTime        @default(now())
+
+  request    Request         @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@unique([requestId, level])
+  @@map("request_alert_events")
+}
+
+enum AlertEventLevel {
+  PICKUP_OVERDUE
+  RETURN_OVERDUE
+  AT_RISK
+  DEADLINE_MISSED
 }

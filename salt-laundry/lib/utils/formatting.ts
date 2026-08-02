@@ -16,6 +16,12 @@ export function timeAgo(date: Date | string): string {
   return formatTimestamp(date)
 }
 
+export function formatInvoiceDate(date: Date | string): string {
+  return new Date(date).toLocaleDateString('en-GB', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  })
+}
+
 export function formatReference(seq: number, createdAt: Date | string): string {
   const year = new Date(createdAt).getFullYear()
   return `LDY-${year}-${String(seq).padStart(4, '0')}`

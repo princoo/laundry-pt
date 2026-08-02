@@ -26,7 +26,7 @@ export function TrackSearchSection({ initialRoom, initialReference, onResult }: 
   }, [])
 
   useEffect(() => {
-    if (exact.request) onResult(exact.request)
+    onResult(exact.request)
   }, [exact.request, onResult])
 
   useEffect(() => {

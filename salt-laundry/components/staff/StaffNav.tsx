@@ -4,7 +4,9 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Shirt } from 'lucide-react'
 import { NavLink } from '@/components/ui/NavLink'
+import { RoleBadge } from '@/components/staff/RoleBadge'
 import { UserMenu } from '@/components/staff/UserMenu'
+import { NotificationBell } from '@/components/staff/NotificationBell'
 
 interface Props {
   userName?: string
@@ -15,7 +17,7 @@ export function StaffNav({ userName, role }: Props) {
   const pathname = usePathname()
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-[0.5px] border-salt-border px-6 py-3 flex items-center justify-between">
+    <nav className="print:hidden sticky top-0 z-50 bg-white border-b border-[0.5px] border-salt-border px-6 py-3 flex items-center justify-between">
       <div className="flex items-center gap-4">
         <Image src="/salt-logo.png" alt="Salt of Akagera" width={80} height={34} priority />
         <div className="h-8 w-px bg-salt-border" />
@@ -26,17 +28,28 @@ export function StaffNav({ userName, role }: Props) {
       </div>
 
       <div className="flex items-center gap-2">
+        <NavLink href="/staff" active={pathname === '/staff'}>Dashboard</NavLink>
+        <NavLink href="/staff/search" active={pathname.startsWith('/staff/search')}>
+          Search
+        </NavLink>
+        <NavLink href="/staff/invoices" active={pathname.startsWith('/staff/invoices')}>
+          Room invoice
+        </NavLink>
         {role === 'ADMIN' && (
           <>
-            <NavLink href="/staff" active={pathname === '/staff'}>Dashboard</NavLink>
             <NavLink href="/staff/items" active={pathname.startsWith('/staff/items')}>
               Catalogue
             </NavLink>
             <NavLink href="/staff/users" active={pathname.startsWith('/staff/users')}>
               Users
             </NavLink>
+            <NavLink href="/staff/reports" active={pathname.startsWith('/staff/reports')}>
+              Reports
+            </NavLink>
           </>
         )}
+        <NotificationBell />
+        {role && <RoleBadge role={role} />}
         {userName && <UserMenu userName={userName} />}
       </div>
     </nav>

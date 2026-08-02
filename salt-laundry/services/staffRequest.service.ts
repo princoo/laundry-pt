@@ -1,9 +1,13 @@
 import { prisma } from '@/lib/prisma'
 import { STATUS_TRANSITIONS } from '@/lib/constants/statuses'
+import { canManageRequest } from '@/lib/utils/requestAccess'
 import { formatReference } from '@/lib/utils/formatting'
-import type { RequestStatus } from '@prisma/client'
+import { getNotesForRequest } from '@/services/note.service'
+import { getAlertEventsForRequest } from '@/services/requestAlert.service'
+import type { RequestStatus, Role } from '@prisma/client'
 
 export class InvalidStatusTransitionError extends Error {}
+export class ForbiddenRequestAccessError extends Error {}
 
 export const ITEM_DETAIL_SELECT = {
   id: true,
@@ -13,52 +17,47 @@ export const ITEM_DETAIL_SELECT = {
   laundryItem: { select: { nameEn: true, nameFr: true } },
 } as const
 
-interface QueueParams {
-  status?: RequestStatus
-  page: number
-  limit: number
-}
-
-export async function getRequestsQueue({ status, page, limit }: QueueParams) {
-  const where = status ? { status } : {}
-
-  const [rows, total] = await Promise.all([
-    prisma.request.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      skip: (page - 1) * limit,
-      take: limit,
-      select: {
-        id: true, seq: true, roomNumber: true, guestName: true, serviceType: true,
-        isExpress: true, status: true, totalAmount: true,
-        createdAt: true, updatedAt: true, collectedAt: true,
-        completedAt: true, returnedAt: true,
-        items: { select: { quantity: true, laundryItem: { select: { nameEn: true } } } },
-      },
-    }),
-    prisma.request.count({ where }),
-  ])
-
-  const requests = rows.map(({ items, seq, createdAt, ...rest }) => ({
-    ...rest,
-    createdAt, reference: formatReference(seq, createdAt),
-    totalItems: items.reduce((sum, item) => sum + item.quantity, 0),
-    itemNames: items.map((item) => item.laundryItem.nameEn),
-  }))
-
-  return { requests, total }
-}
-
 export async function getRequestById(id: string) {
   return prisma.request.findUnique({
     where: { id },
-    include: { items: { select: ITEM_DETAIL_SELECT } },
+    include: {
+      items: { select: ITEM_DETAIL_SELECT },
+      assignedTo: { select: { id: true, name: true } },
+    },
   })
 }
 
-export async function updateRequestStatus(id: string, nextStatus: RequestStatus) {
+// Composes the full request-detail payload, gating notes to assignees/managers
+// and SLA alert history to supervisors — the shape the detail page renders.
+export async function getRequestDetailForUser(id: string, user: { id: string; role: Role }) {
+  const found = await getRequestById(id)
+  if (!found) return null
+
+  const canManage = canManageRequest(found.assignedToId, user)
+  const isSupervisor = user.role === 'SUPERVISOR' || user.role === 'ADMIN'
+  const notes = canManage ? await getNotesForRequest(id) : []
+  const alertEvents = isSupervisor ? await getAlertEventsForRequest(id) : undefined
+
+  return {
+    ...found,
+    reference: formatReference(found.seq, found.createdAt),
+    notes,
+    canManage,
+    ...(alertEvents && { alertEvents }),
+  }
+}
+
+export async function updateRequestStatus(
+  id: string,
+  nextStatus: RequestStatus,
+  actor: { id: string; role: Role }
+) {
   const existing = await prisma.request.findUnique({ where: { id } })
   if (!existing) return null
+
+  if (!canManageRequest(existing.assignedToId, actor)) {
+    throw new ForbiddenRequestAccessError()
+  }
 
   const allowed =
     nextStatus === 'CANCELLED' || STATUS_TRANSITIONS[existing.status].includes(nextStatus)

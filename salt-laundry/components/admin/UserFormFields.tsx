@@ -35,7 +35,8 @@ export function UserFormFields({ isNew, disableActiveToggle }: Props) {
       <div>
         <label className="block text-sm text-salt-text mb-1">Role*</label>
         <select className={inputClasses} {...register('role')}>
-          <option value="STAFF">Staff</option>
+          <option value="HOUSEKEEPER">Housekeeper</option>
+          <option value="SUPERVISOR">Supervisor</option>
           <option value="ADMIN">Admin</option>
         </select>
         <FieldError message={errors.role?.message} />

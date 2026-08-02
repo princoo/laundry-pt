@@ -9,6 +9,7 @@ export interface AdminUser {
   email: string
   role: Role
   isActive: boolean
+  isAvailable: boolean
 }
 
 export function useAdminUsers() {

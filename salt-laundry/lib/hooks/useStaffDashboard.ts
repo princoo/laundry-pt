@@ -16,6 +16,10 @@ export interface QueueRequest {
   createdAt: string
   totalItems: number
   itemNames: string[]
+  assignedTo: { id: string; name: string | null } | null
+  assignedAt: string | null
+  acknowledgedAt: string | null
+  collectedAt: string | null; completedAt: string | null
 }
 
 export interface QueueStats {
@@ -24,41 +28,51 @@ export interface QueueStats {
   inProgress: number
   ready: number
   deliveredToday: number
+  unacknowledged: number
+  unassigned: number
 }
 
-export function useStaffDashboard(activeFilter: string) {
+interface DashboardParams {
+  status?: string
+  viewAll?: boolean
+  assignedTo?: string
+}
+
+export function useStaffDashboard({ status = 'ALL', viewAll = false, assignedTo }: DashboardParams) {
   const [requests, setRequests] = useState<QueueRequest[]>([])
   const [stats, setStats] = useState<QueueStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [loadedFilter, setLoadedFilter] = useState<string | null>(null)
+  const [loadedKey, setLoadedKey] = useState<string | null>(null)
 
-  if (activeFilter !== loadedFilter && !isLoading) {
-    setIsLoading(true)
-  }
+  const key = `${status}|${viewAll}|${assignedTo ?? ''}`
+  if (key !== loadedKey && !isLoading) setIsLoading(true)
 
   const fetchData = useCallback(async () => {
     setError(null)
     try {
-      const qs = activeFilter !== 'ALL' ? `?status=${activeFilter}` : ''
+      const params = new URLSearchParams()
+      if (status !== 'ALL') params.set('status', status)
+      if (viewAll) params.set('view', 'all')
+      if (assignedTo) params.set('assignedTo', assignedTo)
+      const qs = params.toString() ? `?${params.toString()}` : ''
       const [requestsRes, statsRes] = await Promise.all([
         fetch(`/api/staff/requests${qs}`),
         fetch('/api/staff/stats'),
       ])
       if (!requestsRes.ok || !statsRes.ok) throw new Error('Failed to load dashboard')
       const requestsData = await requestsRes.json()
-      const statsData = await statsRes.json()
       setRequests(requestsData.requests ?? [])
-      setStats(statsData)
+      setStats(await statsRes.json())
       setLastUpdated(new Date())
     } catch {
       setError('Failed to load requests.')
     } finally {
       setIsLoading(false)
-      setLoadedFilter(activeFilter)
+      setLoadedKey(key)
     }
-  }, [activeFilter])
+  }, [status, viewAll, assignedTo, key])
 
   useAutoRefresh(fetchData)
 

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
-import { requireStaff } from '@/lib/utils/guards'
-import { getRequestsQueue } from '@/services/staffRequest.service'
+import { getCurrentUser, requireAuth } from '@/lib/utils/guards'
+import { getRequestsQueue } from '@/services/staffRequestQueue.service'
+import { processTimeouts } from '@/services/assignment.service'
+import { recordDetectedAlerts } from '@/services/requestAlert.service'
 import type { RequestStatus } from '@prisma/client'
 
 const VALID_STATUSES: RequestStatus[] = [
@@ -8,9 +10,13 @@ const VALID_STATUSES: RequestStatus[] = [
 ]
 
 export async function GET(request: Request) {
-  const authError = await requireStaff()
+  const authError = await requireAuth()
   if (authError) return authError
 
+  await processTimeouts()
+  await recordDetectedAlerts()
+
+  const user = await getCurrentUser()
   const { searchParams } = new URL(request.url)
   const statusParam = searchParams.get('status')
   if (statusParam && !VALID_STATUSES.includes(statusParam as RequestStatus)) {
@@ -19,11 +25,17 @@ export async function GET(request: Request) {
 
   const page = Math.max(1, Number(searchParams.get('page')) || 1)
   const limit = Math.max(1, Number(searchParams.get('limit')) || 20)
+  const viewAll = searchParams.get('view') === 'all'
+  const assignedToFilter = searchParams.get('assignedTo') ?? undefined
 
   const { requests, total } = await getRequestsQueue({
     status: statusParam as RequestStatus | undefined,
     page,
     limit,
+    actorId: user?.id,
+    actorRole: user?.role,
+    viewAll,
+    assignedToFilter,
   })
 
   return NextResponse.json({

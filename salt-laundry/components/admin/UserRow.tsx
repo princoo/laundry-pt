@@ -1,9 +1,11 @@
 import { getInitials } from '@/lib/utils/formatting'
+import { ActiveToggle } from '@/components/ui/ActiveToggle'
 import type { AdminUser } from '@/lib/hooks/useAdminUsers'
 
 interface Props {
   user: AdminUser
   onEdit: (user: AdminUser) => void
+  onToggleAvailability: (id: string, nextIsAvailable: boolean) => void
 }
 
 function RoleBadge({ role }: { role: AdminUser['role'] }) {
@@ -12,12 +14,17 @@ function RoleBadge({ role }: { role: AdminUser['role'] }) {
       <span className="bg-salt-navy text-white text-xs px-2.5 py-1 rounded-full">Admin</span>
     )
   }
+  if (role === 'SUPERVISOR') {
+    return (
+      <span className="bg-salt-green text-white text-xs px-2.5 py-1 rounded-full">Supervisor</span>
+    )
+  }
   return (
-    <span className="bg-salt-cream text-salt-text-sec text-xs px-2.5 py-1 rounded-full">Staff</span>
+    <span className="bg-salt-cream text-salt-text-sec text-xs px-2.5 py-1 rounded-full">Housekeeper</span>
   )
 }
 
-export function UserRow({ user, onEdit }: Props) {
+export function UserRow({ user, onEdit, onToggleAvailability }: Props) {
   return (
     <tr className="border-b border-[0.5px] border-salt-border last:border-0">
       <td className="py-4 px-5">
@@ -37,6 +44,22 @@ export function UserRow({ user, onEdit }: Props) {
           <span className="text-salt-green text-sm">Active</span>
         ) : (
           <span className="text-salt-text-muted text-sm">Inactive</span>
+        )}
+      </td>
+      <td className="py-4 px-5">
+        {user.role === 'HOUSEKEEPER' ? (
+          <div className="flex items-center gap-2">
+            <ActiveToggle
+              checked={user.isAvailable}
+              onChange={() => onToggleAvailability(user.id, !user.isAvailable)}
+              offColorClass="bg-amber-400"
+            />
+            <span className="text-xs text-salt-text-sec">
+              {user.isAvailable ? 'On shift' : 'Off shift'}
+            </span>
+          </div>
+        ) : (
+          <span className="text-salt-text-muted text-sm">—</span>
         )}
       </td>
       <td className="py-4 px-5">

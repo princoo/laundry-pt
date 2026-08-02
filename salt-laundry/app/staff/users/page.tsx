@@ -7,12 +7,15 @@ import { UsersTable } from '@/components/admin/UsersTable'
 import { UserFormModal } from '@/components/admin/UserFormModal'
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton'
 import { FetchError } from '@/components/ui/FetchError'
+import { ErrorToast } from '@/components/ui/ErrorToast'
 import { useAdminUsers, type AdminUser } from '@/lib/hooks/useAdminUsers'
+import { useToggleAvailability } from '@/lib/hooks/useToggleAvailability'
 
 export default function StaffUsersPage() {
   const { data: session, status } = useSession()
   const { users, isLoading, error, refetch } = useAdminUsers()
   const [modalUser, setModalUser] = useState<AdminUser | 'new' | null>(null)
+  const { toggle, toastMessage, dismissToast } = useToggleAvailability(refetch)
 
   if (status !== 'loading' && (session?.user as any)?.role !== 'ADMIN') {
     return <AdminAccessDenied />
@@ -36,7 +39,7 @@ export default function StaffUsersPage() {
       ) : error ? (
         <FetchError message={error} onRetry={refetch} />
       ) : (
-        <UsersTable users={users} onEdit={setModalUser} />
+        <UsersTable users={users} onEdit={setModalUser} onToggleAvailability={toggle} />
       )}
 
       {modalUser && (
@@ -50,6 +53,8 @@ export default function StaffUsersPage() {
           }}
         />
       )}
+
+      <ErrorToast message={toastMessage} onDismiss={dismissToast} variant="success" />
     </div>
   )
 }

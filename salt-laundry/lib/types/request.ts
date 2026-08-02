@@ -8,6 +8,17 @@ export interface RequestDetailItem {
   laundryItem: { nameEn: string; nameFr: string }
 }
 
+export interface RequestNote {
+  id: string
+  content: string
+  createdAt: string
+}
+
+export interface AlertEventRecord {
+  level: 'pickup_overdue' | 'return_overdue' | 'at_risk' | 'deadline_missed'
+  detectedAt: string
+}
+
 export interface RequestDetail {
   id: string
   roomNumber: string
@@ -24,7 +35,13 @@ export interface RequestDetail {
   collectedAt: string | null
   completedAt: string | null
   returnedAt: string | null
+  assignedTo: { id: string; name: string | null } | null
+  assignedAt: string | null
+  acknowledgedAt: string | null
   items: RequestDetailItem[]
+  notes: RequestNote[]
+  canManage?: boolean
+  alertEvents?: AlertEventRecord[]
 }
 
 export interface TrackedRequest extends RequestDetail {

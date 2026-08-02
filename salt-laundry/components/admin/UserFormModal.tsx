@@ -26,7 +26,7 @@ export function UserFormModal({ user, currentUserId, onClose, onSaved }: Props) 
       isNew,
       name: user?.name ?? '',
       email: user?.email ?? '',
-      role: user?.role ?? 'STAFF',
+      role: user?.role ?? 'HOUSEKEEPER',
       password: '',
       isActive: user?.isActive ?? true,
     },

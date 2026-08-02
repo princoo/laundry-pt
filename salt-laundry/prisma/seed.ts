@@ -46,13 +46,30 @@ async function main() {
     });
   }
 
-  const hashedPassword = await bcrypt.hash("Admin1234!", 12);
   await prisma.user.create({
     data: {
       email: "admin@salt.rw",
       name: "SALT Admin",
-      password: hashedPassword,
+      password: await bcrypt.hash("Admin1234!", 12),
       role: "ADMIN",
+    },
+  });
+
+  await prisma.user.create({
+    data: {
+      email: "supervisor@salt.rw",
+      name: "Head Supervisor",
+      password: await bcrypt.hash("Supervisor1234!", 12),
+      role: "SUPERVISOR",
+    },
+  });
+
+  await prisma.user.create({
+    data: {
+      email: "housekeeper@salt.rw",
+      name: "Jean Baptiste",
+      password: await bcrypt.hash("Housekeeper1234!", 12),
+      role: "HOUSEKEEPER",
     },
   });
 }

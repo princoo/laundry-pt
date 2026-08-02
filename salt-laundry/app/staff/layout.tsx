@@ -1,6 +1,6 @@
-import { SessionProvider } from 'next-auth/react'
 import { auth } from '@/lib/auth'
 import { StaffNav } from '@/components/staff/StaffNav'
+import { NotificationToasts } from '@/components/staff/NotificationToasts'
 
 export default async function StaffLayout({
   children,
@@ -8,15 +8,19 @@ export default async function StaffLayout({
   children: React.ReactNode
 }>) {
   const session = await auth()
-  const userName = session?.user?.name || session?.user?.email || undefined
-  const role = (session?.user as any)?.role
+
+  if (!session) {
+    return <div className="min-h-screen bg-salt-cream print:bg-white">{children}</div>
+  }
+
+  const userName = session.user?.name || session.user?.email || undefined
+  const role = (session.user as any)?.role
 
   return (
-    <SessionProvider session={session}>
-      <div className="min-h-screen bg-salt-cream">
-        <StaffNav userName={userName} role={role} />
-        {children}
-      </div>
-    </SessionProvider>
+    <div className="min-h-screen bg-salt-cream print:bg-white">
+      <StaffNav userName={userName} role={role} />
+      <NotificationToasts />
+      {children}
+    </div>
   )
 }

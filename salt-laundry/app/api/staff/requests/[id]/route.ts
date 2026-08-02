@@ -1,35 +1,41 @@
 import { NextResponse } from 'next/server'
-import { requireStaff } from '@/lib/utils/guards'
+import { getCurrentUser, requireAuth } from '@/lib/utils/guards'
 import {
-  getRequestById,
+  getRequestDetailForUser,
   updateRequestStatus,
   InvalidStatusTransitionError,
+  ForbiddenRequestAccessError,
 } from '@/services/staffRequest.service'
 import { updateStatusSchema } from '@/lib/validations/statusUpdate.schema'
-import { formatReference } from '@/lib/utils/formatting'
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireStaff()
+  const authError = await requireAuth()
   if (authError) return authError
 
   const { id } = await params
-  const found = await getRequestById(id)
-  if (!found) return NextResponse.json({ error: 'Request not found' }, { status: 404 })
+  const user = await getCurrentUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  return NextResponse.json({ ...found, reference: formatReference(found.seq, found.createdAt) })
+  const detail = await getRequestDetailForUser(id, user)
+  if (!detail) return NextResponse.json({ error: 'Request not found' }, { status: 404 })
+
+  return NextResponse.json(detail)
 }
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireStaff()
+  const authError = await requireAuth()
   if (authError) return authError
 
   const { id } = await params
+  const user = await getCurrentUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   let body: unknown
   try {
     body = await request.json()
@@ -43,10 +49,16 @@ export async function PATCH(
   }
 
   try {
-    const updated = await updateRequestStatus(id, parsed.data.status)
+    const updated = await updateRequestStatus(id, parsed.data.status, user)
     if (!updated) return NextResponse.json({ error: 'Request not found' }, { status: 404 })
     return NextResponse.json(updated)
   } catch (error) {
+    if (error instanceof ForbiddenRequestAccessError) {
+      return NextResponse.json(
+        { error: 'You can only update requests assigned to you' },
+        { status: 403 }
+      )
+    }
     if (error instanceof InvalidStatusTransitionError) {
       return NextResponse.json({ error: 'Invalid status transition' }, { status: 400 })
     }
