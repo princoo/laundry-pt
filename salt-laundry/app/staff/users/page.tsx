@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { AdminAccessDenied } from '@/components/admin/AdminAccessDenied'
+import { UsersPageHeader } from '@/components/admin/UsersPageHeader'
 import { UsersTable } from '@/components/admin/UsersTable'
 import { UserFormModal } from '@/components/admin/UserFormModal'
+import { ResetPasswordModal } from '@/components/admin/ResetPasswordModal'
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton'
 import { FetchError } from '@/components/ui/FetchError'
 import { ErrorToast } from '@/components/ui/ErrorToast'
@@ -15,6 +17,8 @@ export default function StaffUsersPage() {
   const { data: session, status } = useSession()
   const { users, isLoading, error, refetch } = useAdminUsers()
   const [modalUser, setModalUser] = useState<AdminUser | 'new' | null>(null)
+  const [resetUser, setResetUser] = useState<AdminUser | null>(null)
+  const [resetToast, setResetToast] = useState<string | null>(null)
   const { toggle, toastMessage, dismissToast } = useToggleAvailability(refetch)
 
   if (status !== 'loading' && (session?.user as any)?.role !== 'ADMIN') {
@@ -22,24 +26,25 @@ export default function StaffUsersPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-5">
-        <h1 className="text-[22px] font-black text-salt-text">Staff accounts</h1>
-        <button
-          type="button"
-          onClick={() => setModalUser('new')}
-          className="bg-salt-navy hover:bg-salt-navy-hover transition-colors text-white rounded-lg px-4 py-2 text-sm"
-        >
-          Add staff member
-        </button>
-      </div>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <UsersPageHeader
+        users={users}
+        showCount={!isLoading && !error}
+        onAdd={() => setModalUser('new')}
+      />
 
       {isLoading ? (
         <LoadingSkeleton rows={5} height="h-14" rounded="rounded-xl" />
       ) : error ? (
         <FetchError message={error} onRetry={refetch} />
       ) : (
-        <UsersTable users={users} onEdit={setModalUser} onToggleAvailability={toggle} />
+        <UsersTable
+          users={users}
+          currentUserId={(session?.user as any)?.id}
+          onEdit={setModalUser}
+          onResetPassword={setResetUser}
+          onToggleAvailability={toggle}
+        />
       )}
 
       {modalUser && (
@@ -54,7 +59,19 @@ export default function StaffUsersPage() {
         />
       )}
 
+      {resetUser && (
+        <ResetPasswordModal
+          user={resetUser}
+          onClose={() => setResetUser(null)}
+          onReset={(name) => {
+            setResetUser(null)
+            setResetToast(`${name}'s password has been reset.`)
+          }}
+        />
+      )}
+
       <ErrorToast message={toastMessage} onDismiss={dismissToast} variant="success" />
+      <ErrorToast message={resetToast} onDismiss={() => setResetToast(null)} variant="success" />
     </div>
   )
 }

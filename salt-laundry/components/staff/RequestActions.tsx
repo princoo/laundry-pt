@@ -1,6 +1,8 @@
 'use client'
 
+import { useState } from 'react'
 import { STATUS_LABELS, STATUS_TRANSITIONS } from '@/lib/constants/statuses'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import type { RequestStatus } from '@prisma/client'
 
 interface Props {
@@ -11,18 +13,14 @@ interface Props {
 }
 
 export function RequestActions({ status, isUpdating, onAdvance, onCancel }: Props) {
+  const [isConfirmingCancel, setIsConfirmingCancel] = useState(false)
+
   if (status === 'CANCELLED') {
     return <p className="text-sm text-salt-text-muted mt-4">This request was cancelled.</p>
   }
 
   const nextStatus = status !== 'DELIVERED' ? STATUS_TRANSITIONS[status][0] : null
   const canCancel = status === 'PENDING' || status === 'COLLECTED'
-
-  const handleCancel = () => {
-    if (window.confirm('Cancel this laundry request? This cannot be undone.')) {
-      onCancel()
-    }
-  }
 
   return (
     <div className="mt-4">
@@ -41,10 +39,22 @@ export function RequestActions({ status, isUpdating, onAdvance, onCancel }: Prop
 
       {canCancel && (
         <div className="mt-3">
-          <button onClick={handleCancel} className="text-red-600 text-sm hover:underline">
+          <button onClick={() => setIsConfirmingCancel(true)} className="text-red-600 text-sm hover:underline">
             Cancel request
           </button>
         </div>
+      )}
+
+      {isConfirmingCancel && (
+        <ConfirmModal
+          title="Cancel request"
+          message="Cancel this laundry request? This cannot be undone."
+          confirmLabel="Cancel request"
+          cancelLabel="Keep request"
+          isDestructive
+          onConfirm={() => { setIsConfirmingCancel(false); onCancel() }}
+          onCancel={() => setIsConfirmingCancel(false)}
+        />
       )}
     </div>
   )

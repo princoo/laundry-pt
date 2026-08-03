@@ -11,11 +11,11 @@ export function RequestHeaderCard({ request, reference }: Props) {
   const { roomNumber, guestName, status, serviceType, isExpress, isHanger, note } = request
 
   return (
-    <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-6">
-      <div className="flex items-start justify-between gap-4">
+    <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-4 sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
         <div>
-          <div className="text-[22px] font-medium text-salt-text">Room {roomNumber}</div>
-          {guestName && <div className="text-sm text-salt-text-sec mt-0.5">{guestName}</div>}
+          <div className="text-2xl sm:text-[26px] font-medium text-salt-text leading-tight">Room {roomNumber}</div>
+          {guestName && <div className="text-sm text-salt-text-sec mt-1">{guestName}</div>}
           {reference && (
             <div className="text-xs text-salt-text-muted mt-1 font-mono">{reference}</div>
           )}
@@ -23,15 +23,17 @@ export function RequestHeaderCard({ request, reference }: Props) {
         <StatusBadge status={status} size="md" />
       </div>
 
-      <div className="flex gap-4 mt-4 text-[13px] text-salt-text-sec">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 mt-4 text-[13px] text-salt-text-sec">
         <span>{SERVICE_TYPE_LABELS[serviceType]}</span>
-        <span>Express: {isExpress ? 'Yes' : 'No'}</span>
+        <span className="text-salt-text-muted">·</span>
+        <span>{isExpress ? 'Express' : 'Standard'}</span>
+        <span className="text-salt-text-muted">·</span>
         <span>{isHanger ? 'Hanger' : 'Folded'}</span>
       </div>
 
       {note && (
         <div className="bg-salt-cream rounded-lg px-4 py-3 mt-4">
-          <div className="text-[11px] uppercase text-salt-text-muted">Guest note:</div>
+          <div className="text-[11px] uppercase text-salt-text-muted">Guest note</div>
           <div className="text-[13px] text-salt-text mt-1">{note}</div>
         </div>
       )}

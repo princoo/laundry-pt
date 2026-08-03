@@ -1,38 +1,36 @@
 import { getInitials } from '@/lib/utils/formatting'
 import { ActiveToggle } from '@/components/ui/ActiveToggle'
+import { RoleBadge } from '@/components/admin/RoleBadge'
+import { UserActions } from '@/components/admin/UserActions'
+import { UserStatusDot } from '@/components/admin/UserStatusDot'
 import type { AdminUser } from '@/lib/hooks/useAdminUsers'
 
 interface Props {
   user: AdminUser
+  isCurrentUser: boolean
   onEdit: (user: AdminUser) => void
+  onResetPassword: (user: AdminUser) => void
   onToggleAvailability: (id: string, nextIsAvailable: boolean) => void
 }
 
-function RoleBadge({ role }: { role: AdminUser['role'] }) {
-  if (role === 'ADMIN') {
-    return (
-      <span className="bg-salt-navy text-white text-xs px-2.5 py-1 rounded-full">Admin</span>
-    )
-  }
-  if (role === 'SUPERVISOR') {
-    return (
-      <span className="bg-salt-green text-white text-xs px-2.5 py-1 rounded-full">Supervisor</span>
-    )
-  }
+export function UserRow({
+  user,
+  isCurrentUser,
+  onEdit,
+  onResetPassword,
+  onToggleAvailability,
+}: Props) {
   return (
-    <span className="bg-salt-cream text-salt-text-sec text-xs px-2.5 py-1 rounded-full">Housekeeper</span>
-  )
-}
-
-export function UserRow({ user, onEdit, onToggleAvailability }: Props) {
-  return (
-    <tr className="border-b border-[0.5px] border-salt-border last:border-0">
+    <tr className="border-b border-[0.5px] border-salt-border last:border-0 hover:bg-salt-cream transition-colors">
       <td className="py-4 px-5">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-salt-green-light text-salt-green text-xs font-medium flex items-center justify-center">
+          <div className="w-8 h-8 shrink-0 rounded-full bg-salt-green-light text-salt-green text-xs font-medium flex items-center justify-center">
             {getInitials(user.name, user.email)}
           </div>
-          <span className="text-salt-text">{user.name || user.email}</span>
+          <span className="text-salt-text">
+            {user.name || user.email}
+            {isCurrentUser && <span className="text-salt-text-muted"> (You)</span>}
+          </span>
         </div>
       </td>
       <td className="py-4 px-5 text-sm text-salt-text-sec">{user.email}</td>
@@ -40,11 +38,7 @@ export function UserRow({ user, onEdit, onToggleAvailability }: Props) {
         <RoleBadge role={user.role} />
       </td>
       <td className="py-4 px-5">
-        {user.isActive ? (
-          <span className="text-salt-green text-sm">Active</span>
-        ) : (
-          <span className="text-salt-text-muted text-sm">Inactive</span>
-        )}
+        <UserStatusDot isActive={user.isActive} />
       </td>
       <td className="py-4 px-5">
         {user.role === 'HOUSEKEEPER' ? (
@@ -63,9 +57,12 @@ export function UserRow({ user, onEdit, onToggleAvailability }: Props) {
         )}
       </td>
       <td className="py-4 px-5">
-        <button type="button" onClick={() => onEdit(user)} className="text-salt-navy text-sm underline">
-          Edit
-        </button>
+        <UserActions
+          user={user}
+          isCurrentUser={isCurrentUser}
+          onEdit={onEdit}
+          onResetPassword={onResetPassword}
+        />
       </td>
     </tr>
   )

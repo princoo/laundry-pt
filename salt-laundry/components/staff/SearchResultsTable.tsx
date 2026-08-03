@@ -1,6 +1,7 @@
 'use client'
 
 import { SearchResultRow } from '@/components/staff/SearchResultRow'
+import { SearchResultCard } from '@/components/staff/SearchResultCard'
 import { SearchTableFooter } from '@/components/staff/SearchTableFooter'
 import type { SearchResult } from '@/lib/hooks/useSearchRequests'
 
@@ -14,26 +15,35 @@ export function SearchResultsTable({ results, billableTotal, onSelectRequest }: 
   const totalAll = results.reduce((sum, r) => sum + r.totalAmount, 0)
 
   return (
-    <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm overflow-x-auto mt-3">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-xs text-salt-text-muted border-b border-[0.5px] border-salt-border">
-            <th className="px-4 py-3 font-medium">Date</th>
-            <th className="px-4 py-3 font-medium">Room</th>
-            <th className="px-4 py-3 font-medium">Guest</th>
-            <th className="px-4 py-3 font-medium">Service</th>
-            <th className="px-4 py-3 font-medium">Items</th>
-            <th className="px-4 py-3 font-medium">Total</th>
-            <th className="px-4 py-3 font-medium">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {results.map((r) => (
-            <SearchResultRow key={r.id} request={r} onClick={() => onSelectRequest(r.id)} />
-          ))}
-        </tbody>
-      </table>
-      <SearchTableFooter count={results.length} totalAll={totalAll} billableTotal={billableTotal} />
-    </div>
+    <>
+      <div className="hidden md:block bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs text-salt-text-muted border-b border-[0.5px] border-salt-border">
+              <th className="px-4 py-3 font-medium">Date</th>
+              <th className="px-4 py-3 font-medium">Room</th>
+              <th className="px-4 py-3 font-medium">Guest</th>
+              <th className="px-4 py-3 font-medium">Service</th>
+              <th className="px-4 py-3 font-medium">Items</th>
+              <th className="px-4 py-3 font-medium">Total</th>
+              <th className="px-4 py-3 font-medium">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {results.map((r) => (
+              <SearchResultRow key={r.id} request={r} onClick={() => onSelectRequest(r.id)} />
+            ))}
+          </tbody>
+        </table>
+        <SearchTableFooter count={results.length} totalAll={totalAll} billableTotal={billableTotal} />
+      </div>
+
+      <div className="md:hidden flex flex-col gap-3">
+        {results.map((r) => (
+          <SearchResultCard key={r.id} request={r} onClick={() => onSelectRequest(r.id)} />
+        ))}
+        <SearchTableFooter count={results.length} totalAll={totalAll} billableTotal={billableTotal} standalone />
+      </div>
+    </>
   )
 }

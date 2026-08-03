@@ -16,7 +16,7 @@ export function RequestNotes({ requestId, initialNotes }: Props) {
     useRequestNotes(requestId, initialNotes)
 
   return (
-    <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-6 mt-4">
+    <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-4 sm:p-6">
       <div className="text-[11px] uppercase text-salt-text-muted mb-4">Staff notes</div>
 
       <div className="space-y-2 mb-4">

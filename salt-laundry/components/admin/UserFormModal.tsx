@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { userFormSchema, type UserFormValues } from '@/lib/validations/user.schema'
 import { buildUserPayload } from '@/lib/utils/user'
 import { Modal } from '@/components/ui/Modal'
+import { ModalActions } from '@/components/ui/ModalActions'
 import { UserFormFields } from '@/components/admin/UserFormFields'
 import type { AdminUser } from '@/lib/hooks/useAdminUsers'
 
@@ -57,22 +58,12 @@ export function UserFormModal({ user, currentUserId, onClose, onSaved }: Props) 
             </div>
           )}
           <UserFormFields isNew={isNew} disableActiveToggle={disableActiveToggle} />
-          <div className="flex justify-end gap-2 mt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="border border-[0.5px] border-salt-border rounded-lg px-4 py-2 text-sm text-salt-text"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={form.formState.isSubmitting}
-              className="bg-salt-navy hover:bg-salt-navy-hover transition-colors text-white rounded-lg px-4 py-2 text-sm disabled:opacity-60"
-            >
-              {form.formState.isSubmitting ? 'Saving…' : 'Save'}
-            </button>
-          </div>
+          <ModalActions
+            onCancel={onClose}
+            isSubmitting={form.formState.isSubmitting}
+            submitLabel="Save"
+            pendingLabel="Saving…"
+          />
         </form>
       </FormProvider>
     </Modal>

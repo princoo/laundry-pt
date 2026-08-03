@@ -1,6 +1,7 @@
 'use client'
 
 import { Modal } from '@/components/ui/Modal'
+import { Select } from '@/components/ui/Select'
 import { useHousekeepers } from '@/lib/hooks/useHousekeepers'
 import { useReassignRequest } from '@/lib/hooks/useReassignRequest'
 
@@ -25,16 +26,14 @@ export function ReassignModal({
       <p className="text-sm text-salt-text-sec mb-3">
         Currently assigned: {currentAssigneeName ?? 'Unassigned'}
       </p>
-      <select
-        value={selectedId}
-        onChange={(e) => setSelectedId(e.target.value)}
-        className="w-full border border-[0.5px] border-salt-border rounded-lg px-3 py-2.5 text-sm bg-white mb-3"
-      >
-        <option value="">Select a housekeeper…</option>
-        {options.map((h) => (
-          <option key={h.id} value={h.id}>{h.name ?? h.email}</option>
-        ))}
-      </select>
+      <div className="mb-3">
+        <Select
+          value={selectedId}
+          onChange={setSelectedId}
+          placeholder="Select a housekeeper…"
+          options={options.map((h) => ({ value: h.id, label: h.name ?? h.email }))}
+        />
+      </div>
       <p className="text-[11px] text-salt-text-muted mb-3">
         Only showing housekeepers currently on shift.
       </p>

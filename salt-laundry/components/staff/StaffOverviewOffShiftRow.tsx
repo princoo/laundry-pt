@@ -1,3 +1,5 @@
+import { UserPlus } from 'lucide-react'
+
 interface Props {
   name: string | null
   onMarkOnShift: () => void
@@ -13,9 +15,11 @@ export function StaffOverviewOffShiftRow({ name, onMarkOnShift }: Props) {
       <button
         type="button"
         onClick={onMarkOnShift}
-        className="text-salt-navy text-xs underline whitespace-nowrap"
+        aria-label="Mark on shift"
+        title="Mark on shift"
+        className="w-7 h-7 flex items-center justify-center rounded-lg border border-[0.5px] border-salt-border text-salt-navy hover:bg-salt-cream transition-colors shrink-0"
       >
-        Mark as on shift
+        <UserPlus className="w-3.5 h-3.5" />
       </button>
     </div>
   )

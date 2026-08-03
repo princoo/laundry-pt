@@ -9,7 +9,7 @@ const inactiveClasses = 'text-salt-text-sec px-4 py-1.5 text-sm hover:text-salt-
 
 export function HousekeeperTabs({ tab, myCount, onChange }: Props) {
   return (
-    <div className="flex gap-1 mb-4">
+    <div className="flex gap-1">
       <button
         type="button"
         onClick={() => onChange('mine')}

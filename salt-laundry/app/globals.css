@@ -4,3 +4,26 @@
 * { box-sizing: border-box; }
 html { scrollbar-gutter: stable; }
 body { background-color: #f5f4f1; }
+
+/* Invoices are printed on white paper — the cream page tint is screen-only. */
+@media print {
+  body { background-color: #ffffff; }
+}
+
+.modal-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #103050 transparent;
+}
+.modal-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.modal-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-scroll::-webkit-scrollbar-thumb {
+  background-color: #103050;
+  border-radius: 9999px;
+}
+.modal-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #1c4570;
+}

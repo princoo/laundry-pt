@@ -1,5 +1,7 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+import { Pencil } from 'lucide-react'
 import { ActiveToggle } from '@/components/ui/ActiveToggle'
 import { formatCurrency } from '@/lib/utils/formatting'
 import type { AdminItem } from '@/lib/hooks/useAdminItems'
@@ -18,27 +20,43 @@ function PriceCell({ price }: { price: number | null }) {
 }
 
 export function ItemRow({ item, onToggle, onEdit }: Props) {
+  const router = useRouter()
+  const goToDetail = () => router.push(`/staff/items/${item.id}`)
+  const onKey = (e: React.KeyboardEvent) => { if (e.key === 'Enter') goToDetail() }
+
   return (
-    <tr className="border-b border-[0.5px] border-salt-border last:border-0">
+    <tr
+      tabIndex={0}
+      onClick={goToDetail}
+      onKeyDown={onKey}
+      className={`border-b border-[0.5px] border-salt-border last:border-0 cursor-pointer hover:bg-salt-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-salt-navy transition-colors ${!item.isActive ? 'bg-salt-cream/40' : ''}`}
+    >
       <td className="py-4 px-5">
-        <div className="font-medium text-salt-text">{item.nameEn}</div>
+        <div className={`font-medium ${item.isActive ? 'text-salt-text' : 'text-salt-text-muted'}`}>
+          {item.nameEn}
+        </div>
         <div className="text-xs text-salt-text-muted mt-0.5">{item.nameFr}</div>
       </td>
-      <td className="py-4 px-5">
+      <td className="py-4 px-5 whitespace-nowrap">
         <PriceCell price={item.priceNormal} />
       </td>
-      <td className="py-4 px-5">
+      <td className="py-4 px-5 whitespace-nowrap">
         <PriceCell price={item.priceDryClean} />
       </td>
-      <td className="py-4 px-5">
+      <td className="py-4 px-5 whitespace-nowrap">
         <PriceCell price={item.pricePressing} />
       </td>
-      <td className="py-4 px-5">
+      <td className="py-4 px-5" onClick={(e) => e.stopPropagation()}>
         <ActiveToggle checked={item.isActive} onChange={() => onToggle(item.id, !item.isActive)} />
       </td>
-      <td className="py-4 px-5">
-        <button type="button" onClick={() => onEdit(item)} className="text-salt-navy text-sm underline">
-          Edit
+      <td className="py-4 px-5" onClick={(e) => e.stopPropagation()}>
+        <button
+          type="button"
+          onClick={() => onEdit(item)}
+          aria-label={`Edit ${item.nameEn}`}
+          className="w-8 h-8 inline-flex items-center justify-center rounded-md text-salt-text-sec hover:text-salt-navy hover:bg-salt-cream transition-colors"
+        >
+          <Pencil className="w-4 h-4" />
         </button>
       </td>
     </tr>

@@ -25,8 +25,11 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6">
-      <h1 className="text-[22px] font-black text-salt-text mb-5">Reports</h1>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="mb-5 sm:mb-6">
+        <h1 className="text-[22px] font-black text-salt-text">Reports</h1>
+        <p className="text-sm text-salt-text-sec mt-1">Revenue and activity for the period you choose below.</p>
+      </div>
 
       <ReportsPeriodSelector
         from={from} to={to}
@@ -35,7 +38,7 @@ export default function ReportsPage() {
         isLoading={isLoading}
       />
 
-      <div className="mt-6">
+      <div className="mt-6 sm:mt-8">
         {isLoading ? (
           <LoadingSkeleton rows={4} height="h-20" rounded="rounded-xl" />
         ) : error ? (
@@ -43,7 +46,7 @@ export default function ReportsPage() {
         ) : !report || report.summary.requestCount === 0 ? (
           <ReportsEmptyState />
         ) : (
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 sm:gap-8">
             <ReportsSummaryCards
               summary={report.summary}
               expressCount={report.expressCount}

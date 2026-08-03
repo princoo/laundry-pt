@@ -50,22 +50,3 @@ export async function searchRequests(filters: SearchFilters) {
 
   return { requests, billableTotal }
 }
-
-export async function getRoomInvoiceData(roomNumber: string) {
-  const requests = await prisma.request.findMany({
-    where: {
-      roomNumber: { equals: roomNumber, mode: 'insensitive' },
-      status: 'DELIVERED',
-    },
-    orderBy: { createdAt: 'asc' },
-    include: {
-      items: { include: { laundryItem: { select: { nameEn: true } } } },
-    },
-  })
-
-  const grossTotal = requests.reduce((sum, r) => sum + r.grossAmount, 0)
-  const vatTotal = requests.reduce((sum, r) => sum + r.vatAmount, 0)
-  const grandTotal = requests.reduce((sum, r) => sum + r.totalAmount, 0)
-
-  return { requests, grossTotal, vatTotal, grandTotal }
-}

@@ -48,13 +48,13 @@ export default function Home() {
 
   return (
     <FormProvider {...methods}>
-      <div className="min-h-screen bg-salt-cream">
+      <div className="min-h-screen bg-salt-cream pb-24 md:pb-0">
         <GuestNav active="new" />
 
-        <div className="max-w-5xl mx-auto px-4">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <GuestFormHeader />
 
-          <div className="flex flex-col md:flex-row gap-6 pb-24 md:pb-10">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
             <GuestFormFields
               serviceType={serviceType}
               onServiceTypeChange={setServiceType}
@@ -66,7 +66,7 @@ export default function Home() {
               onRetryItems={refetchItems}
             />
 
-            <div className="w-full md:w-80 md:sticky md:top-20 md:self-start">
+            <div className="w-full lg:w-80 lg:sticky lg:top-20 lg:self-start">
               <OrderSummary
                 selectedLines={selectedLines}
                 gross={gross}

@@ -12,7 +12,7 @@ export default function StaffDashboardPage() {
 
   if (status === 'loading') {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <LoadingSkeleton rows={3} height="h-20" rounded="rounded-xl" />
       </div>
     )

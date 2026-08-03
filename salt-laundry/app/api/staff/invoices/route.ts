@@ -1,18 +1,29 @@
 import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/utils/guards'
-import { getRoomInvoiceData } from '@/services/search.service'
+import { getRoomInvoiceData } from '@/services/invoice.service'
+import { roomInvoiceQuerySchema } from '@/lib/validations/roomInvoice.schema'
 
 export async function GET(request: Request) {
   const authError = await requireAuth()
   if (authError) return authError
 
   const { searchParams } = new URL(request.url)
-  const room = searchParams.get('room')?.trim()
+  const parsed = roomInvoiceQuerySchema.safeParse(Object.fromEntries(searchParams))
 
-  if (!room) {
-    return NextResponse.json({ error: 'Room number is required' }, { status: 400 })
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
   }
 
-  const data = await getRoomInvoiceData(room)
+  const { room, guestName, serviceType, express, from, to } = parsed.data
+
+  const data = await getRoomInvoiceData({
+    room,
+    guestName,
+    serviceType,
+    isExpress: express === 'ALL' ? undefined : express === 'EXPRESS',
+    from: from ? new Date(`${from}T00:00:00.000`) : undefined,
+    to: to ? new Date(`${to}T23:59:59.999`) : undefined,
+  })
+
   return NextResponse.json(data)
 }

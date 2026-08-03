@@ -53,6 +53,13 @@ export function summarizeItemNames(names: string[]): string {
   return `${names.slice(0, 3).join(', ')} and ${names.length - 3} more`
 }
 
+export function offShiftConfirmMessage(name: string | null, activeTaskCount: number): string {
+  const who = name ?? 'This housekeeper'
+  if (activeTaskCount === 0) return `${who} will stop receiving new tasks.`
+  const tasks = activeTaskCount === 1 ? '1 active task' : `${activeTaskCount} active tasks`
+  return `${who} will stop receiving new tasks. ${tasks} will be reassigned to other housekeepers.`
+}
+
 export function getInitials(name: string | null, email: string): string {
   if (name?.trim()) {
     const parts = name.trim().split(/\s+/)

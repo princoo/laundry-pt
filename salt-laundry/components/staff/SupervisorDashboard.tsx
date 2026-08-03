@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { StatBar } from '@/components/staff/StatBar'
-import { StatusFilter } from '@/components/staff/StatusFilter'
-import { QueueMeta } from '@/components/staff/QueueMeta'
+import { QueueFilterBar } from '@/components/staff/QueueFilterBar'
 import { RequestCard } from '@/components/staff/RequestCard'
 import { EmptyQueue } from '@/components/staff/EmptyQueue'
 import { StaffOverviewPanel } from '@/components/staff/StaffOverviewPanel'
@@ -34,7 +33,7 @@ export function SupervisorDashboard() {
   const visibleRequests = alertsOnly ? requests.filter(hasAlert) : requests
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-5">
       <StatBar
         stats={stats}
         metrics={SUPERVISOR_METRICS}
@@ -42,9 +41,12 @@ export function SupervisorDashboard() {
         alertActive={alertsOnly}
         onAlertClick={() => setAlertsOnly((v) => !v)}
       />
-      <StaffOverviewPanel onViewTasks={setAssignedTo} />
-      <StatusFilter active={activeFilter} onChange={setActiveFilter} />
-      <QueueMeta deliveredToday={stats?.deliveredToday ?? 0} lastUpdated={lastUpdated} />
+      <StaffOverviewPanel />
+      <QueueFilterBar
+        status={activeFilter} onStatusChange={setActiveFilter}
+        assignedTo={assignedTo} onAssignedToChange={setAssignedTo}
+        deliveredToday={stats?.deliveredToday ?? 0} lastUpdated={lastUpdated}
+      />
 
       {isLoading ? (
         <LoadingSkeleton rows={3} height="h-20" rounded="rounded-xl" />

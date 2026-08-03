@@ -28,6 +28,24 @@ export async function getAllItems() {
   return prisma.laundryItem.findMany({ orderBy: { sortOrder: 'asc' } })
 }
 
+export async function getItemById(id: string) {
+  const item = await prisma.laundryItem.findUnique({ where: { id } })
+  if (!item) return null
+
+  const stats = await prisma.requestItem.aggregate({
+    where: { laundryItemId: id },
+    _count: { id: true },
+    _sum: { quantity: true, subtotal: true },
+  })
+
+  return {
+    ...item,
+    timesOrdered: stats._count.id,
+    totalQuantity: stats._sum.quantity ?? 0,
+    totalRevenue: stats._sum.subtotal ?? 0,
+  }
+}
+
 export async function createItem(data: CreateItemInput) {
   return prisma.laundryItem.create({ data })
 }

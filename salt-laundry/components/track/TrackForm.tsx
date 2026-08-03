@@ -48,7 +48,7 @@ export function TrackForm({ defaultValues, isSubmitting, onSubmit }: Props) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="bg-salt-navy hover:bg-salt-navy-hover transition-colors text-white rounded-lg px-5 py-2.5 text-sm font-medium disabled:opacity-60 flex items-center justify-center gap-2 md:mt-6"
+        className="bg-salt-navy hover:bg-salt-navy-hover transition-colors text-white rounded-lg px-5 py-2.5 text-sm font-medium disabled:opacity-60 flex items-center justify-center gap-2 min-h-[44px] md:mt-6"
       >
         <Search className="w-4 h-4" />
         {isSubmitting ? 'Tracking…' : 'Track'}

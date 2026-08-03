@@ -8,29 +8,34 @@ interface Props {
 }
 
 export function ReportsSummaryCards({ summary, expressCount, expressRevenue }: Props) {
-  const cards = [
-    { label: 'Total revenue', value: formatCurrency(summary.totalRevenue), primary: true },
+  const stats = [
     { label: 'Gross (excl. VAT)', value: formatCurrency(summary.grossRevenue) },
     { label: 'VAT collected', value: formatCurrency(summary.vatRevenue) },
     { label: 'Requests delivered', value: String(summary.requestCount) },
     { label: 'Avg. order value', value: formatCurrency(summary.avgOrderValue) },
+    { label: 'Express revenue', value: formatCurrency(expressRevenue), hint: `${expressCount} orders` },
   ]
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-      {cards.map((card) => (
-        <div key={card.label} className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-5">
-          <div className="text-xs text-salt-text-muted">{card.label}</div>
-          <div className={`text-xl font-medium mt-1 ${card.primary ? 'text-salt-navy' : 'text-salt-text'}`}>
-            {card.value}
-          </div>
-        </div>
-      ))}
+    <div className="flex flex-col gap-3">
+      <div className="bg-salt-navy rounded-xl shadow-sm p-5 sm:p-6">
+        <div className="text-xs text-white/70">Total revenue</div>
+        <div className="text-3xl font-medium mt-1 text-white">{formatCurrency(summary.totalRevenue)}</div>
+      </div>
 
-      <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-5">
-        <div className="text-xs text-salt-text-muted">Express revenue</div>
-        <div className="text-xl font-medium mt-1 text-salt-text">{formatCurrency(expressRevenue)}</div>
-        <div className="text-xs text-salt-text-muted mt-1">({expressCount} orders)</div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {stats.map((stat, i) => (
+          <div
+            key={stat.label}
+            className={`bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-4 ${
+              i === stats.length - 1 ? 'col-span-2 sm:col-span-1' : ''
+            }`}
+          >
+            <div className="text-xs text-salt-text-muted">{stat.label}</div>
+            <div className="text-lg font-medium mt-1 text-salt-text">{stat.value}</div>
+            {stat.hint && <div className="text-xs text-salt-text-muted mt-0.5">{stat.hint}</div>}
+          </div>
+        ))}
       </div>
     </div>
   )

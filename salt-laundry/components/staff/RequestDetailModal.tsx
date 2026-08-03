@@ -32,7 +32,7 @@ export function RequestDetailModal({ id, onClose }: Props) {
       )}
 
       {!isLoading && !fetchError && request && (
-        <div>
+        <div className="flex flex-col gap-4">
           <RequestHeaderCard request={request} reference={request.reference} />
           <ItemBreakdownCard request={request} />
 

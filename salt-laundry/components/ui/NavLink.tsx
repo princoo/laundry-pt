@@ -9,11 +9,17 @@ interface Props {
   href: string
   active: boolean
   children: ReactNode
+  onClick?: () => void
+  className?: string
 }
 
-export function NavLink({ href, active, children }: Props) {
+export function NavLink({ href, active, children, onClick, className = '' }: Props) {
   return (
-    <Link href={href} className={active ? activeClasses : inactiveClasses}>
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`${active ? activeClasses : inactiveClasses} ${className}`}
+    >
       {children}
     </Link>
   )

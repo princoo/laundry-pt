@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { RequestStatus, ServiceType } from '@prisma/client'
 
 export interface SearchFilters {
@@ -43,14 +43,14 @@ export function useSearchRequests() {
   const [filters, setFilters] = useState<SearchFilters>(EMPTY_FILTERS)
   const [results, setResults] = useState<SearchResult[] | null>(null)
   const [billableTotal, setBillableTotal] = useState(0)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const search = useCallback(async () => {
+  const runSearch = useCallback(async (activeFilters: SearchFilters) => {
     setIsLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/staff/search?${buildQuery(filters)}`)
+      const res = await fetch(`/api/staff/search?${buildQuery(activeFilters)}`)
       if (!res.ok) throw new Error('Search failed')
       const data = await res.json()
       setResults(data.requests)
@@ -61,14 +61,24 @@ export function useSearchRequests() {
     } finally {
       setIsLoading(false)
     }
-  }, [filters])
+  }, [])
 
   const clear = useCallback(() => {
     setFilters(EMPTY_FILTERS)
-    setResults(null)
-    setBillableTotal(0)
     setError(null)
+    runSearch(EMPTY_FILTERS)
+  }, [runSearch])
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial fetch on mount
+    runSearch(EMPTY_FILTERS)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  return { filters, setFilters, results, billableTotal, isLoading, error, search, clear }
+  return {
+    filters, setFilters,
+    results, billableTotal, isLoading, error,
+    search: () => runSearch(filters),
+    clear,
+  }
 }

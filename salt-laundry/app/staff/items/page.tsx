@@ -20,13 +20,20 @@ export default function StaffItemsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-5">
-        <h1 className="text-[22px] font-black text-salt-text">Item catalogue</h1>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div className="flex items-start justify-between gap-3 mb-6">
+        <div>
+          <h1 className="text-[22px] font-black text-salt-text">Item catalogue</h1>
+          {!isLoading && !fetchError && (
+            <p className="text-sm text-salt-text-sec mt-1">
+              {items.length} {items.length === 1 ? 'item' : 'items'} · {items.filter((i) => i.isActive).length} active
+            </p>
+          )}
+        </div>
         <button
           type="button"
           onClick={() => setModalItem('new')}
-          className="bg-salt-navy hover:bg-salt-navy-hover transition-colors text-white rounded-lg px-4 py-2 text-sm"
+          className="bg-salt-navy hover:bg-salt-navy-hover transition-colors text-white rounded-lg px-4 py-2 text-sm shrink-0"
         >
           Add item
         </button>

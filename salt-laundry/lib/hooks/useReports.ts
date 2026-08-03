@@ -1,34 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { rangeFor, startOfMonth, toISODate, type QuickRange } from '@/lib/utils/dateRange'
 import type { Report } from '@/lib/types/report'
-
-export const QUICK_RANGES = ['This month', 'Last month', 'Last 30 days', 'Last 90 days'] as const
-export type QuickRange = (typeof QUICK_RANGES)[number]
-
-function toISODate(d: Date): string {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
-function startOfMonth(d: Date): Date {
-  return new Date(d.getFullYear(), d.getMonth(), 1)
-}
-
-function rangeFor(quick: QuickRange): { from: Date; to: Date } {
-  const today = new Date()
-  if (quick === 'This month') return { from: startOfMonth(today), to: today }
-  if (quick === 'Last month') {
-    const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0)
-    return { from: startOfMonth(lastMonthEnd), to: lastMonthEnd }
-  }
-  const days = quick === 'Last 30 days' ? 30 : 90
-  const from = new Date(today)
-  from.setDate(from.getDate() - days + 1)
-  return { from, to: today }
-}
 
 export function useReports() {
   const [from, setFrom] = useState(() => toISODate(startOfMonth(new Date())))
@@ -54,9 +28,7 @@ export function useReports() {
   }, [])
 
   const applyQuickRange = useCallback((quick: QuickRange) => {
-    const { from: f, to: t } = rangeFor(quick)
-    const fromStr = toISODate(f)
-    const toStr = toISODate(t)
+    const { from: fromStr, to: toStr } = rangeFor(quick)
     setFrom(fromStr)
     setTo(toStr)
     generate(fromStr, toStr)

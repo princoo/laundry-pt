@@ -1,12 +1,16 @@
 'use client'
 
-import Image from 'next/image'
+import { useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { Shirt } from 'lucide-react'
+import { Shirt, Menu, X } from 'lucide-react'
+import { BrandLogo } from '@/components/ui/BrandLogo'
 import { NavLink } from '@/components/ui/NavLink'
+import { NavGroupDropdown } from '@/components/staff/NavGroupDropdown'
 import { RoleBadge } from '@/components/staff/RoleBadge'
 import { UserMenu } from '@/components/staff/UserMenu'
 import { NotificationBell } from '@/components/staff/NotificationBell'
+import { MobileNavMenu } from '@/components/staff/MobileNavMenu'
+import { STAFF_NAV_LINKS, ADMIN_NAV_LINKS } from '@/lib/constants/navigation'
 
 interface Props {
   userName?: string
@@ -15,43 +19,52 @@ interface Props {
 
 export function StaffNav({ userName, role }: Props) {
   const pathname = usePathname()
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
 
   return (
-    <nav className="print:hidden sticky top-0 z-50 bg-white border-b border-[0.5px] border-salt-border px-6 py-3 flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <Image src="/salt-logo.png" alt="Salt of Akagera" width={80} height={34} priority />
-        <div className="h-8 w-px bg-salt-border" />
-        <div className="flex items-center gap-2">
-          <Shirt className="w-6 h-6 text-salt-green" />
-          <span className="text-salt-navy text-lg font-black">Laundry Dashboard</span>
+    <nav className="print:hidden sticky top-0 z-50 bg-white border-b border-[0.5px] border-salt-border">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          <BrandLogo className="shrink-0" />
+          <div className="h-8 w-px bg-salt-border hidden sm:block" />
+          <div className="flex items-center gap-2 min-w-0">
+            <Shirt className="w-6 h-6 text-salt-green shrink-0" />
+            <span className="text-salt-navy text-lg font-black truncate">Laundry Dashboard</span>
+          </div>
+        </div>
+
+        <div className="hidden md:flex items-center gap-2">
+          {STAFF_NAV_LINKS.map((link) => (
+            <NavLink
+              key={link.href}
+              href={link.href}
+              active={link.exact ? pathname === link.href : pathname.startsWith(link.href)}
+            >
+              {link.label}
+            </NavLink>
+          ))}
+          {role === 'ADMIN' && <NavGroupDropdown label="Manage" items={ADMIN_NAV_LINKS} />}
+          <NotificationBell />
+          {role && <RoleBadge role={role} />}
+          {userName && <UserMenu userName={userName} />}
+        </div>
+
+        <div className="flex md:hidden items-center gap-2 shrink-0">
+          <NotificationBell />
+          <button
+            type="button"
+            onClick={() => setIsMobileOpen((prev) => !prev)}
+            aria-label="Menu"
+            className="w-9 h-9 flex items-center justify-center rounded-full bg-salt-cream text-salt-text-sec"
+          >
+            {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <NavLink href="/staff" active={pathname === '/staff'}>Dashboard</NavLink>
-        <NavLink href="/staff/search" active={pathname.startsWith('/staff/search')}>
-          Search
-        </NavLink>
-        <NavLink href="/staff/invoices" active={pathname.startsWith('/staff/invoices')}>
-          Room invoice
-        </NavLink>
-        {role === 'ADMIN' && (
-          <>
-            <NavLink href="/staff/items" active={pathname.startsWith('/staff/items')}>
-              Catalogue
-            </NavLink>
-            <NavLink href="/staff/users" active={pathname.startsWith('/staff/users')}>
-              Users
-            </NavLink>
-            <NavLink href="/staff/reports" active={pathname.startsWith('/staff/reports')}>
-              Reports
-            </NavLink>
-          </>
-        )}
-        <NotificationBell />
-        {role && <RoleBadge role={role} />}
-        {userName && <UserMenu userName={userName} />}
-      </div>
+      {isMobileOpen && (
+        <MobileNavMenu role={role} userName={userName} onNavigate={() => setIsMobileOpen(false)} />
+      )}
     </nav>
   )
 }

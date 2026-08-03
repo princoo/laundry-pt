@@ -11,7 +11,7 @@ export function AlertHistoryPanel({ events }: Props) {
   if (events.length === 0) return null
 
   return (
-    <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-4 mt-4">
+    <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-4 sm:p-6">
       <div className="text-xs font-medium text-salt-text-sec mb-2">Alert history (supervisor only)</div>
       {events.map((event, i) => (
         <div key={i} className="flex items-center justify-between text-xs text-salt-text-muted py-1">

@@ -50,7 +50,8 @@ export function GuestDetailsForm() {
         </div>
       </div>
 
-      <div className="flex gap-2 mt-4">
+      <p className="block text-sm text-salt-text mb-1.5 mt-4">Handling</p>
+      <div className="flex gap-2">
         <button
           type="button"
           onClick={() => setValue('isHanger', true)}

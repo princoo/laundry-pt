@@ -52,6 +52,7 @@ async function main() {
       name: "SALT Admin",
       password: await bcrypt.hash("Admin1234!", 12),
       role: "ADMIN",
+      mustChangePassword: false,
     },
   });
 
@@ -61,6 +62,7 @@ async function main() {
       name: "Head Supervisor",
       password: await bcrypt.hash("Supervisor1234!", 12),
       role: "SUPERVISOR",
+      mustChangePassword: false,
     },
   });
 
@@ -70,6 +72,7 @@ async function main() {
       name: "Jean Baptiste",
       password: await bcrypt.hash("Housekeeper1234!", 12),
       role: "HOUSEKEEPER",
+      mustChangePassword: false,
     },
   });
 }

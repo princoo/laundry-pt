@@ -25,7 +25,8 @@ export function ReportsServiceDonut({ byServiceType, totalRevenue }: Props) {
   }))
 
   return (
-    <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-5 flex flex-col items-center">
+    <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-5 sm:p-6 flex flex-col items-center">
+      <h2 className="text-sm font-medium text-salt-text mb-4 self-start">Share of revenue</h2>
       <div className="relative w-40 h-40">
         <svg viewBox="0 0 42 42" className="w-full h-full -rotate-90">
           <circle cx="21" cy="21" r="15.915" fill="none" stroke="currentColor" strokeWidth="6" className="text-salt-border" />

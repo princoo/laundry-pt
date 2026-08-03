@@ -15,28 +15,28 @@ export default function StaffSearchPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <h1 className="text-[22px] font-black text-salt-text">Search requests</h1>
-      <p className="text-sm text-salt-text-muted mt-1">Find requests by room number or guest name.</p>
+      <p className="text-sm text-salt-text-muted mt-1 mb-5 sm:mb-6">Find requests by room number or guest name.</p>
 
-      <div className="mt-4">
-        <SearchFilterBar filters={filters} onChange={setFilters} onSearch={search} onClear={clear} isLoading={isLoading} />
+      <SearchFilterBar filters={filters} onChange={setFilters} onSearch={search} onClear={clear} isLoading={isLoading} />
+
+      <div className="mt-5 sm:mt-6">
+        {isLoading ? (
+          <LoadingSkeleton rows={4} height="h-14" rounded="rounded-lg" />
+        ) : error ? (
+          <FetchError message={error} onRetry={search} />
+        ) : results === null ? (
+          <SearchStateMessage variant="idle" />
+        ) : results.length === 0 ? (
+          <SearchStateMessage variant="empty" />
+        ) : (
+          <>
+            <SearchSummaryBar count={results.length} room={filters.room.trim() || undefined} billableTotal={billableTotal} />
+            <SearchResultsTable results={results} billableTotal={billableTotal} onSelectRequest={setSelectedId} />
+          </>
+        )}
       </div>
-
-      {isLoading ? (
-        <div className="mt-6"><LoadingSkeleton rows={4} height="h-14" rounded="rounded-lg" /></div>
-      ) : error ? (
-        <div className="mt-6"><FetchError message={error} onRetry={search} /></div>
-      ) : results === null ? (
-        <SearchStateMessage variant="idle" />
-      ) : results.length === 0 ? (
-        <SearchStateMessage variant="empty" />
-      ) : (
-        <>
-          <SearchSummaryBar count={results.length} room={filters.room.trim() || undefined} billableTotal={billableTotal} />
-          <SearchResultsTable results={results} billableTotal={billableTotal} onSelectRequest={setSelectedId} />
-        </>
-      )}
 
       {selectedId && (
         <RequestDetailModal id={selectedId} onClose={() => setSelectedId(null)} />

@@ -1,7 +1,20 @@
 import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/utils/guards'
-import { updateItem, softDeleteItem } from '@/services/item.service'
+import { getItemById, updateItem, softDeleteItem } from '@/services/item.service'
 import { updateItemSchema } from '@/lib/validations/item.schema'
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const authError = await requireAdmin()
+  if (authError) return authError
+
+  const { id } = await params
+  const item = await getItemById(id)
+  if (!item) return NextResponse.json({ error: 'Item not found' }, { status: 404 })
+  return NextResponse.json(item)
+}
 
 export async function PATCH(
   request: Request,

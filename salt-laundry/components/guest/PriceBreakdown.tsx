@@ -31,7 +31,7 @@ export function PriceBreakdown({ selectedLines, gross, vat, total }: Props) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between border-t-[0.5px] border-salt-border pt-3">
         <span className="text-[18px] font-medium text-salt-navy">Total</span>
         <span className="text-[18px] font-medium text-salt-navy">{formatCurrency(total)}</span>
       </div>

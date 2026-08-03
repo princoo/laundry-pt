@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { TrackForm } from '@/components/track/TrackForm'
 import { RoomLookupForm } from '@/components/track/RoomLookupForm'
-import { TrackResultItem } from '@/components/track/TrackResultItem'
+import { TrackResultsList } from '@/components/track/TrackResultsList'
 import { SearchStatus } from '@/components/track/SearchStatus'
 import { useRoomRequests } from '@/lib/hooks/useRoomRequests'
 import { useTrackRequest } from '@/lib/hooks/useTrackRequest'
@@ -14,6 +14,8 @@ interface Props {
   initialReference: string
   onResult: (request: TrackedRequest | null) => void
 }
+
+const switchLinkClasses = 'text-sm text-salt-navy mt-1 py-2 hover:underline'
 
 export function TrackSearchSection({ initialRoom, initialReference, onResult }: Props) {
   const [manual, setManual] = useState(Boolean(initialReference))
@@ -47,7 +49,7 @@ export function TrackSearchSection({ initialRoom, initialReference, onResult }: 
           isSubmitting={exact.isLoading}
           onSubmit={(values) => exact.search(values.roomNumber, values.reference)}
         />
-        <button type="button" onClick={() => switchTo(false)} className="text-sm text-salt-navy mt-3">
+        <button type="button" onClick={() => switchTo(false)} className={switchLinkClasses}>
           Search by room number instead
         </button>
         <SearchStatus isLoading={exact.isLoading} error={exact.error} onRetry={exact.retry} notFound={exact.notFound} />
@@ -58,7 +60,7 @@ export function TrackSearchSection({ initialRoom, initialReference, onResult }: 
   return (
     <>
       <RoomLookupForm defaultRoom={initialRoom} isSubmitting={room.isLoading} onSubmit={(v) => room.search(v.roomNumber)} />
-      <button type="button" onClick={() => switchTo(true)} className="text-sm text-salt-navy mt-3">
+      <button type="button" onClick={() => switchTo(true)} className={switchLinkClasses}>
         Already delivered? Search by reference
       </button>
       <SearchStatus
@@ -69,9 +71,7 @@ export function TrackSearchSection({ initialRoom, initialReference, onResult }: 
         notFoundMessage="No active order for that room. Already delivered? Search by reference above."
       />
       {!room.isLoading && room.requests && room.requests.length > 1 && (
-        <div className="flex flex-col gap-3 mt-4">
-          {room.requests.map((r) => <TrackResultItem key={r.id} request={r} onSelect={onResult} />)}
-        </div>
+        <TrackResultsList requests={room.requests} />
       )}
     </>
   )

@@ -41,7 +41,7 @@ export function HousekeeperDashboard() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-5">
       <StatBar
         stats={stats}
         metrics={MY_METRICS}
@@ -53,8 +53,10 @@ export function HousekeeperDashboard() {
         count={stats?.unacknowledged ?? 0}
         onView={handleViewUnacknowledged}
       />
-      <HousekeeperTabs tab={tab} myCount={myCount} onChange={setTab} />
-      <QueueMeta deliveredToday={stats?.deliveredToday ?? 0} lastUpdated={lastUpdated} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <HousekeeperTabs tab={tab} myCount={myCount} onChange={setTab} />
+        <QueueMeta deliveredToday={stats?.deliveredToday ?? 0} lastUpdated={lastUpdated} />
+      </div>
 
       {isLoading ? (
         <LoadingSkeleton rows={3} height="h-20" rounded="rounded-xl" />

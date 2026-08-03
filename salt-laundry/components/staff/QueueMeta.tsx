@@ -17,7 +17,7 @@ export function QueueMeta({ deliveredToday, lastUpdated }: Props) {
   }, [])
 
   return (
-    <div className="flex items-center justify-end gap-3 mt-2 mb-4 text-[11px] text-salt-text-muted">
+    <div className="flex items-center gap-3 text-xs text-salt-text-muted">
       <span>Delivered today: {deliveredToday}</span>
       {lastUpdated && <span>{secondsAgoLabel(lastUpdated, now)}</span>}
     </div>

@@ -4,21 +4,25 @@ import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { StaffOverviewOnShiftRow } from '@/components/staff/StaffOverviewOnShiftRow'
 import { StaffOverviewOffShiftRow } from '@/components/staff/StaffOverviewOffShiftRow'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { ErrorToast } from '@/components/ui/ErrorToast'
-import { useStaffOverview } from '@/lib/hooks/useStaffOverview'
+import { useStaffOverview, type OnShiftRow } from '@/lib/hooks/useStaffOverview'
+import { offShiftConfirmMessage } from '@/lib/utils/formatting'
 
-interface Props {
-  onViewTasks: (housekeeperId: string) => void
-}
-
-export function StaffOverviewPanel({ onViewTasks }: Props) {
+export function StaffOverviewPanel() {
   const [isOpen, setIsOpen] = useState(false)
   const [showOffShift, setShowOffShift] = useState(false)
+  const [pendingOffShift, setPendingOffShift] = useState<OnShiftRow | null>(null)
   const { onShift, offShift, markOnShift, markOffShift, toastMessage, dismissToast } =
     useStaffOverview(isOpen)
 
+  function confirmOffShift() {
+    if (pendingOffShift) markOffShift(pendingOffShift.id)
+    setPendingOffShift(null)
+  }
+
   return (
-    <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm mb-4">
+    <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm">
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
@@ -29,15 +33,15 @@ export function StaffOverviewPanel({ onViewTasks }: Props) {
       </button>
       {isOpen && (
         <div className="border-t border-[0.5px] border-salt-border px-5 py-3">
-          <div className="text-xs uppercase text-salt-text-muted mb-2">
+          <div className="text-xs uppercase tracking-wide text-salt-text-muted mb-2">
             On shift ({onShift.length})
           </div>
           {onShift.map((row) => (
             <StaffOverviewOnShiftRow
               key={row.id}
-              {...row}
-              onViewTasks={() => onViewTasks(row.id)}
-              onMarkOffShift={() => markOffShift(row.id)}
+              name={row.name}
+              activeTaskCount={row.activeTaskCount}
+              onMarkOffShift={() => setPendingOffShift(row)}
             />
           ))}
           {onShift.length === 0 && (
@@ -47,7 +51,7 @@ export function StaffOverviewPanel({ onViewTasks }: Props) {
           <button
             type="button"
             onClick={() => setShowOffShift((prev) => !prev)}
-            className="text-xs uppercase text-salt-text-muted mt-4 mb-2 flex items-center gap-1"
+            className="text-xs uppercase tracking-wide text-salt-text-muted mt-4 mb-2 flex items-center gap-1"
           >
             Off shift ({offShift.length})
             <ChevronDown className={`w-3 h-3 transition-transform ${showOffShift ? 'rotate-180' : ''}`} />
@@ -60,6 +64,16 @@ export function StaffOverviewPanel({ onViewTasks }: Props) {
             />
           ))}
         </div>
+      )}
+
+      {pendingOffShift && (
+        <ConfirmModal
+          title="Mark off shift"
+          message={offShiftConfirmMessage(pendingOffShift.name, pendingOffShift.activeTaskCount)}
+          confirmLabel="Mark off shift"
+          onConfirm={confirmOffShift}
+          onCancel={() => setPendingOffShift(null)}
+        />
       )}
 
       <ErrorToast message={toastMessage} onDismiss={dismissToast} variant="success" />

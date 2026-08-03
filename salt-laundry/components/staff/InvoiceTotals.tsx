@@ -12,22 +12,21 @@ export function InvoiceTotals({
   grossAmount, vatAmount, totalAmount, totalLabel = 'TOTAL', large = false,
 }: Props) {
   return (
-    <div className="flex flex-col items-end gap-2 mt-4 text-[14px]">
-      <div className="flex justify-between w-64">
-        <span className="text-gray-600">Subtotal (excl. VAT):</span>
-        <span>{formatCurrency(grossAmount)}</span>
+    <div className="flex flex-col items-end gap-2 mt-6 text-[14px]">
+      <div className="flex justify-between w-full max-w-[280px] text-salt-text-sec">
+        <span>Subtotal (excl. VAT)</span>
+        <span className="text-salt-text">{formatCurrency(grossAmount)}</span>
       </div>
-      <div className="flex justify-between w-64">
-        <span className="text-gray-600">VAT 15%:</span>
-        <span>{formatCurrency(vatAmount)}</span>
+      <div className="flex justify-between w-full max-w-[280px] text-salt-text-sec">
+        <span>VAT 15%</span>
+        <span className="text-salt-text">{formatCurrency(vatAmount)}</span>
       </div>
-      <div className="w-64 border-t border-black" />
       <div
-        className={`flex justify-between w-64 font-medium text-[#0d2137] ${
+        className={`flex justify-between items-center w-full max-w-[280px] mt-2 bg-salt-cream rounded-lg px-4 py-3 font-medium text-salt-navy ${
           large ? 'text-[22px]' : 'text-[18px]'
         }`}
       >
-        <span>{totalLabel}:</span>
+        <span className="text-[13px] uppercase tracking-wide">{totalLabel}</span>
         <span>{formatCurrency(totalAmount)}</span>
       </div>
     </div>

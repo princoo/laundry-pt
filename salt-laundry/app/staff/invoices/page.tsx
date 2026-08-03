@@ -1,59 +1,40 @@
 'use client'
 
-import { Inter } from 'next/font/google'
 import { useRoomInvoice } from '@/lib/hooks/useRoomInvoice'
-import { InvoiceMasthead } from '@/components/staff/InvoiceMasthead'
-import { RoomInvoiceSearchForm } from '@/components/staff/RoomInvoiceSearchForm'
-import { RoomInvoiceInfoBlock } from '@/components/staff/RoomInvoiceInfoBlock'
-import { RoomInvoiceRequestSection } from '@/components/staff/RoomInvoiceRequestSection'
-import { RoomInvoiceGrandTotal } from '@/components/staff/RoomInvoiceGrandTotal'
-import { PrintButton } from '@/components/ui/PrintButton'
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+import { RoomInvoiceFilterPanel } from '@/components/staff/RoomInvoiceFilterPanel'
+import { RoomInvoiceResult } from '@/components/staff/RoomInvoiceResult'
 
 export default function RoomInvoicesPage() {
-  const { room, setRoom, roomSearched, data, isLoading, error, search } = useRoomInvoice()
+  const { filters, setFilters, applied, data, isLoading, error, search, reset } = useRoomInvoice()
 
   return (
-    <div className={`${inter.variable} font-[family-name:var(--font-inter)] max-w-[680px] mx-auto px-4 py-8 print:px-0`}>
-      <RoomInvoiceSearchForm
-        room={room}
-        onRoomChange={setRoom}
-        onSearch={search}
-        isLoading={isLoading}
-      />
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 print:max-w-none print:p-0">
+      <header className="print:hidden mb-5 sm:mb-6">
+        <h1 className="text-[22px] font-black text-salt-text">Room invoice</h1>
+        <p className="text-sm text-salt-text-sec mt-1">
+          Filter a room&apos;s delivered laundry and generate a printable bill.
+        </p>
+      </header>
 
-      {error && <p className="print:hidden text-sm text-red-600 mb-6">{error}</p>}
+      <div className="grid items-start gap-5 lg:gap-6 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)] print:block">
+        <RoomInvoiceFilterPanel
+          filters={filters}
+          onChange={setFilters}
+          onSearch={search}
+          onReset={reset}
+          isLoading={isLoading}
+        />
 
-      {data && (
-        <div>
-          <InvoiceMasthead subtitle="Laundry Billing Summary" />
-          <RoomInvoiceInfoBlock roomNumber={roomSearched} />
-
-          {data.requests.length === 0 && (
-            <p className="text-sm text-gray-600">
-              No delivered laundry requests found for room {roomSearched}.
-            </p>
-          )}
-
-          {data.requests.map((request) => (
-            <RoomInvoiceRequestSection key={request.id} request={request} />
-          ))}
-
-          {data.requests.length > 0 && (
-            <RoomInvoiceGrandTotal
-              count={data.requests.length}
-              grossTotal={data.grossTotal}
-              vatTotal={data.vatTotal}
-              grandTotal={data.grandTotal}
-            />
-          )}
-
-          <div className="print:hidden mt-8 flex justify-center">
-            <PrintButton />
-          </div>
+        <div className="min-w-0">
+          <RoomInvoiceResult
+            applied={applied}
+            data={data}
+            isLoading={isLoading}
+            error={error}
+            onRetry={search}
+          />
         </div>
-      )}
+      </div>
     </div>
   )
 }
