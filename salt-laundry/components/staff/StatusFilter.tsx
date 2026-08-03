@@ -1,22 +1,16 @@
-import { STATUS_LABELS } from '@/lib/constants/statuses'
-
-const FILTERS = [
-  { value: 'ALL', label: 'All' },
-  { value: 'PENDING', label: STATUS_LABELS.PENDING },
-  { value: 'COLLECTED', label: STATUS_LABELS.COLLECTED },
-  { value: 'IN_PROGRESS', label: STATUS_LABELS.IN_PROGRESS },
-  { value: 'READY', label: STATUS_LABELS.READY },
-]
+import { QUEUE_STATUS_FILTERS, STATUS_LABELS } from '@/lib/constants/statuses'
+import type { RequestStatus } from '@prisma/client'
 
 interface Props {
   active: string
   onChange: (value: string) => void
+  options?: readonly string[]
 }
 
-export function StatusFilter({ active, onChange }: Props) {
+export function StatusFilter({ active, onChange, options = QUEUE_STATUS_FILTERS }: Props) {
   return (
     <div className="flex gap-1 overflow-x-auto">
-      {FILTERS.map(({ value, label }) => (
+      {options.map((value) => (
         <button
           key={value}
           type="button"
@@ -27,7 +21,7 @@ export function StatusFilter({ active, onChange }: Props) {
               : 'text-salt-text-sec px-4 py-1.5 text-sm whitespace-nowrap hover:text-salt-text'
           }
         >
-          {label}
+          {value === 'ALL' ? 'All' : STATUS_LABELS[value as RequestStatus]}
         </button>
       ))}
     </div>

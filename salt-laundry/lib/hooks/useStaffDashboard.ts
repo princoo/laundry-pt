@@ -2,27 +2,24 @@
 
 import { useCallback, useRef, useState } from 'react'
 import { useAutoRefresh } from '@/lib/hooks/useAutoRefresh'
+import { buildQueueQuery, type QueueQuery } from '@/lib/utils/staffQueueQuery'
 import type { QueueRequest, QueueStats } from '@/lib/types/staffDashboard'
 
 export type { QueueRequest, QueueStats }
 
-interface DashboardParams {
-  status?: string
-  viewAll?: boolean
-  assignedTo?: string
-}
-
-export function useStaffDashboard({ status = 'ALL', viewAll = false, assignedTo }: DashboardParams) {
+export function useStaffDashboard(params: QueueQuery) {
   const [requests, setRequests] = useState<QueueRequest[]>([])
   const [stats, setStats] = useState<QueueStats | null>(null)
+  const [total, setTotal] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [loadedKey, setLoadedKey] = useState<string | null>(null)
   const latestRequestId = useRef(0)
 
-  const key = `${status}|${viewAll}|${assignedTo ?? ''}`
-  if (key !== loadedKey && !isLoading) setIsLoading(true)
+  const query = buildQueueQuery(params)
+  if (query !== loadedKey && !isLoading) setIsLoading(true)
 
   const fetchData = useCallback(async () => {
     // Overlapping calls can settle out of order (filter change mid-flight, tab
@@ -30,13 +27,8 @@ export function useStaffDashboard({ status = 'ALL', viewAll = false, assignedTo 
     const requestId = ++latestRequestId.current
     setError(null)
     try {
-      const params = new URLSearchParams()
-      if (status !== 'ALL') params.set('status', status)
-      if (viewAll) params.set('view', 'all')
-      if (assignedTo) params.set('assignedTo', assignedTo)
-      const qs = params.toString() ? `?${params.toString()}` : ''
       const [requestsRes, statsRes] = await Promise.all([
-        fetch(`/api/staff/requests${qs}`),
+        fetch(`/api/staff/requests?${query}`),
         fetch('/api/staff/stats'),
       ])
       if (!requestsRes.ok || !statsRes.ok) throw new Error('Failed to load dashboard')
@@ -44,6 +36,8 @@ export function useStaffDashboard({ status = 'ALL', viewAll = false, assignedTo 
       const statsData = await statsRes.json()
       if (requestId !== latestRequestId.current) return
       setRequests(requestsData.requests ?? [])
+      setTotal(requestsData.total ?? 0)
+      setTotalPages(Math.max(1, requestsData.totalPages ?? 1))
       setStats(statsData)
       setLastUpdated(new Date())
     } catch {
@@ -52,12 +46,12 @@ export function useStaffDashboard({ status = 'ALL', viewAll = false, assignedTo 
     } finally {
       if (requestId === latestRequestId.current) {
         setIsLoading(false)
-        setLoadedKey(key)
+        setLoadedKey(query)
       }
     }
-  }, [status, viewAll, assignedTo, key])
+  }, [query])
 
   useAutoRefresh(fetchData)
 
-  return { requests, stats, isLoading, error, lastUpdated, refetch: fetchData }
+  return { requests, stats, total, totalPages, isLoading, error, lastUpdated, refetch: fetchData }
 }

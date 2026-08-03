@@ -11,23 +11,23 @@ export async function getStaffStats(actor: Actor) {
   startOfToday.setUTCHours(0, 0, 0, 0)
 
   const assignedFilter = actor.role === 'HOUSEKEEPER' ? { assignedToId: actor.id } : {}
-  const unacknowledgedWhere =
-    actor.role === 'HOUSEKEEPER'
-      ? { assignedToId: actor.id, acknowledgedAt: null, status: 'PENDING' as const }
-      : { assignedToId: { not: null }, acknowledgedAt: null, status: 'PENDING' as const }
 
-  const [pending, collected, inProgress, ready, deliveredToday, unacknowledged, unassigned] =
-    await Promise.all([
-      prisma.request.count({ where: { ...assignedFilter, status: 'PENDING' } }),
-      prisma.request.count({ where: { ...assignedFilter, status: 'COLLECTED' } }),
-      prisma.request.count({ where: { ...assignedFilter, status: 'IN_PROGRESS' } }),
-      prisma.request.count({ where: { ...assignedFilter, status: 'READY' } }),
-      prisma.request.count({
-        where: { ...assignedFilter, status: 'DELIVERED', returnedAt: { gte: startOfToday } },
-      }),
-      prisma.request.count({ where: unacknowledgedWhere }),
-      prisma.request.count({ where: { assignedToId: null, status: 'PENDING' } }),
-    ])
+  const [grouped, deliveredToday, unassigned] = await Promise.all([
+    prisma.request.groupBy({ by: ['status'], where: assignedFilter, _count: true }),
+    prisma.request.count({
+      where: { ...assignedFilter, status: 'DELIVERED', returnedAt: { gte: startOfToday } },
+    }),
+    prisma.request.count({ where: { assignedToId: null, status: 'PENDING' } }),
+  ])
 
-  return { pending, collected, inProgress, ready, deliveredToday, unacknowledged, unassigned }
+  const byStatus = new Map(grouped.map((row) => [row.status, row._count]))
+
+  return {
+    pending: byStatus.get('PENDING') ?? 0,
+    collected: byStatus.get('COLLECTED') ?? 0,
+    inProgress: byStatus.get('IN_PROGRESS') ?? 0,
+    ready: byStatus.get('READY') ?? 0,
+    deliveredToday,
+    unassigned,
+  }
 }

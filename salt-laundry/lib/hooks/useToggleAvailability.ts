@@ -15,7 +15,7 @@ export function useToggleAvailability(onChanged: () => void) {
 
     const data = await res.json()
     onChanged()
-    if (data.reassignedCount > 0) setToastMessage(data.message)
+    if (data.message) setToastMessage(data.message)
   }
 
   return { toggle, toastMessage, dismissToast: () => setToastMessage(null) }

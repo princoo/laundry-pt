@@ -51,8 +51,8 @@ export function useRequestDetail(id: string) {
         body: JSON.stringify({ status }),
       })
       if (!res.ok) {
-        // Surface the server's reason — a rejected transition or an
-        // unacknowledged assignment isn't fixed by trying again.
+        // Surface the server's reason — a rejected transition isn't
+        // fixed by trying again.
         const body = await res.json().catch(() => null)
         throw new Error(body?.error)
       }

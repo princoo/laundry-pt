@@ -11,13 +11,13 @@ import { ReassignModal } from '@/components/staff/ReassignModal'
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton'
 import { FetchError } from '@/components/ui/FetchError'
 import { useStaffDashboard, type QueueRequest } from '@/lib/hooks/useStaffDashboard'
+import { SUPERVISOR_QUEUE_LIMIT } from '@/lib/constants/queue'
 import { hasAlert } from '@/lib/utils/sla'
 
 const SUPERVISOR_METRICS = [
   { key: 'pending' as const, label: 'All pending' },
   { key: 'inProgress' as const, label: 'All in progress' },
   { key: 'ready' as const, label: 'All ready' },
-  { key: 'unacknowledged' as const, label: 'Unacknowledged' },
   { key: 'unassigned' as const, label: 'Unassigned' },
 ]
 
@@ -29,7 +29,7 @@ export function SupervisorDashboard() {
   const [assignedTo, setAssignedTo] = useState<string | undefined>(undefined)
   const [reassignTarget, setReassignTarget] = useState<QueueRequest | null>(null)
   const { requests, stats, isLoading, error, lastUpdated, refetch } =
-    useStaffDashboard({ status: activeFilter, assignedTo })
+    useStaffDashboard({ status: activeFilter, assignedTo, limit: SUPERVISOR_QUEUE_LIMIT })
   const visibleRequests = alertsOnly ? requests.filter(hasAlert) : requests
 
   return (

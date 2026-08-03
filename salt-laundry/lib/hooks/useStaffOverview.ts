@@ -37,7 +37,7 @@ export function useStaffOverview(isOpen: boolean) {
     })
     if (res.ok) {
       const data = await res.json()
-      if (data.reassignedCount > 0) setToastMessage(data.message)
+      if (data.message) setToastMessage(data.message)
     }
     load()
   }

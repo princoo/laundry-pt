@@ -28,10 +28,11 @@ export async function PATCH(
 
     return NextResponse.json({
       isAvailable: result.isAvailable,
-      reassignedCount: result.reassignedCount,
-      ...(isAvailable
+      ...(isAvailable || result.openTasks === 0
         ? {}
-        : { message: `${result.name} marked as unavailable. ${result.reassignedCount} pending task(s) reassigned.` }),
+        : {
+            message: `${result.name} marked as off shift. Their ${result.openTasks} open task(s) stay assigned — reassign them if someone else should take over.`,
+          }),
     })
   } catch (error) {
     if (error instanceof AdminAvailabilityError) {

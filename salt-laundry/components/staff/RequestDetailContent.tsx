@@ -1,5 +1,4 @@
 import { AlertBanner } from '@/components/staff/AlertBanner'
-import { AcknowledgeButton } from '@/components/staff/AcknowledgeButton'
 import { AssignmentCard } from '@/components/staff/AssignmentCard'
 import { RequestStatusCard } from '@/components/staff/RequestStatusCard'
 import { RequestNotes } from '@/components/staff/RequestNotes'
@@ -13,7 +12,6 @@ import type { RequestStatus } from '@prisma/client'
 interface Props {
   request: TrackedRequest
   requestId: string
-  canAcknowledge: boolean
   canReassign: boolean
   isUpdating: boolean
   onAdvance: (status: RequestStatus) => void
@@ -21,16 +19,11 @@ interface Props {
 }
 
 export function RequestDetailContent({
-  request, requestId, canAcknowledge, canReassign, isUpdating, onAdvance, onChanged,
+  request, requestId, canReassign, isUpdating, onAdvance, onChanged,
 }: Props) {
   return (
     <div className="mt-6">
       <AlertBanner request={request} />
-      {canAcknowledge && (
-        <div className="mb-4">
-          <AcknowledgeButton requestId={requestId} onAcknowledged={onChanged} />
-        </div>
-      )}
 
       <div className="lg:flex lg:gap-6 lg:items-start">
         <div className="flex-1 min-w-0 space-y-4">
@@ -39,7 +32,6 @@ export function RequestDetailContent({
             <RequestStatusCard
               request={request}
               isUpdating={isUpdating}
-              requiresAcknowledgment={canAcknowledge}
               onAdvance={onAdvance}
               onCancel={() => onAdvance('CANCELLED')}
             />

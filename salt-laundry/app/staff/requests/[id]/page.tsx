@@ -18,8 +18,6 @@ export default function RequestDetailPage() {
     updateStatus, refetch, clearError,
   } = useRequestDetail(id)
 
-  const canAcknowledge =
-    user?.role === 'HOUSEKEEPER' && request?.assignedTo?.id === user?.id && !request?.acknowledgedAt
   const canReassign = user?.role === 'SUPERVISOR' || user?.role === 'ADMIN'
 
   return (
@@ -39,7 +37,6 @@ export default function RequestDetailPage() {
         <RequestDetailContent
           request={request}
           requestId={id}
-          canAcknowledge={canAcknowledge}
           canReassign={canReassign}
           isUpdating={isUpdating}
           onAdvance={updateStatus}

@@ -6,14 +6,11 @@ import type { RequestStatus } from '@prisma/client'
 interface Props {
   request: RequestDetail
   isUpdating: boolean
-  requiresAcknowledgment?: boolean
   onAdvance: (status: RequestStatus) => void
   onCancel: () => void
 }
 
-export function RequestStatusCard({
-  request, isUpdating, requiresAcknowledgment, onAdvance, onCancel,
-}: Props) {
+export function RequestStatusCard({ request, isUpdating, onAdvance, onCancel }: Props) {
   return (
     <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-4 sm:p-6">
       <div className="text-[11px] uppercase text-salt-text-muted mb-4">Status</div>
@@ -26,7 +23,6 @@ export function RequestStatusCard({
       <RequestActions
         status={request.status}
         isUpdating={isUpdating}
-        requiresAcknowledgment={requiresAcknowledgment}
         onAdvance={onAdvance}
         onCancel={onCancel}
       />

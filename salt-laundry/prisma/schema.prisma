@@ -63,7 +63,6 @@ model Request {
   returnedAt        DateTime?
   assignedToId      String?
   assignedAt        DateTime?
-  acknowledgedAt    DateTime?
   assignmentMethod  AssignmentMethod?
   unassignedFromId  String?
   unassignedAt      DateTime?

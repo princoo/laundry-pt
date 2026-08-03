@@ -14,7 +14,6 @@ export interface QueueRequest {
   itemNames: string[]
   assignedTo: { id: string; name: string | null } | null
   assignedAt: string | null
-  acknowledgedAt: string | null
   collectedAt: string | null; completedAt: string | null
 }
 
@@ -24,6 +23,5 @@ export interface QueueStats {
   inProgress: number
   ready: number
   deliveredToday: number
-  unacknowledged: number
   unassigned: number
 }

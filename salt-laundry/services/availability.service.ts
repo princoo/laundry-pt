@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/prisma'
-import { autoAssign, releaseAssignment } from '@/services/assignment.service'
+import { ACTIVE_STATUSES } from '@/services/assignment.service'
 
 export class AdminAvailabilityError extends Error {}
 
-// Toggles a housekeeper's shift availability. Turning it off immediately
-// redistributes their PENDING + unacknowledged tasks — anything already
-// COLLECTED or IN_PROGRESS stays with them, since they have the items.
+// Toggles a housekeeper's shift availability. Going off shift only removes them
+// from the auto-assign pool for new requests — work already on their plate stays
+// with them until a supervisor reassigns it.
 export async function setHousekeeperAvailability(userId: string, isAvailable: boolean) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -16,19 +16,11 @@ export async function setHousekeeperAvailability(userId: string, isAvailable: bo
 
   await prisma.user.update({ where: { id: userId }, data: { isAvailable } })
 
-  if (isAvailable) {
-    return { isAvailable: true, reassignedCount: 0, name: user.name }
-  }
+  const openTasks = isAvailable
+    ? 0
+    : await prisma.request.count({
+        where: { assignedToId: userId, status: { in: ACTIVE_STATUSES } },
+      })
 
-  const pendingTasks = await prisma.request.findMany({
-    where: { assignedToId: userId, acknowledgedAt: null, status: 'PENDING' },
-    select: { id: true },
-  })
-
-  for (const task of pendingTasks) {
-    await releaseAssignment(task.id, userId)
-    await autoAssign(task.id, userId)
-  }
-
-  return { isAvailable: false, reassignedCount: pendingTasks.length, name: user.name }
+  return { isAvailable, name: user.name, openTasks }
 }

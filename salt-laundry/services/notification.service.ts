@@ -50,19 +50,19 @@ export async function getRequestsAssignedTo(userId: string, since: Date) {
   return mapAssigned(rows)
 }
 
-// Assignments the housekeeper hasn't acted on yet — status can't advance past
-// PENDING before acknowledgment, so this alone identifies "still owed a look".
-export async function getUnacknowledgedAssignments(userId: string) {
+// Assignments the housekeeper still owes a collection — replayed when a
+// notification stream reconnects, so work assigned while they were offline
+// isn't silently missed.
+export async function getOpenAssignments(userId: string) {
   const rows = await prisma.request.findMany({
-    where: { assignedToId: userId, acknowledgedAt: null, status: 'PENDING' },
+    where: { assignedToId: userId, status: 'PENDING' },
     orderBy: { assignedAt: 'desc' },
     select: ASSIGNED_SELECT,
   })
   return mapAssigned(rows)
 }
 
-// Tasks most recently taken from this user — manual reassignment, a missed
-// acknowledgment timeout, or an availability toggle. Informational only, no catch-up.
+// Tasks a supervisor has moved to someone else. Informational only, no catch-up.
 export async function getUnassignedNotifications(userId: string, since: Date) {
   const rows = await prisma.request.findMany({
     where: { unassignedFromId: userId, unassignedAt: { gt: since } },

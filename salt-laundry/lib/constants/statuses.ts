@@ -15,6 +15,16 @@ export const TRACKABLE_STATUSES: RequestStatus[] = [
   'PENDING', 'COLLECTED', 'IN_PROGRESS', 'READY',
 ]
 
+// Filter chips above a request list. 'ALL' is a UI-only pseudo-status.
+export const QUEUE_STATUS_FILTERS = [
+  'ALL', 'PENDING', 'COLLECTED', 'IN_PROGRESS', 'READY',
+] as const
+
+// A housekeeper also needs to look back at work already closed out.
+export const MY_TASK_STATUS_FILTERS = [
+  'ALL', ...REQUEST_STATUSES,
+] as const
+
 export const STATUS_TRANSITIONS: Record<RequestStatus, RequestStatus[]> = {
   PENDING:     ['COLLECTED', 'CANCELLED'],
   COLLECTED:   ['IN_PROGRESS', 'CANCELLED'],

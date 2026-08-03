@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getCurrentUser, requireAuth } from '@/lib/utils/guards'
 import { getRequestsQueue } from '@/services/staffRequestQueue.service'
-import { processTimeouts } from '@/services/assignment.service'
 import { recordDetectedAlerts } from '@/services/requestAlert.service'
+import { DEFAULT_SORT, QUEUE_PAGE_SIZE, type SortOrder } from '@/lib/constants/queue'
 import type { RequestStatus } from '@prisma/client'
 
 const VALID_STATUSES: RequestStatus[] = [
@@ -13,7 +13,6 @@ export async function GET(request: Request) {
   const authError = await requireAuth()
   if (authError) return authError
 
-  await processTimeouts()
   await recordDetectedAlerts()
 
   const user = await getCurrentUser()
@@ -24,17 +23,17 @@ export async function GET(request: Request) {
   }
 
   const page = Math.max(1, Number(searchParams.get('page')) || 1)
-  const limit = Math.max(1, Number(searchParams.get('limit')) || 20)
-  const viewAll = searchParams.get('view') === 'all'
+  const limit = Math.max(1, Number(searchParams.get('limit')) || QUEUE_PAGE_SIZE)
+  const sort: SortOrder = searchParams.get('sort') === 'asc' ? 'asc' : DEFAULT_SORT
   const assignedToFilter = searchParams.get('assignedTo') ?? undefined
 
   const { requests, total } = await getRequestsQueue({
     status: statusParam as RequestStatus | undefined,
     page,
     limit,
+    sort,
     actorId: user?.id,
     actorRole: user?.role,
-    viewAll,
     assignedToFilter,
   })
 

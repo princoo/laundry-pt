@@ -20,10 +20,9 @@ export function RequestCard({ request, role, onReassign }: Props) {
   const router = useRouter()
   const {
     id, reference, roomNumber, guestName, serviceType, isExpress,
-    status, createdAt, totalItems, itemNames, assignedTo, acknowledgedAt,
+    status, createdAt, totalItems, itemNames, assignedTo,
   } = request
   const canReassign = (role === 'SUPERVISOR' || role === 'ADMIN') && onReassign
-  const awaitingAck = !acknowledgedAt && status === 'PENDING'
   const goToDetail = () => router.push(`/staff/requests/${id}`)
   const onKey = (e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToDetail() } }
   return (
@@ -48,11 +47,6 @@ export function RequestCard({ request, role, onReassign }: Props) {
           )}
         </div>
         <div className="flex items-center gap-1.5 flex-wrap justify-end shrink-0">
-          {awaitingAck && (
-            <span className="bg-amber-50 text-amber-700 text-xs px-2.5 py-1 rounded-full whitespace-nowrap">
-              Awaiting acknowledgment
-            </span>
-          )}
           <OverdueBadge request={request} />
           <StatusBadge status={status} />
         </div>

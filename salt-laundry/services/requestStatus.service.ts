@@ -6,7 +6,6 @@ import type { RequestStatus, Role } from '@prisma/client'
 
 export class InvalidStatusTransitionError extends Error {}
 export class ForbiddenRequestAccessError extends Error {}
-export class UnacknowledgedAssignmentError extends Error {}
 
 export async function updateRequestStatus(
   id: string,
@@ -18,14 +17,6 @@ export async function updateRequestStatus(
 
   if (!canManageRequest(existing.assignedToId, actor)) {
     throw new ForbiddenRequestAccessError()
-  }
-
-  // A housekeeper confirms they've seen the assignment before acting on it.
-  // Without this the status leaves PENDING while acknowledgedAt stays null,
-  // which hides the request from processTimeouts() forever and leaves it
-  // counted as unacknowledged in the stats.
-  if (actor.role === 'HOUSEKEEPER' && !existing.acknowledgedAt) {
-    throw new UnacknowledgedAssignmentError()
   }
 
   const allowed =

@@ -37,7 +37,6 @@ export interface RequestDetail {
   returnedAt: string | null
   assignedTo: { id: string; name: string | null } | null
   assignedAt: string | null
-  acknowledgedAt: string | null
   items: RequestDetailItem[]
   notes: RequestNote[]
   canManage?: boolean

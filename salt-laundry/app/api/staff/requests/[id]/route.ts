@@ -5,7 +5,6 @@ import {
   updateRequestStatus,
   InvalidStatusTransitionError,
   ForbiddenRequestAccessError,
-  UnacknowledgedAssignmentError,
 } from '@/services/requestStatus.service'
 import { updateStatusSchema } from '@/lib/validations/statusUpdate.schema'
 
@@ -58,12 +57,6 @@ export async function PATCH(
       return NextResponse.json(
         { error: 'You can only update requests assigned to you' },
         { status: 403 }
-      )
-    }
-    if (error instanceof UnacknowledgedAssignmentError) {
-      return NextResponse.json(
-        { error: 'Acknowledge this assignment before updating its status' },
-        { status: 409 }
       )
     }
     if (error instanceof InvalidStatusTransitionError) {
