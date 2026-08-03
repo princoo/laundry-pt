@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { useAutoRefresh } from '@/lib/hooks/useAutoRefresh'
 import { buildQueueQuery, type QueueQuery } from '@/lib/utils/staffQueueQuery'
+import { QUEUE_REFRESH_INTERVAL_MS } from '@/lib/constants/queue'
 import type { QueueRequest, QueueStats } from '@/lib/types/staffDashboard'
 
 export type { QueueRequest, QueueStats }
@@ -51,7 +52,7 @@ export function useStaffDashboard(params: QueueQuery) {
     }
   }, [query])
 
-  useAutoRefresh(fetchData)
+  useAutoRefresh(fetchData, QUEUE_REFRESH_INTERVAL_MS)
 
   return { requests, stats, total, totalPages, isLoading, error, lastUpdated, refetch: fetchData }
 }

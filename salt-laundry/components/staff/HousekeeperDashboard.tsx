@@ -40,6 +40,7 @@ export function HousekeeperDashboard() {
         sort={sort} onSortChange={setSort}
         total={total}
         deliveredToday={stats?.deliveredToday ?? 0} lastUpdated={lastUpdated}
+        onRefresh={refetch}
       />
 
       {isLoading ? (

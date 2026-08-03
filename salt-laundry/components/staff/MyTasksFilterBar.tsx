@@ -14,16 +14,19 @@ interface Props {
   total: number
   deliveredToday: number
   lastUpdated: Date | null
+  onRefresh: () => void | Promise<void>
 }
 
 export function MyTasksFilterBar({
-  status, onStatusChange, sort, onSortChange, total, deliveredToday, lastUpdated,
+  status, onStatusChange, sort, onSortChange, total, deliveredToday, lastUpdated, onRefresh,
 }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="text-sm font-medium text-salt-text">My tasks · {total}</span>
-        <QueueMeta deliveredToday={deliveredToday} lastUpdated={lastUpdated} />
+        <QueueMeta
+          deliveredToday={deliveredToday} lastUpdated={lastUpdated} onRefresh={onRefresh}
+        />
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <StatusFilter active={status} onChange={onStatusChange} options={MY_TASK_STATUS_FILTERS} />

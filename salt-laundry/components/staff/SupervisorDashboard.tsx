@@ -46,6 +46,7 @@ export function SupervisorDashboard() {
         status={activeFilter} onStatusChange={setActiveFilter}
         assignedTo={assignedTo} onAssignedToChange={setAssignedTo}
         deliveredToday={stats?.deliveredToday ?? 0} lastUpdated={lastUpdated}
+        onRefresh={refetch}
       />
 
       {isLoading ? (
