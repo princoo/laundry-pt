@@ -1,5 +1,10 @@
 import type { RequestStatus } from '@prisma/client'
 
+// See the note in lib/constants/services.ts on why this is a literal tuple.
+export const REQUEST_STATUSES = [
+  'PENDING', 'COLLECTED', 'IN_PROGRESS', 'READY', 'DELIVERED', 'CANCELLED',
+] as const satisfies readonly RequestStatus[]
+
 export const ACTIVE_STATUSES: RequestStatus[] = [
   'PENDING', 'COLLECTED', 'IN_PROGRESS', 'READY', 'DELIVERED',
 ]

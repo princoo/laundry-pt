@@ -1,6 +1,9 @@
 import type { ServiceType } from '@prisma/client'
 
-export const SERVICE_TYPES: ServiceType[] = ['NORMAL', 'DRY_CLEAN', 'PRESSING']
+// Literal tuple, not `ServiceType[]`: Zod schemas build from it, and a value
+// import of the Prisma enum would drag the Prisma runtime into client bundles.
+// `satisfies` still fails the build if the schema's enum ever drifts.
+export const SERVICE_TYPES = ['NORMAL', 'DRY_CLEAN', 'PRESSING'] as const satisfies readonly ServiceType[]
 
 export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
   NORMAL: 'Normal',

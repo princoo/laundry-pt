@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ServiceType } from '@prisma/client'
+import { SERVICE_TYPES } from '@/lib/constants/services'
 
 export const guestDetailsSchema = z.object({
   roomNumber: z.string().trim().min(1, 'Room number is required'),
@@ -16,7 +16,7 @@ export const requestItemSchema = z.object({
 })
 
 export const createGuestRequestSchema = guestDetailsSchema.extend({
-  serviceType: z.enum(ServiceType),
+  serviceType: z.enum(SERVICE_TYPES),
   isExpress: z.boolean(),
   items: z.array(requestItemSchema).min(1, 'Select at least one item'),
 })

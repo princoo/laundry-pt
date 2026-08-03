@@ -1,11 +1,11 @@
 import { z } from 'zod'
-import { Role } from '@prisma/client'
+import { ROLES } from '@/lib/constants/roles'
 
 export const createUserSchema = z.object({
   email: z.email('Enter a valid email address').trim().min(1, 'Email is required'),
   name: z.string().trim().optional(),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  role: z.enum(Role),
+  role: z.enum(ROLES),
 })
 
 export type CreateUserInput = z.infer<typeof createUserSchema>
@@ -13,7 +13,7 @@ export type CreateUserInput = z.infer<typeof createUserSchema>
 export const updateUserSchema = z.object({
   name: z.string().trim().optional(),
   email: z.email('Enter a valid email address').trim().optional(),
-  role: z.enum(Role).optional(),
+  role: z.enum(ROLES).optional(),
   isActive: z.boolean().optional(),
 })
 
@@ -24,7 +24,7 @@ export const userFormSchema = z
     isNew: z.boolean(),
     name: z.string().trim().optional(),
     email: z.email('Enter a valid email address').trim().min(1, 'Email is required'),
-    role: z.enum(Role),
+    role: z.enum(ROLES),
     password: z.string().optional(),
     isActive: z.boolean(),
   })
