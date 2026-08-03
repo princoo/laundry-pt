@@ -39,6 +39,7 @@ export function RequestDetailContent({
             <RequestStatusCard
               request={request}
               isUpdating={isUpdating}
+              requiresAcknowledgment={canAcknowledge}
               onAdvance={onAdvance}
               onCancel={() => onAdvance('CANCELLED')}
             />

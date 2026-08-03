@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
 import { getCurrentUser, requireAuth } from '@/lib/utils/guards'
+import { getRequestDetailForUser } from '@/services/staffRequest.service'
 import {
-  getRequestDetailForUser,
   updateRequestStatus,
   InvalidStatusTransitionError,
   ForbiddenRequestAccessError,
-} from '@/services/staffRequest.service'
+  UnacknowledgedAssignmentError,
+} from '@/services/requestStatus.service'
 import { updateStatusSchema } from '@/lib/validations/statusUpdate.schema'
 
 export async function GET(
@@ -57,6 +58,12 @@ export async function PATCH(
       return NextResponse.json(
         { error: 'You can only update requests assigned to you' },
         { status: 403 }
+      )
+    }
+    if (error instanceof UnacknowledgedAssignmentError) {
+      return NextResponse.json(
+        { error: 'Acknowledge this assignment before updating its status' },
+        { status: 409 }
       )
     }
     if (error instanceof InvalidStatusTransitionError) {

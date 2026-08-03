@@ -18,7 +18,7 @@ export function AlertBanner({ request }: Props) {
   const level = getAlertLevel(request)
   if (!level) return null
 
-  const deadline = getReturnDeadline(request.serviceType, request.isExpress)
+  const deadline = getReturnDeadline(request.serviceType, request.isExpress, request.createdAt)
 
   return (
     <div className={`${ALERT_BANNER_CLASSES[level]} border rounded-xl px-5 py-3 mb-4 flex items-start gap-2`}>

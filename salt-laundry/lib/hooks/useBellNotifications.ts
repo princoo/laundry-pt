@@ -1,9 +1,10 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { useNotifications, type StaffNotification } from '@/lib/hooks/useNotifications'
 
-const STORAGE_KEY = 'salt:staff-notifications'
+const STORAGE_PREFIX = 'salt:staff-notifications'
 const MAX_NOTIFICATIONS = 20
 
 interface StoredState {
@@ -11,28 +12,42 @@ interface StoredState {
   unreadCount: number
 }
 
-function loadStoredState(): StoredState {
-  if (typeof window === 'undefined') return { notifications: [], unreadCount: 0 }
+function loadStoredState(storageKey: string): StoredState {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY)
+    const raw = sessionStorage.getItem(storageKey)
     return raw ? JSON.parse(raw) : { notifications: [], unreadCount: 0 }
   } catch {
     return { notifications: [], unreadCount: 0 }
   }
 }
 
-// Persisted per-tab so a refresh doesn't lose what's already been observed —
-// it can't recover requests that arrived while no staff tab was connected.
+// Persisted per-tab, namespaced by user id — a refresh doesn't lose what's
+// already been observed, and switching accounts in the same tab can't leak
+// one housekeeper's notifications into another's.
 export function useBellNotifications() {
-  const [notifications, setNotifications] = useState(() => loadStoredState().notifications)
-  const [unreadCount, setUnreadCount] = useState(() => loadStoredState().unreadCount)
+  const { data: session } = useSession()
+  const userId = (session?.user as { id?: string } | undefined)?.id
+  const storageKey = userId ? `${STORAGE_PREFIX}:${userId}` : null
+
+  const [notifications, setNotifications] = useState<StaffNotification[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
   const dedupeKey = (n: StaffNotification) => `${n.id}:${n.kind}:${n.timestamp}`
-  const seenKeys = useRef(new Set(notifications.map(dedupeKey)))
+  const seenKeys = useRef(new Set<string>())
+
+  // Load this user's own stored notifications once we know who they are.
+  useEffect(() => {
+    if (!storageKey) return
+    const stored = loadStoredState(storageKey)
+    setNotifications(stored.notifications)
+    setUnreadCount(stored.unreadCount)
+    seenKeys.current = new Set(stored.notifications.map(dedupeKey))
+  }, [storageKey])
 
   useEffect(() => {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ notifications, unreadCount }))
+    if (!storageKey) return
+    sessionStorage.setItem(storageKey, JSON.stringify({ notifications, unreadCount }))
     seenKeys.current = new Set(notifications.map(dedupeKey))
-  }, [notifications, unreadCount])
+  }, [notifications, unreadCount, storageKey])
 
   // Catch-up on reconnect can redeliver the exact same event — dedupe on
   // id+kind+timestamp so a different kind for the same request (e.g. assigned,

@@ -1,4 +1,5 @@
 import { Clock } from 'lucide-react'
+import { useNextDayReturn } from '@/lib/hooks/useNextDayReturn'
 
 interface Props {
   isExpress: boolean
@@ -6,6 +7,8 @@ interface Props {
 }
 
 export function ExpressToggle({ isExpress, onChange }: Props) {
+  const isNextDay = useNextDayReturn('NORMAL', true)
+
   return (
     <label
       className={`flex items-start gap-2 rounded-lg px-3 py-2.5 cursor-pointer transition-colors ${
@@ -26,7 +29,7 @@ export function ExpressToggle({ isExpress, onChange }: Props) {
           Express (+30%)
         </span>
         <span className={`block text-xs mt-0.5 ${isExpress ? 'text-salt-green' : 'text-salt-text-muted'}`}>
-          Same-day return by 3:00 p.m.
+          {isNextDay ? 'Next-day' : 'Same-day'} return by 3:00 p.m.
         </span>
       </span>
     </label>

@@ -50,10 +50,16 @@ export function useRequestDetail(id: string) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),
       })
-      if (!res.ok) throw new Error()
+      if (!res.ok) {
+        // Surface the server's reason — a rejected transition or an
+        // unacknowledged assignment isn't fixed by trying again.
+        const body = await res.json().catch(() => null)
+        throw new Error(body?.error)
+      }
       fetchRequest()
-    } catch {
-      setActionError('Could not update status. Try again.')
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : ''
+      setActionError(reason || 'Could not update status. Try again.')
     } finally {
       setIsUpdating(false)
     }

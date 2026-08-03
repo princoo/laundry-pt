@@ -48,10 +48,10 @@ export default function Home() {
 
   return (
     <FormProvider {...methods}>
-      <div className="min-h-screen bg-salt-cream pb-24 md:pb-0">
+      <div className="min-h-screen bg-salt-cream pb-24 md:pb-0 flex flex-col">
         <GuestNav active="new" />
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex-1 w-full">
           <GuestFormHeader />
 
           <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">

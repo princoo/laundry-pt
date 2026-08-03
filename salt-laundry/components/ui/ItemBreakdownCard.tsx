@@ -9,7 +9,7 @@ export function ItemBreakdownCard({ request }: Props) {
   const { items, grossAmount, vatAmount, totalAmount } = request
 
   return (
-    <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-4 sm:p-6">
+    <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-4 sm:p-6 mt-4">
       <div className="text-[11px] uppercase text-salt-text-muted mb-2">Items</div>
 
       <div className="overflow-x-auto">
@@ -24,7 +24,7 @@ export function ItemBreakdownCard({ request }: Props) {
           </thead>
           <tbody>
             {items.map((item) => (
-              <tr key={item.id} className="text-sm border-b border-[0.5px] border-salt-border last:border-0">
+              <tr key={item.id} className="text-sm border-b  border-salt-border last:border-0">
                 <td className="py-3">{item.laundryItem.nameEn}</td>
                 <td className="py-3">{item.quantity}</td>
                 <td className="py-3">{formatCurrency(item.unitPrice)}</td>

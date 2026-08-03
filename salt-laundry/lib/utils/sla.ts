@@ -11,19 +11,17 @@ export type AlertLevel =
   | 'deadline_missed'   // Past the hotel's return promise
   | null
 
-// Derives the hotel's return-by deadline from the service type + today's date.
-// Based on the original paper form commitments:
-//   Normal (Express):  return by 15:00
-//   Normal:            return by 19:00
-//   Dry-cleaning:      return by 20:00
-//   Pressing:          return by 19:00
+// Return-by deadline from the service type + when the request was placed:
+// Express 15:00, Normal/Pressing 19:00, Dry-clean 20:00. Rolls to the next
+// day if placed after that cutoff, so a 19:55 order isn't born overdue.
 export function getReturnDeadline(
   serviceType: ServiceType,
-  isExpress: boolean
+  isExpress: boolean,
+  createdAt: Date | string = new Date()
 ): Date {
-  const now = new Date()
+  const created = new Date(createdAt)
   const base = new Date(
-    now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0
+    created.getFullYear(), created.getMonth(), created.getDate(), 0, 0, 0
   )
 
   const deadlineHour =
@@ -31,7 +29,11 @@ export function getReturnDeadline(
     serviceType === 'DRY_CLEAN' ? 20 :
     19  // NORMAL + PRESSING
 
-  return new Date(base.getTime() + deadlineHour * 60 * 60 * 1000)
+  const deadline = new Date(base.getTime() + deadlineHour * 60 * 60 * 1000)
+  if (deadline.getTime() <= created.getTime()) {
+    return new Date(deadline.getTime() + 24 * 60 * 60 * 1000)
+  }
+  return deadline
 }
 
 // Single entry point — returns the most severe alert level for a request,
@@ -61,7 +63,7 @@ export function getAlertLevel(request: {
   }
 
   // Step 3: Overall deadline check — applies to all active statuses
-  const deadline      = getReturnDeadline(request.serviceType, request.isExpress)
+  const deadline      = getReturnDeadline(request.serviceType, request.isExpress, request.createdAt)
   const minsRemaining = (deadline.getTime() - Date.now()) / 60_000
 
   if (minsRemaining <= 0)                  return 'deadline_missed'

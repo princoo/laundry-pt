@@ -1,36 +1,10 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useAutoRefresh } from '@/lib/hooks/useAutoRefresh'
-import type { RequestStatus, ServiceType } from '@prisma/client'
+import type { QueueRequest, QueueStats } from '@/lib/types/staffDashboard'
 
-export interface QueueRequest {
-  id: string
-  reference: string
-  roomNumber: string
-  guestName: string | null
-  serviceType: ServiceType
-  isExpress: boolean
-  status: RequestStatus
-  totalAmount: number
-  createdAt: string
-  totalItems: number
-  itemNames: string[]
-  assignedTo: { id: string; name: string | null } | null
-  assignedAt: string | null
-  acknowledgedAt: string | null
-  collectedAt: string | null; completedAt: string | null
-}
-
-export interface QueueStats {
-  pending: number
-  collected: number
-  inProgress: number
-  ready: number
-  deliveredToday: number
-  unacknowledged: number
-  unassigned: number
-}
+export type { QueueRequest, QueueStats }
 
 interface DashboardParams {
   status?: string
@@ -45,11 +19,15 @@ export function useStaffDashboard({ status = 'ALL', viewAll = false, assignedTo 
   const [error, setError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [loadedKey, setLoadedKey] = useState<string | null>(null)
+  const latestRequestId = useRef(0)
 
   const key = `${status}|${viewAll}|${assignedTo ?? ''}`
   if (key !== loadedKey && !isLoading) setIsLoading(true)
 
   const fetchData = useCallback(async () => {
+    // Overlapping calls can settle out of order (filter change mid-flight, tab
+    // refocus) — only the most recently issued call is allowed to touch state.
+    const requestId = ++latestRequestId.current
     setError(null)
     try {
       const params = new URLSearchParams()
@@ -63,14 +41,19 @@ export function useStaffDashboard({ status = 'ALL', viewAll = false, assignedTo 
       ])
       if (!requestsRes.ok || !statsRes.ok) throw new Error('Failed to load dashboard')
       const requestsData = await requestsRes.json()
+      const statsData = await statsRes.json()
+      if (requestId !== latestRequestId.current) return
       setRequests(requestsData.requests ?? [])
-      setStats(await statsRes.json())
+      setStats(statsData)
       setLastUpdated(new Date())
     } catch {
+      if (requestId !== latestRequestId.current) return
       setError('Failed to load requests.')
     } finally {
-      setIsLoading(false)
-      setLoadedKey(key)
+      if (requestId === latestRequestId.current) {
+        setIsLoading(false)
+        setLoadedKey(key)
+      }
     }
   }, [status, viewAll, assignedTo, key])
 
