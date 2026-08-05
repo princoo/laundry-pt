@@ -5,9 +5,7 @@ import { useFormContext } from 'react-hook-form'
 import type { StaffLoginValues } from '@/lib/validations/staffLogin.schema'
 import { FieldError } from '@/components/ui/FieldError'
 import { PasswordInput } from '@/components/ui/PasswordInput'
-
-const inputClasses =
-  'w-full border border-[0.5px] border-salt-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-salt-navy bg-white'
+import { INPUT_CLASSES } from '@/lib/constants/formStyles'
 
 export function StaffLoginFields() {
   const {
@@ -27,7 +25,7 @@ export function StaffLoginFields() {
           placeholder="your@salt.rw"
           autoComplete="email"
           autoFocus
-          className={inputClasses}
+          className={INPUT_CLASSES}
           {...register('email')}
         />
         <FieldError message={errors.email?.message} />
@@ -41,7 +39,7 @@ export function StaffLoginFields() {
           id="password"
           placeholder="••••••••"
           autoComplete="current-password"
-          className={inputClasses}
+          className={INPUT_CLASSES}
           {...register('password')}
         />
         <FieldError message={errors.password?.message} />

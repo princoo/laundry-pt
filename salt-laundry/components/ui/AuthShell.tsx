@@ -5,12 +5,21 @@ interface Props {
   title: string
   description: string
   aside?: ReactNode
+  // Card background. White everywhere except screens that are a status rather
+  // than a form — the sign-in-in-progress card tints the whole card green.
+  cardClassName?: string
   children: ReactNode
 }
 
 // Two-column frame for the standalone staff auth pages: context on the left,
 // the form card on the right, single column below lg.
-export function AuthShell({ title, description, aside, children }: Props) {
+export function AuthShell({
+  title,
+  description,
+  aside,
+  cardClassName = 'bg-white',
+  children,
+}: Props) {
   return (
     <div className="min-h-[100dvh] flex flex-col">
       <AuthNav />
@@ -30,7 +39,9 @@ export function AuthShell({ title, description, aside, children }: Props) {
             {aside && <div className="mt-6 pt-6 border-t-[0.5px] border-salt-border">{aside}</div>}
           </div>
 
-          <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-5 sm:p-7">
+          <div
+            className={`${cardClassName} rounded-xl border border-[0.5px] border-salt-border p-5 sm:p-7`}
+          >
             {children}
           </div>
         </div>

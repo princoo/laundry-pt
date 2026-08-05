@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { staffLoginSchema, type StaffLoginValues } from '@/lib/validations/staffLogin.schema'
 import { StaffLoginFields } from '@/components/staff/StaffLoginFields'
+import { FormAlert } from '@/components/ui/FormAlert'
+import { PRIMARY_BUTTON_CLASSES } from '@/lib/constants/formStyles'
 
 export function StaffLoginForm() {
   const router = useRouter()
@@ -29,22 +31,11 @@ export function StaffLoginForm() {
   return (
     <FormProvider {...methods}>
       <form onSubmit={methods.handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
-        {hasAuthError && (
-          <div className="bg-red-50 border border-[0.5px] border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
-            Incorrect email or password.
-          </div>
-        )}
+        <FormAlert message={hasAuthError ? 'Incorrect email or password.' : null} />
 
         <StaffLoginFields />
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-salt-navy hover:bg-salt-navy-hover transition-colors text-white rounded-lg py-3 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
-        >
-          {isSubmitting && (
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          )}
+        <button type="submit" disabled={isSubmitting} className={PRIMARY_BUTTON_CLASSES}>
           {isSubmitting ? 'Signing in…' : 'Sign in'}
         </button>
       </form>

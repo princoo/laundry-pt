@@ -3,6 +3,7 @@ import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { getOwnProfile } from '@/services/account.service'
+import { DEMO_MODE } from '@/lib/constants/demoMode'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -12,11 +13,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null
+        if (!credentials?.email) return null
         const user = await prisma.user.findUnique({
           where: { email: String(credentials.email).toLowerCase() },
         })
         if (!user || !user.isActive) return null
+
+        // ── DEMO MODE: password check disabled — TESTING ONLY ────────────
+        // DEMO_MODE=true accepts any password once the email above resolves,
+        // and forces mustChangePassword false so a demo never hits the
+        // change-password wall. Turn the flag off to restore the check below.
+        if (DEMO_MODE) {
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name ?? '',
+            role: user.role,
+            mustChangePassword: false,
+          }
+        }
+        // ── END DEMO MODE — do not delete, disable with the flag ─────────
+
+        // ORIGINAL AUTH — runs whenever DEMO_MODE is not 'true'. Do not remove.
+        if (!credentials?.password) return null
         const valid = await bcrypt.compare(String(credentials.password), user.password)
         if (!valid) return null
         return {

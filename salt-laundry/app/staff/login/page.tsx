@@ -1,26 +1,36 @@
 import type { Metadata } from 'next'
-import { AuthNav } from '@/components/ui/AuthNav'
+import { AuthShell } from '@/components/ui/AuthShell'
 import { StaffLoginForm } from '@/components/staff/StaffLoginForm'
+import { StaffLoginAside } from '@/components/staff/StaffLoginAside'
+import { StaffDemoLogin } from '@/components/staff/StaffDemoLogin'
+import { DEMO_MODE_CLIENT } from '@/lib/constants/demoMode'
 
 export const metadata: Metadata = { title: 'Sign in' }
 
-export default function StaffLoginPage() {
+export default async function StaffLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ email?: string }>
+}) {
+  // ── DEMO MODE: ?email= auto-login — TESTING ONLY ───────────────────────
+  // With NEXT_PUBLIC_DEMO_MODE on, ?email= swaps the form for a card that
+  // signs that address in with no password. Reading the param here rather
+  // than with useSearchParams keeps the page a server component and skips the
+  // Suspense-fallback flash of a form nobody is going to fill in. Turn the
+  // flag off and this branch never runs. Do not delete.
+  const { email } = await searchParams
+  if (DEMO_MODE_CLIENT && email) {
+    return <StaffDemoLogin email={email} />
+  }
+  // ── END DEMO MODE ──────────────────────────────────────────────────────
+
   return (
-    <div className="min-h-screen bg-salt-cream flex flex-col">
-      <AuthNav />
-
-      <div className="flex-1 flex items-center justify-center px-4 py-10">
-        <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm max-w-sm w-full p-6 sm:p-8">
-          <p className="text-[12px] text-salt-text-muted">Staff portal</p>
-
-          <div className="mt-6 pb-6 mb-6 border-b-[0.5px] border-salt-border">
-            <h1 className="text-[22px] font-black text-salt-text">Sign in</h1>
-            <p className="text-sm text-salt-text-sec mt-1">Manage laundry requests and assignments.</p>
-          </div>
-
-          <StaffLoginForm />
-        </div>
-      </div>
-    </div>
+    <AuthShell
+      title="Sign in"
+      description="Use the staff account your administrator created for you. The dashboard opens on the work waiting today."
+      aside={<StaffLoginAside />}
+    >
+      <StaffLoginForm />
+    </AuthShell>
   )
 }
