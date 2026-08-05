@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { getPriceForService } from '@/lib/utils/pricing'
 import { SERVICE_TYPES } from '@/lib/constants/services'
+import { pageSlice, type PageParams } from '@/lib/utils/pagination'
 import type { CreateItemInput, UpdateItemInput } from '@/lib/validations/item.schema'
 
 // Every active item with each service it's actually priced for, so the guest
@@ -32,8 +33,18 @@ export async function getActiveItemsByIds(ids: string[]) {
   })
 }
 
-export async function getAllItems() {
-  return prisma.laundryItem.findMany({ orderBy: { sortOrder: 'asc' } })
+// sortOrder isn't unique, so it alone can hand the same row to two pages —
+// id breaks the tie and makes the ordering total.
+export async function getAllItems(pageParams: PageParams) {
+  const [items, total, activeCount] = await Promise.all([
+    prisma.laundryItem.findMany({
+      orderBy: [{ sortOrder: 'asc' }, { id: 'asc' }],
+      ...pageSlice(pageParams),
+    }),
+    prisma.laundryItem.count(),
+    prisma.laundryItem.count({ where: { isActive: true } }),
+  ])
+  return { items, total, activeCount }
 }
 
 export async function getItemById(id: string) {

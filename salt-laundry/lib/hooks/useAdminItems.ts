@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
+import { usePagedFetch } from '@/lib/hooks/usePagedFetch'
 
 export interface AdminItem {
   id: string
@@ -13,62 +14,34 @@ export interface AdminItem {
   sortOrder: number
 }
 
-export function useAdminItems() {
-  const [items, setItems] = useState<AdminItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [fetchError, setFetchError] = useState<string | null>(null)
+export function useAdminItems(page: number) {
+  const {
+    rows: items, setRows: setItems, total, totalPages, activeCount,
+    adjustActiveCount, isLoading, error: fetchError, refetch,
+  } = usePagedFetch<AdminItem>('/api/admin/items', 'items', page, 'Failed to load items.')
   const [error, setError] = useState<string | null>(null)
 
-  const fetchItems = useCallback(() => {
-    let cancelled = false
-
-    fetch('/api/admin/items')
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to load items')
-        return res.json()
-      })
-      .then((data) => {
-        if (!cancelled) {
-          setItems(data.items ?? [])
-          setFetchError(null)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setFetchError('Failed to load items.')
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => fetchItems(), [fetchItems])
-
+  // activeCount is a server figure, so the optimistic flip has to move it too —
+  // otherwise the header contradicts the toggle the admin just clicked.
   const toggleActive = useCallback(async (id: string, isActive: boolean) => {
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, isActive } : i)))
+    adjustActiveCount(isActive ? 1 : -1)
     try {
       const res = await fetch(`/api/admin/items/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive }),
       })
-      if (!res.ok) throw new Error()
+      if (!res.ok) throw new Error('Failed to update item')
     } catch {
       setItems((prev) => prev.map((i) => (i.id === id ? { ...i, isActive: !isActive } : i)))
+      adjustActiveCount(isActive ? -1 : 1)
       setError('Could not update item. Try again.')
     }
-  }, [])
+  }, [setItems, adjustActiveCount])
 
   return {
-    items,
-    isLoading,
-    fetchError,
-    error,
-    refetch: fetchItems,
-    toggleActive,
-    clearError: () => setError(null),
+    items, total, totalPages, activeCount, isLoading, fetchError, error,
+    refetch, toggleActive, clearError: () => setError(null),
   }
 }

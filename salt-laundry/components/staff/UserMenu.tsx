@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import Link from 'next/link'
 import { User, ArrowLeft } from 'lucide-react'
 import { SignOutButton } from '@/components/staff/SignOutButton'
+import { useClickOutside } from '@/lib/hooks/useClickOutside'
 import { PROFILE_NAV_LINK, HOME_NAV_LINK } from '@/lib/constants/navigation'
 
 interface Props {
@@ -13,15 +14,8 @@ interface Props {
 export function UserMenu({ userName }: Props) {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!isOpen) return
-    const onClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setIsOpen(false)
-    }
-    document.addEventListener('mousedown', onClickOutside)
-    return () => document.removeEventListener('mousedown', onClickOutside)
-  }, [isOpen])
+  const close = useCallback(() => setIsOpen(false), [])
+  useClickOutside(menuRef, isOpen, close)
 
   return (
     <div className="relative" ref={menuRef}>

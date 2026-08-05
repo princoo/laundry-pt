@@ -5,6 +5,7 @@ import { Shirt, Menu, X } from 'lucide-react'
 import { BrandLogo } from '@/components/ui/BrandLogo'
 import { NavLink } from '@/components/ui/NavLink'
 import { StaffAccessLink } from '@/components/guest/StaffAccessLink'
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher'
 
 interface Props {
   active: 'new' | 'track'
@@ -29,18 +30,23 @@ export function GuestNav({ active }: Props) {
           <NavLink href="/" active={active === 'new'}>New request</NavLink>
           <NavLink href="/track" active={active === 'track'}>Track order</NavLink>
           <div className="h-6 w-px bg-salt-border mx-1" />
+          <LanguageSwitcher />
           <StaffAccessLink />
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
-          aria-label={isOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={isOpen}
-          className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg text-salt-text-sec hover:text-salt-text transition-colors"
-        >
-          {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        {/* Guests need the language picker without opening the menu first. */}
+        <div className="md:hidden flex items-center gap-1">
+          <LanguageSwitcher />
+          <button
+            type="button"
+            onClick={() => setIsOpen((prev) => !prev)}
+            aria-label={isOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={isOpen}
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-salt-text-sec hover:text-salt-text transition-colors"
+          >
+            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
       {isOpen && (

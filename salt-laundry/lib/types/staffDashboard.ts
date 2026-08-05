@@ -24,4 +24,13 @@ export interface QueueStats {
   ready: number
   deliveredToday: number
   unassigned: number
+  needsAttention: number
+}
+
+// One tile on the dashboard's stat bar. `tone: 'alert'` colours the figure red
+// for counts that mean something is wrong.
+export interface QueueMetric {
+  key: keyof QueueStats
+  label: string
+  tone?: 'alert'
 }

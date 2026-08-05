@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
+import { useClickOutside } from '@/lib/hooks/useClickOutside'
 import type { NavLinkItem } from '@/lib/constants/navigation'
 
 interface Props {
@@ -16,15 +17,8 @@ export function NavGroupDropdown({ label, items }: Props) {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const isActive = items.some((item) => pathname.startsWith(item.href))
-
-  useEffect(() => {
-    if (!isOpen) return
-    const onClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setIsOpen(false)
-    }
-    document.addEventListener('mousedown', onClickOutside)
-    return () => document.removeEventListener('mousedown', onClickOutside)
-  }, [isOpen])
+  const close = useCallback(() => setIsOpen(false), [])
+  useClickOutside(menuRef, isOpen, close)
 
   return (
     <div className="relative" ref={menuRef}>

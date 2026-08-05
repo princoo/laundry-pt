@@ -2,13 +2,17 @@ import { NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/utils/guards'
 import { getAllUsers, createUser, findUserByEmail } from '@/services/user.service'
 import { createUserSchema } from '@/lib/validations/user.schema'
+import { parsePageParams, buildPageMeta } from '@/lib/utils/pagination'
 
-export async function GET() {
+export async function GET(request: Request) {
   const authError = await requireAdmin()
   if (authError) return authError
 
-  const users = await getAllUsers()
-  return NextResponse.json({ users })
+  const { searchParams } = new URL(request.url)
+  const pageParams = parsePageParams(searchParams)
+  const { users, total, activeCount } = await getAllUsers(pageParams)
+
+  return NextResponse.json({ users, activeCount, ...buildPageMeta(total, pageParams) })
 }
 
 export async function POST(request: Request) {

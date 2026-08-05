@@ -20,11 +20,12 @@ const FROM_DB_LEVEL: Record<AlertEventLevel, Key> = {
   DEADLINE_MISSED: 'deadline_missed',
 }
 
-// Scans active requests for alert conditions and records each (request, level)
-// pair the first time it's detected — a frozen fact even after the request closes.
-export async function recordDetectedAlerts(): Promise<void> {
+// Alert level is derived from timestamps at read time rather than stored, so
+// every count or sweep starts from the same scan. `where` narrows the scope —
+// a housekeeper's own tasks rather than the whole hotel.
+export async function scanActiveAlerts(where: object = {}) {
   const active = await prisma.request.findMany({
-    where: { status: { in: ACTIVE_STATUSES } },
+    where: { ...where, status: { in: ACTIVE_STATUSES } },
     select: {
       id: true, status: true, isExpress: true,
       createdAt: true, completedAt: true,
@@ -32,11 +33,23 @@ export async function recordDetectedAlerts(): Promise<void> {
     },
   })
 
-  const events = active
-    .map(({ items, ...r }) => ({
-      requestId: r.id,
-      level: getAlertLevel({ ...r, serviceTypes: uniqueServiceTypes(items) }),
-    }))
+  return active.map(({ items, ...r }) => ({
+    requestId: r.id,
+    level: getAlertLevel({ ...r, serviceTypes: uniqueServiceTypes(items) }),
+  }))
+}
+
+// Counts across every active request, not just the page on screen — the whole
+// point of the dashboard tile.
+export async function countActiveAlerts(where: object = {}): Promise<number> {
+  const scanned = await scanActiveAlerts(where)
+  return scanned.filter((alert) => alert.level !== null).length
+}
+
+// Records each (request, level) pair the first time it's detected — a frozen
+// fact even after the request closes.
+export async function recordDetectedAlerts(): Promise<void> {
+  const events = (await scanActiveAlerts())
     .filter((e): e is { requestId: string; level: Key } => e.level !== null)
     .map((e) => ({ requestId: e.requestId, level: DB_LEVEL[e.level] }))
 

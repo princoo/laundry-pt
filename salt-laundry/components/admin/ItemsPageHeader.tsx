@@ -6,15 +6,15 @@ interface Props {
 }
 
 // Counts come from the server rather than the loaded rows — with pagination,
-// users.length is only ever the current page.
-export function UsersPageHeader({ total, activeCount, showCount, onAdd }: Props) {
+// items.length is only ever the current page.
+export function ItemsPageHeader({ total, activeCount, showCount, onAdd }: Props) {
   return (
     <div className="flex items-start justify-between gap-3 mb-6">
       <div>
-        <h1 className="text-[22px] font-black text-salt-text">Staff accounts</h1>
+        <h1 className="text-[22px] font-black text-salt-text">Item catalogue</h1>
         {showCount && (
           <p className="text-sm text-salt-text-sec mt-1">
-            {total} {total === 1 ? 'account' : 'accounts'} · {activeCount} active
+            {total} {total === 1 ? 'item' : 'items'} · {activeCount} active
           </p>
         )}
       </div>
@@ -23,7 +23,7 @@ export function UsersPageHeader({ total, activeCount, showCount, onAdd }: Props)
         onClick={onAdd}
         className="bg-salt-navy hover:bg-salt-navy-hover transition-colors text-white rounded-lg px-4 py-2 text-sm shrink-0"
       >
-        Add staff member
+        Add item
       </button>
     </div>
   )

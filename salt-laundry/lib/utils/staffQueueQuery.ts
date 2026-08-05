@@ -1,4 +1,5 @@
-import { DEFAULT_SORT, QUEUE_PAGE_SIZE, type SortOrder } from '@/lib/constants/queue'
+import { DEFAULT_SORT, type SortOrder } from '@/lib/constants/queue'
+import { DEFAULT_PAGE_SIZE } from '@/lib/constants/pagination'
 
 export interface QueueQuery {
   status?: string
@@ -9,7 +10,7 @@ export interface QueueQuery {
 }
 
 export function buildQueueQuery({
-  status = 'ALL', assignedTo, page = 1, limit = QUEUE_PAGE_SIZE, sort = DEFAULT_SORT,
+  status = 'ALL', assignedTo, page = 1, limit = DEFAULT_PAGE_SIZE, sort = DEFAULT_SORT,
 }: QueueQuery): string {
   const params = new URLSearchParams()
   if (status !== 'ALL') params.set('status', status)

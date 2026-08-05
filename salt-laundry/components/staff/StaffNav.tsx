@@ -10,6 +10,7 @@ import { RoleBadge } from '@/components/staff/RoleBadge'
 import { UserMenu } from '@/components/staff/UserMenu'
 import { NotificationBell } from '@/components/staff/NotificationBell'
 import { MobileNavMenu } from '@/components/staff/MobileNavMenu'
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher'
 import { STAFF_NAV_LINKS, ADMIN_NAV_LINKS } from '@/lib/constants/navigation'
 
 interface Props {
@@ -44,12 +45,14 @@ export function StaffNav({ userName, role }: Props) {
             </NavLink>
           ))}
           {role === 'ADMIN' && <NavGroupDropdown label="Manage" items={ADMIN_NAV_LINKS} />}
+          <LanguageSwitcher />
           <NotificationBell />
           {role && <RoleBadge role={role} />}
           {userName && <UserMenu userName={userName} />}
         </div>
 
-        <div className="flex md:hidden items-center gap-2 shrink-0">
+        <div className="flex md:hidden items-center gap-1 shrink-0">
+          <LanguageSwitcher />
           <NotificationBell />
           <button
             type="button"
