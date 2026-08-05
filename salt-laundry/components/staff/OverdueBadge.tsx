@@ -6,7 +6,7 @@ import type { RequestStatus, ServiceType } from '@prisma/client'
 interface Props {
   request: {
     status:       RequestStatus
-    serviceType:  ServiceType
+    serviceTypes: readonly ServiceType[]
     isExpress:    boolean
     createdAt:    Date | string
     completedAt?: Date | string | null

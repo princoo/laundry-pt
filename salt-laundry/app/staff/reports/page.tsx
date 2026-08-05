@@ -63,7 +63,7 @@ export default function ReportsPage() {
               />
               <ReportsServiceDonut
                 byServiceType={report.byServiceType}
-                totalRevenue={report.summary.totalRevenue}
+                serviceRevenue={report.serviceRevenue}
               />
             </div>
 

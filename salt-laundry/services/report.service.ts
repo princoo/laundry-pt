@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma'
-import type { ServiceType } from '@prisma/client'
-import { SERVICE_TYPES } from '@/lib/constants/services'
-import type { Report, ReportServiceStat, ReportItemStat } from '@/lib/types/report'
+import { aggregateByServiceType } from '@/lib/utils/reportStats'
+import type { Report, ReportItemStat } from '@/lib/types/report'
 
 export interface ReportFilters {
   from: Date
@@ -25,13 +24,7 @@ export async function generateReport(filters: ReportFilters): Promise<Report> {
   const totalRevenue = requests.reduce((s, r) => s + r.totalAmount, 0)
   const avgOrderValue = requestCount > 0 ? Math.round(totalRevenue / requestCount) : 0
 
-  const byServiceType = Object.fromEntries(
-    SERVICE_TYPES.map((type) => [type, { count: 0, revenue: 0 }])
-  ) as Record<ServiceType, ReportServiceStat>
-  for (const r of requests) {
-    byServiceType[r.serviceType].count += 1
-    byServiceType[r.serviceType].revenue += r.totalAmount
-  }
+  const { byServiceType, serviceRevenue } = aggregateByServiceType(requests)
 
   const expressRequests = requests.filter((r) => r.isExpress)
   const expressCount = expressRequests.length
@@ -70,6 +63,7 @@ export async function generateReport(filters: ReportFilters): Promise<Report> {
     period: { from: filters.from.toISOString(), to: filters.to.toISOString() },
     summary: { grossRevenue, vatRevenue, totalRevenue, requestCount, avgOrderValue },
     byServiceType,
+    serviceRevenue,
     expressCount,
     expressRevenue,
     topItems,

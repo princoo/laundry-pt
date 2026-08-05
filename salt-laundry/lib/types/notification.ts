@@ -8,7 +8,7 @@ export interface StaffNotification {
   reference: string
   roomNumber: string
   guestName: string | null
-  serviceType: ServiceType
+  serviceTypes: ServiceType[]
   isExpress: boolean
   totalAmount: number
   timestamp: string

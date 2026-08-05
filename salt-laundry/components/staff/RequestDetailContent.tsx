@@ -6,6 +6,7 @@ import { RequestTimestamps } from '@/components/staff/RequestTimestamps'
 import { AlertHistoryPanel } from '@/components/staff/AlertHistoryPanel'
 import { RequestHeaderCard } from '@/components/ui/RequestHeaderCard'
 import { ItemBreakdownCard } from '@/components/ui/ItemBreakdownCard'
+import { uniqueServiceTypes } from '@/lib/utils/serviceSummary'
 import type { TrackedRequest } from '@/lib/types/request'
 import type { RequestStatus } from '@prisma/client'
 
@@ -23,7 +24,9 @@ export function RequestDetailContent({
 }: Props) {
   return (
     <div className="mt-6">
-      <AlertBanner request={request} />
+      <AlertBanner
+        request={{ ...request, serviceTypes: uniqueServiceTypes(request.items) }}
+      />
 
       <div className="lg:flex lg:gap-6 lg:items-start">
         <div className="flex-1 min-w-0 space-y-4">

@@ -1,8 +1,8 @@
 import type { ServiceType } from '@prisma/client'
 
 export interface ReportServiceStat {
-  count: number
-  revenue: number
+  count: number    // items sold under this service
+  revenue: number  // line base (quantity × unitPrice), excludes express and VAT
 }
 
 export interface ReportItemStat {
@@ -33,6 +33,7 @@ export interface Report {
   period: { from: string; to: string }
   summary: ReportSummary
   byServiceType: Record<ServiceType, ReportServiceStat>
+  serviceRevenue: number  // sum of the buckets above — the donut's denominator
   expressCount: number
   expressRevenue: number
   topItems: ReportItemStat[]

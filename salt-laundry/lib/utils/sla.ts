@@ -11,11 +11,12 @@ export type AlertLevel =
   | 'deadline_missed'   // Past the hotel's return promise
   | null
 
-// Return-by deadline from the service type + when the request was placed:
-// Express 15:00, Normal/Pressing 19:00, Dry-clean 20:00. Rolls to the next
-// day if placed after that cutoff, so a 19:55 order isn't born overdue.
+// Return-by deadline: Express 15:00, Normal/Pressing 19:00, Dry-clean 20:00.
+// Rolls to the next day if placed after that cutoff, so a 19:55 order isn't
+// born overdue. A mixed request takes the LATEST cutoff among its lines — it
+// isn't finished until its slowest part is.
 export function getReturnDeadline(
-  serviceType: ServiceType,
+  serviceTypes: readonly ServiceType[],
   isExpress: boolean,
   createdAt: Date | string = new Date()
 ): Date {
@@ -25,8 +26,8 @@ export function getReturnDeadline(
   )
 
   const deadlineHour =
-    isExpress           ? 15 :
-    serviceType === 'DRY_CLEAN' ? 20 :
+    isExpress                             ? 15 :
+    serviceTypes.includes('DRY_CLEAN')    ? 20 :
     19  // NORMAL + PRESSING
 
   const deadline = new Date(base.getTime() + deadlineHour * 60 * 60 * 1000)
@@ -40,7 +41,7 @@ export function getReturnDeadline(
 // or null if everything is on track.
 export function getAlertLevel(request: {
   status:       RequestStatus
-  serviceType:  ServiceType
+  serviceTypes: readonly ServiceType[]
   isExpress:    boolean
   createdAt:    Date | string
   completedAt?: Date | string | null
@@ -63,7 +64,7 @@ export function getAlertLevel(request: {
   }
 
   // Step 3: Overall deadline check — applies to all active statuses
-  const deadline      = getReturnDeadline(request.serviceType, request.isExpress, request.createdAt)
+  const deadline      = getReturnDeadline(request.serviceTypes, request.isExpress, request.createdAt)
   const minsRemaining = (deadline.getTime() - Date.now()) / 60_000
 
   if (minsRemaining <= 0)                  return 'deadline_missed'

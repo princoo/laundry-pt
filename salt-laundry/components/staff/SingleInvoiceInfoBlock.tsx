@@ -1,13 +1,10 @@
-import { SERVICE_TYPE_LABELS } from '@/lib/constants/services'
 import { formatInvoiceDate, formatReference, formatTimestamp } from '@/lib/utils/formatting'
 import { InvoiceField } from '@/components/ui/InvoiceField'
-import type { ServiceType } from '@prisma/client'
 
 interface Props {
   request: {
     seq: number
     createdAt: Date | string
-    serviceType: ServiceType
     isExpress: boolean
     roomNumber: string
     guestName: string | null
@@ -18,7 +15,7 @@ interface Props {
 
 export function SingleInvoiceInfoBlock({ request }: Props) {
   const {
-    seq, createdAt, serviceType, isExpress, roomNumber,
+    seq, createdAt, isExpress, roomNumber,
     guestName, collectedAt, returnedAt,
   } = request
 
@@ -27,7 +24,9 @@ export function SingleInvoiceInfoBlock({ request }: Props) {
       <div className="space-y-4">
         <InvoiceField label="Invoice date" value={formatInvoiceDate(createdAt)} />
         <InvoiceField label="Reference" value={formatReference(seq, createdAt)} mono />
-        <InvoiceField label="Service" value={`${SERVICE_TYPE_LABELS[serviceType]}${isExpress ? ' + Express' : ''}`} />
+        {/* Service is per line in the items table. Express is request-level and
+            affects the total, so the invoice still states it here. */}
+        <InvoiceField label="Express" value={isExpress ? 'Yes' : 'No'} />
       </div>
       <div className="space-y-4">
         <InvoiceField label="Room number" value={roomNumber} />

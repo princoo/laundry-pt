@@ -1,6 +1,6 @@
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { ExpressBadge } from '@/components/ui/ExpressBadge'
-import { SERVICE_TYPE_LABELS } from '@/lib/constants/services'
+import { getServiceLabel } from '@/lib/utils/serviceSummary'
 import { formatCurrency } from '@/lib/utils/formatting'
 import type { SearchResult } from '@/lib/hooks/useSearchRequests'
 
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function SearchResultRow({ request, onClick }: Props) {
-  const { roomNumber, guestName, serviceType, isExpress, status, totalAmount, createdAt, totalItems } = request
+  const { roomNumber, guestName, serviceTypes, isExpress, status, totalAmount, createdAt, totalItems } = request
   const date = new Date(createdAt)
   const day = date.toLocaleDateString('en-RW', { day: 'numeric', month: 'short' })
   const time = date.toLocaleTimeString('en-RW', { hour: '2-digit', minute: '2-digit' })
@@ -28,7 +28,7 @@ export function SearchResultRow({ request, onClick }: Props) {
       <td className="px-4 py-3 text-salt-text-sec">{guestName || '—'}</td>
       <td className="px-4 py-3 text-salt-text-sec">
         <div className="flex items-center gap-1.5">
-          {SERVICE_TYPE_LABELS[serviceType]}
+          {getServiceLabel(serviceTypes)}
           {isExpress && <ExpressBadge />}
         </div>
       </td>

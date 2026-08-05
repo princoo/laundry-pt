@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createGuestRequest, RequestValidationError } from '@/services/request.service'
+import { createGuestRequest } from '@/services/request.service'
+import { RequestValidationError } from '@/services/requestPricing.service'
 import { autoAssign } from '@/services/assignment.service'
 import { createGuestRequestSchema } from '@/lib/validations/guestRequest.schema'
 import { formatReference } from '@/lib/utils/formatting'
@@ -16,18 +17,20 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
   }
-  const { roomNumber, guestName, serviceType, isExpress, isHanger, note, items } = parsed.data
-  const resolvedIsExpress = serviceType === 'NORMAL' ? isExpress : false
+  const { roomNumber, guestName, isExpress, isHanger, note, items } = parsed.data
 
   try {
     const created = await createGuestRequest({
       roomNumber,
       guestName: guestName || undefined,
-      serviceType,
-      isExpress: resolvedIsExpress,
+      isExpress,
       isHanger,
       note: note || undefined,
-      items: items.map(({ laundryItemId, quantity }) => ({ laundryItemId, quantity })),
+      items: items.map(({ laundryItemId, serviceType, quantity }) => ({
+        laundryItemId,
+        serviceType,
+        quantity,
+      })),
     })
 
     try {

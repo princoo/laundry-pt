@@ -1,4 +1,5 @@
 import { formatCurrency } from '@/lib/utils/formatting'
+import { SERVICE_TYPE_LABELS } from '@/lib/constants/services'
 import type { RequestDetail } from '@/lib/types/request'
 
 interface Props {
@@ -13,10 +14,11 @@ export function ItemBreakdownCard({ request }: Props) {
       <div className="text-[11px] uppercase text-salt-text-muted mb-2">Items</div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-left min-w-[420px]">
+        <table className="w-full text-left min-w-[520px]">
           <thead>
             <tr className="text-[11px] uppercase text-salt-text-muted border-b border-salt-border">
               <th className="font-normal pb-3">Item</th>
+              <th className="font-normal pb-3">Service</th>
               <th className="font-normal pb-3">Qty</th>
               <th className="font-normal pb-3">Unit price</th>
               <th className="font-normal pb-3 text-right">Subtotal</th>
@@ -26,6 +28,7 @@ export function ItemBreakdownCard({ request }: Props) {
             {items.map((item) => (
               <tr key={item.id} className="text-sm border-b  border-salt-border last:border-0">
                 <td className="py-3">{item.laundryItem.nameEn}</td>
+                <td className="py-3">{SERVICE_TYPE_LABELS[item.serviceType]}</td>
                 <td className="py-3">{item.quantity}</td>
                 <td className="py-3">{formatCurrency(item.unitPrice)}</td>
                 <td className="py-3 text-right">{formatCurrency(item.subtotal)}</td>

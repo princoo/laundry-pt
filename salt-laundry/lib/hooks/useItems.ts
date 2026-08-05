@@ -1,29 +1,19 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import type { ServiceType } from '@prisma/client'
+import type { LaundryItemOption } from '@/lib/types/guestOrder'
 
-export interface LaundryItemOption {
-  id: string
-  nameEn: string
-  nameFr: string
-  price: number
-}
-
-export function useItems(serviceType: ServiceType) {
+// One fetch for the whole catalogue: every item carries the services it's
+// priced for, so changing an item's service needs no round trip.
+export function useItems() {
   const [items, setItems] = useState<LaundryItemOption[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [loadedServiceType, setLoadedServiceType] = useState<ServiceType | null>(null)
-
-  if (serviceType !== loadedServiceType && !isLoading) {
-    setIsLoading(true)
-  }
 
   const fetchItems = useCallback(() => {
     let cancelled = false
 
-    fetch(`/api/items?service=${serviceType}`)
+    fetch('/api/items')
       .then((res) => {
         if (!res.ok) throw new Error('Failed to load items')
         return res.json()
@@ -38,16 +28,13 @@ export function useItems(serviceType: ServiceType) {
         if (!cancelled) setError('Failed to load items.')
       })
       .finally(() => {
-        if (!cancelled) {
-          setIsLoading(false)
-          setLoadedServiceType(serviceType)
-        }
+        if (!cancelled) setIsLoading(false)
       })
 
     return () => {
       cancelled = true
     }
-  }, [serviceType])
+  }, [])
 
   useEffect(() => fetchItems(), [fetchItems])
 

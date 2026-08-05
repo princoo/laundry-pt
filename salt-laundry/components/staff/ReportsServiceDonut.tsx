@@ -11,12 +11,15 @@ const SEGMENTS: { type: ServiceType; colorClass: string }[] = [
 
 interface Props {
   byServiceType: Record<ServiceType, ReportServiceStat>
-  totalRevenue: number
+  // Sum of the service buckets, NOT summary.totalRevenue — the buckets are line
+  // bases, so dividing by the VAT- and express-inclusive total would leave the
+  // segments short of 100%.
+  serviceRevenue: number
 }
 
-export function ReportsServiceDonut({ byServiceType, totalRevenue }: Props) {
+export function ReportsServiceDonut({ byServiceType, serviceRevenue }: Props) {
   const percents = SEGMENTS.map((seg) =>
-    totalRevenue > 0 ? (byServiceType[seg.type].revenue / totalRevenue) * 100 : 0
+    serviceRevenue > 0 ? (byServiceType[seg.type].revenue / serviceRevenue) * 100 : 0
   )
   const arcs = SEGMENTS.map((seg, i) => ({
     ...seg,
@@ -42,7 +45,7 @@ export function ReportsServiceDonut({ byServiceType, totalRevenue }: Props) {
           ))}
         </svg>
         <div className="absolute inset-0 flex items-center justify-center text-center px-2">
-          <span className="text-xs font-medium text-salt-text">{formatCurrency(totalRevenue)}</span>
+          <span className="text-xs font-medium text-salt-text">{formatCurrency(serviceRevenue)}</span>
         </div>
       </div>
       <div className="flex flex-col gap-1 mt-4 w-full">

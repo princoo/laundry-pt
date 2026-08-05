@@ -5,7 +5,7 @@ import { UserCog } from 'lucide-react'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { ExpressBadge } from '@/components/ui/ExpressBadge'
 import { OverdueBadge } from '@/components/staff/OverdueBadge'
-import { SERVICE_TYPE_LABELS } from '@/lib/constants/services'
+import { getServiceLabel } from '@/lib/utils/serviceSummary'
 import { timeAgo, summarizeItemNames } from '@/lib/utils/formatting'
 import type { QueueRequest } from '@/lib/hooks/useStaffDashboard'
 import type { Role } from '@prisma/client'
@@ -19,7 +19,7 @@ interface Props {
 export function RequestCard({ request, role, onReassign }: Props) {
   const router = useRouter()
   const {
-    id, reference, roomNumber, guestName, serviceType, isExpress,
+    id, reference, roomNumber, guestName, serviceTypes, isExpress,
     status, createdAt, totalItems, itemNames, assignedTo,
   } = request
   const canReassign = (role === 'SUPERVISOR' || role === 'ADMIN') && onReassign
@@ -40,7 +40,7 @@ export function RequestCard({ request, role, onReassign }: Props) {
           <div className="text-xs text-salt-text-muted font-mono">{reference}</div>
           <div className="text-xs text-salt-text-muted mt-0.5 flex items-center gap-1.5">
             {isExpress && <ExpressBadge />}
-            <span>{SERVICE_TYPE_LABELS[serviceType]} · {totalItems} items · {timeAgo(createdAt)}</span>
+            <span>{getServiceLabel(serviceTypes)} · {totalItems} items · {timeAgo(createdAt)}</span>
           </div>
           {itemNames.length > 0 && (
             <div className="text-xs text-salt-text-sec mt-1">{summarizeItemNames(itemNames)}</div>

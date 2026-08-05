@@ -1,5 +1,5 @@
 import { ExpressBadge } from '@/components/ui/ExpressBadge'
-import { SERVICE_TYPE_LABELS } from '@/lib/constants/services'
+import { getServiceLabel } from '@/lib/utils/serviceSummary'
 import { NOTIFICATION_KIND_LABELS, NOTIFICATION_KIND_CLASSES } from '@/lib/constants/notifications'
 import { formatCurrency, timeAgo } from '@/lib/utils/formatting'
 import type { StaffNotification } from '@/lib/hooks/useNotifications'
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function NotificationItem({ notification, onSelect }: Props) {
-  const { id, kind, roomNumber, guestName, serviceType, isExpress, totalAmount, timestamp } = notification
+  const { id, kind, roomNumber, guestName, serviceTypes, isExpress, totalAmount, timestamp } = notification
   const kindLabel = NOTIFICATION_KIND_LABELS[kind]
 
   return (
@@ -32,7 +32,7 @@ export function NotificationItem({ notification, onSelect }: Props) {
           </div>
           <div className="text-xs text-salt-text-muted mt-0.5 flex items-center gap-1.5">
             {isExpress && <ExpressBadge />}
-            <span>{SERVICE_TYPE_LABELS[serviceType]}</span>
+            <span>{getServiceLabel(serviceTypes)}</span>
           </div>
         </div>
         <div className="text-right shrink-0">

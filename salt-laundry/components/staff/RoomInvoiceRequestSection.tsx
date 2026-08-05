@@ -1,4 +1,4 @@
-import { SERVICE_TYPE_LABELS } from '@/lib/constants/services'
+import { getServiceLabel, uniqueServiceTypes } from '@/lib/utils/serviceSummary'
 import { formatCurrency, formatInvoiceDate } from '@/lib/utils/formatting'
 import { InvoiceItemsTable } from '@/components/staff/InvoiceItemsTable'
 import type { RoomInvoiceRequest } from '@/lib/types/roomInvoice'
@@ -16,7 +16,7 @@ export function RoomInvoiceRequestSection({ request }: Props) {
             {formatInvoiceDate(request.createdAt)}
           </span>
           <span className="text-[11px] text-salt-text-sec bg-salt-cream rounded-full px-2 py-0.5">
-            {SERVICE_TYPE_LABELS[request.serviceType]}
+            {getServiceLabel(uniqueServiceTypes(request.items))}
           </span>
           {request.isExpress && (
             <span className="inline-flex items-center gap-1.5 text-[11px] text-salt-text bg-salt-green-light rounded-full px-2 py-0.5">

@@ -16,7 +16,7 @@ export interface SearchResult {
   id: string
   roomNumber: string
   guestName: string | null
-  serviceType: ServiceType
+  serviceTypes: ServiceType[]
   isExpress: boolean
   status: RequestStatus
   totalAmount: number

@@ -51,7 +51,7 @@ export function SearchFilterBar({ filters, onChange, onSearch, onClear, isLoadin
             options={[{ value: '', label: 'All statuses' }, ...STATUSES.map((s) => ({ value: s, label: STATUS_LABELS[s] }))]} />
         </div>
         <div>
-          <label className="block text-xs text-salt-text-muted mb-1">Service type</label>
+          <label className="block text-xs text-salt-text-muted mb-1">Item service type</label>
           <Select value={filters.serviceType} onChange={(v) => set('serviceType', v as ServiceType | '')}
             options={[{ value: '', label: 'All types' }, ...SERVICES.map((s) => ({ value: s, label: SERVICE_TYPE_LABELS[s] }))]} />
         </div>

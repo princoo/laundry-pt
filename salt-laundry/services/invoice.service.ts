@@ -19,7 +19,8 @@ function buildWhere(filters: RoomInvoiceQueryFilters): Prisma.RequestWhereInput 
   if (filters.guestName?.trim()) {
     where.guestName = { contains: filters.guestName.trim(), mode: 'insensitive' }
   }
-  if (filters.serviceType) where.serviceType = filters.serviceType
+  // A request can mix services, so this matches requests CONTAINING the service.
+  if (filters.serviceType) where.items = { some: { serviceType: filters.serviceType } }
   if (filters.isExpress !== undefined) where.isExpress = filters.isExpress
   if (filters.from || filters.to) {
     where.createdAt = {

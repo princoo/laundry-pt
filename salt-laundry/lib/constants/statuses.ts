@@ -25,6 +25,25 @@ export const MY_TASK_STATUS_FILTERS = [
   'ALL', ...REQUEST_STATUSES,
 ] as const
 
+// A guest can only edit a request that hasn't been picked up yet. Once it's in
+// the laundry's hands the order it's working from has to stay fixed.
+export const GUEST_EDITABLE_STATUS: RequestStatus = 'PENDING'
+
+// Why an edit is closed off, in the guest's terms — keyed by where the request
+// has got to. PENDING is empty because nothing is locked there.
+export const EDIT_LOCKED_REASONS: Record<RequestStatus, string> = {
+  PENDING:     '',
+  COLLECTED:   'Your items have been collected, so this request can no longer be edited.',
+  IN_PROGRESS: 'Your items are being cleaned, so this request can no longer be edited.',
+  READY:       'Your order is ready, so this request can no longer be edited.',
+  DELIVERED:   'This request has been delivered.',
+  CANCELLED:   'This request was cancelled.',
+}
+
+// The narrower case: collected between opening the edit form and saving it.
+export const COLLECTED_MID_EDIT =
+  'This request has just been collected and can no longer be edited.'
+
 export const STATUS_TRANSITIONS: Record<RequestStatus, RequestStatus[]> = {
   PENDING:     ['COLLECTED', 'CANCELLED'],
   COLLECTED:   ['IN_PROGRESS', 'CANCELLED'],

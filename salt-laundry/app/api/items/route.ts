@@ -1,19 +1,11 @@
 import { NextResponse } from 'next/server'
-import { getActiveItemsByService } from '@/services/item.service'
-import type { ServiceType } from '@prisma/client'
+import { getActiveItemsWithServices } from '@/services/item.service'
 
-const VALID_SERVICES = ['NORMAL', 'DRY_CLEAN', 'PRESSING']
-
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const service = (searchParams.get('service') ?? 'NORMAL').toUpperCase()
-
-  if (!VALID_SERVICES.includes(service)) {
-    return NextResponse.json({ error: 'Invalid service type' }, { status: 400 })
-  }
-
+// No `service` query param: the guest form picks service per item, so it needs
+// the whole pricing picture in one call.
+export async function GET() {
   try {
-    const items = await getActiveItemsByService(service as ServiceType)
+    const items = await getActiveItemsWithServices()
     return NextResponse.json({ items })
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

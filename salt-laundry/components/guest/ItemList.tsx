@@ -1,20 +1,27 @@
+import type { ServiceType } from '@prisma/client'
 import { Shirt } from 'lucide-react'
 import { ItemRow } from '@/components/guest/ItemRow'
+import { ItemSearch } from '@/components/guest/ItemSearch'
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton'
 import { FetchError } from '@/components/ui/FetchError'
-import type { LaundryItemOption } from '@/lib/hooks/useItems'
+import type { LaundryItemOption, Selections } from '@/lib/types/guestOrder'
 
 interface Props {
   items: LaundryItemOption[]
-  quantities: Record<string, number>
-  onQuantityChange: (id: string, quantity: number) => void
+  selections: Selections
+  defaultServiceType: ServiceType
+  onQuantityChange: (item: LaundryItemOption, quantity: number) => void
+  onServiceChange: (itemId: string, serviceType: ServiceType) => void
   isLoading: boolean
   error: string | null
   onRetry: () => void
 }
 
-export function ItemList({ items, quantities, onQuantityChange, isLoading, error, onRetry }: Props) {
-  const totalCount = Object.values(quantities).reduce((sum, q) => sum + q, 0)
+export function ItemList({
+  items, selections, defaultServiceType,
+  onQuantityChange, onServiceChange, isLoading, error, onRetry,
+}: Props) {
+  const totalCount = Object.values(selections).reduce((sum, s) => sum + s.quantity, 0)
 
   return (
     <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-5">
@@ -23,8 +30,9 @@ export function ItemList({ items, quantities, onQuantityChange, isLoading, error
           Select items
         </p>
         {totalCount > 0 && (
-          <span className="flex items-center gap-1.5 text-base font-medium text-salt-text-sec">
-            <Shirt className="w-6 h-6 text-salt-green" /> {totalCount} items
+          <span className="flex items-center gap-1.5 text-sm font-medium text-salt-text">
+            <Shirt className="w-4 h-4 text-salt-green" />
+            {totalCount} {totalCount === 1 ? 'item' : 'items'}
           </span>
         )}
       </div>
@@ -38,18 +46,29 @@ export function ItemList({ items, quantities, onQuantityChange, isLoading, error
           No items available yet. Prices are being configured.
         </p>
       ) : (
-        <div className="flex flex-col divide-y divide-salt-border">
-          {items.map((item) => (
-            <ItemRow
-              key={item.id}
-              nameEn={item.nameEn}
-              nameFr={item.nameFr}
-              price={item.price}
-              quantity={quantities[item.id] ?? 0}
-              onChange={(quantity) => onQuantityChange(item.id, quantity)}
-            />
-          ))}
-        </div>
+        <>
+          <ItemSearch
+            items={items}
+            selections={selections}
+            defaultServiceType={defaultServiceType}
+            // A pick means "one more of this", so it stacks on what's there.
+            onAdd={(item) => onQuantityChange(item, (selections[item.id]?.quantity ?? 0) + 1)}
+          />
+          {/* Pulled out past the card padding so a picked row's tint reads as a
+              band in the list rather than a floating block inside it. */}
+          <div className="-mx-3 flex flex-col divide-y-[0.5px] divide-salt-border">
+            {items.map((item) => (
+              <ItemRow
+                key={item.id}
+                item={item}
+                selection={selections[item.id]}
+                defaultServiceType={defaultServiceType}
+                onQuantityChange={(quantity) => onQuantityChange(item, quantity)}
+                onServiceChange={(serviceType) => onServiceChange(item.id, serviceType)}
+              />
+            ))}
+          </div>
+        </>
       )}
     </div>
   )

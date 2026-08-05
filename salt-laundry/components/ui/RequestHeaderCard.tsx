@@ -1,5 +1,4 @@
 import { StatusBadge } from '@/components/ui/StatusBadge'
-import { SERVICE_TYPE_LABELS } from '@/lib/constants/services'
 import type { RequestDetail } from '@/lib/types/request'
 
 interface Props {
@@ -8,7 +7,7 @@ interface Props {
 }
 
 export function RequestHeaderCard({ request, reference }: Props) {
-  const { roomNumber, guestName, status, serviceType, isExpress, isHanger, note } = request
+  const { roomNumber, guestName, status, isExpress, isHanger, note } = request
 
   return (
     <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-4 sm:p-6">
@@ -24,8 +23,8 @@ export function RequestHeaderCard({ request, reference }: Props) {
       </div>
 
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 mt-4 text-[13px] text-salt-text-sec">
-        <span>{SERVICE_TYPE_LABELS[serviceType]}</span>
-        <span className="text-salt-text-muted">·</span>
+        {/* No single service here — it's per item, shown in the breakdown.
+            Express stays: it's request-level. */}
         <span>{isExpress ? 'Express' : 'Standard'}</span>
         <span className="text-salt-text-muted">·</span>
         <span>{isHanger ? 'Hanger' : 'Folded'}</span>

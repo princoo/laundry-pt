@@ -6,8 +6,10 @@ interface Props {
   onChange: (value: boolean) => void
 }
 
+// Request-level: express is priority return for the whole order, so the
+// deadline it previews doesn't depend on any item's service.
 export function ExpressToggle({ isExpress, onChange }: Props) {
-  const isNextDay = useNextDayReturn('NORMAL', true)
+  const isNextDay = useNextDayReturn([], true)
 
   return (
     <label
@@ -26,10 +28,10 @@ export function ExpressToggle({ isExpress, onChange }: Props) {
           className={`flex items-center gap-1.5 text-sm font-medium ${isExpress ? 'text-salt-green' : 'text-salt-text'}`}
         >
           <Clock className="w-4 h-4 text-salt-green" />
-          Express (+30%)
+          Express return (+30%)
         </span>
         <span className={`block text-xs mt-0.5 ${isExpress ? 'text-salt-green' : 'text-salt-text-muted'}`}>
-          {isNextDay ? 'Next-day' : 'Same-day'} return by 3:00 p.m.
+          Priority — {isNextDay ? 'next-day' : 'same-day'} return by 3:00 p.m.
         </span>
       </span>
     </label>

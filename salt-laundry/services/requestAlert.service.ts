@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { ACTIVE_STATUSES } from '@/services/assignment.service'
 import { getAlertLevel, type AlertLevel } from '@/lib/utils/sla'
+import { uniqueServiceTypes } from '@/lib/utils/serviceSummary'
 import type { AlertEventLevel } from '@prisma/client'
 
 type Key = Exclude<AlertLevel, null>
@@ -25,13 +26,17 @@ export async function recordDetectedAlerts(): Promise<void> {
   const active = await prisma.request.findMany({
     where: { status: { in: ACTIVE_STATUSES } },
     select: {
-      id: true, status: true, serviceType: true, isExpress: true,
+      id: true, status: true, isExpress: true,
       createdAt: true, completedAt: true,
+      items: { select: { serviceType: true } },
     },
   })
 
   const events = active
-    .map((r) => ({ requestId: r.id, level: getAlertLevel(r) }))
+    .map(({ items, ...r }) => ({
+      requestId: r.id,
+      level: getAlertLevel({ ...r, serviceTypes: uniqueServiceTypes(items) }),
+    }))
     .filter((e): e is { requestId: string; level: Key } => e.level !== null)
     .map((e) => ({ requestId: e.requestId, level: DB_LEVEL[e.level] }))
 

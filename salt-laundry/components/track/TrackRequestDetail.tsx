@@ -1,6 +1,7 @@
 import { RequestHeaderCard } from '@/components/ui/RequestHeaderCard'
 import { ItemBreakdownCard } from '@/components/ui/ItemBreakdownCard'
 import { StatusStepper } from '@/components/ui/StatusStepper'
+import { EditRequestPrompt } from '@/components/track/EditRequestPrompt'
 import type { TrackedRequest } from '@/lib/types/request'
 
 interface Props {
@@ -21,6 +22,8 @@ export function TrackRequestDetail({ request }: Props) {
           returnedAt={request.returnedAt}
         />
       </div>
+
+      <EditRequestPrompt request={request} />
     </>
   )
 }

@@ -38,6 +38,6 @@ export async function POST(
     )
   }
 
-  const note = await addNoteToRequest(id, parsed.data.content)
+  const note = await addNoteToRequest(id, parsed.data.content, user.id)
   return NextResponse.json(note, { status: 201 })
 }

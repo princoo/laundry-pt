@@ -22,8 +22,10 @@ export function TrackSearchSection({ initialRoom, initialReference, onResult }: 
   const room = useRoomRequests()
   const exact = useTrackRequest()
 
+  // A room alone is enough to run the lookup — that's how a saved edit returns.
   useEffect(() => {
     if (initialRoom && initialReference) exact.search(initialRoom, initialReference)
+    else if (initialRoom) room.search(initialRoom)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

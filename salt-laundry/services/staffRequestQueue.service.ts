@@ -32,13 +32,15 @@ export async function getRequestsQueue({
       skip: (page - 1) * limit,
       take: limit,
       select: {
-        id: true, seq: true, roomNumber: true, guestName: true, serviceType: true,
+        id: true, seq: true, roomNumber: true, guestName: true,
         isExpress: true, status: true, totalAmount: true,
         createdAt: true, updatedAt: true, collectedAt: true,
         completedAt: true, returnedAt: true,
         assignedAt: true,
         assignedTo: { select: { id: true, name: true } },
-        items: { select: { quantity: true, laundryItem: { select: { nameEn: true } } } },
+        items: {
+          select: { quantity: true, serviceType: true, laundryItem: { select: { nameEn: true } } },
+        },
       },
     }),
     prisma.request.count({ where }),
@@ -47,6 +49,7 @@ export async function getRequestsQueue({
   const requests = rows.map(({ items, seq, createdAt, ...rest }) => ({
     ...rest,
     createdAt, reference: formatReference(seq, createdAt),
+    serviceTypes: [...new Set(items.map((item) => item.serviceType))],
     totalItems: items.reduce((sum, item) => sum + item.quantity, 0),
     itemNames: items.map((item) => item.laundryItem.nameEn),
   }))

@@ -3,18 +3,22 @@
 import { useFormContext } from 'react-hook-form'
 import type { GuestDetailsValues } from '@/lib/validations/guestRequest.schema'
 import { FieldError } from '@/components/ui/FieldError'
+import { ReadOnlyRoomField } from '@/components/guest/ReadOnlyRoomField'
 
 const inputClasses =
   'w-full border border-[0.5px] border-salt-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-salt-navy bg-white'
 
-export function GuestDetailsForm() {
+interface Props {
+  // Set on an edit: the room is shown, not asked for. Moving a request to
+  // another room would hand it to a different guest.
+  readOnlyRoom?: string
+}
+
+export function GuestDetailsForm({ readOnlyRoom }: Props) {
   const {
     register,
-    watch,
-    setValue,
     formState: { errors },
   } = useFormContext<GuestDetailsValues>()
-  const isHanger = watch('isHanger')
 
   return (
     <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-5">
@@ -23,19 +27,23 @@ export function GuestDetailsForm() {
       </p>
 
       <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1">
-          <label htmlFor="roomNumber" className="block text-sm text-salt-text mb-1.5">
-            Room number*
-          </label>
-          <input
-            id="roomNumber"
-            type="text"
-            placeholder="e.g. 214"
-            className={inputClasses}
-            {...register('roomNumber')}
-          />
-          <FieldError message={errors.roomNumber?.message} />
-        </div>
+        {readOnlyRoom ? (
+          <ReadOnlyRoomField roomNumber={readOnlyRoom} />
+        ) : (
+          <div className="flex-1">
+            <label htmlFor="roomNumber" className="block text-sm text-salt-text mb-1.5">
+              Room number*
+            </label>
+            <input
+              id="roomNumber"
+              type="text"
+              placeholder="e.g. 214"
+              className={inputClasses}
+              {...register('roomNumber')}
+            />
+            <FieldError message={errors.roomNumber?.message} />
+          </div>
+        )}
         <div className="flex-1">
           <label htmlFor="guestName" className="block text-sm text-salt-text mb-1.5">
             Name (optional)
@@ -48,32 +56,6 @@ export function GuestDetailsForm() {
             {...register('guestName')}
           />
         </div>
-      </div>
-
-      <p className="block text-sm text-salt-text mb-1.5 mt-4">Handling</p>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => setValue('isHanger', true)}
-          className={`py-1.5 px-3 rounded-lg text-sm font-medium transition-colors ${
-            isHanger
-              ? 'bg-salt-navy hover:bg-salt-navy-hover text-white'
-              : 'bg-white text-salt-text-sec border border-[0.5px] border-salt-border'
-          }`}
-        >
-          Shirt on hanger
-        </button>
-        <button
-          type="button"
-          onClick={() => setValue('isHanger', false)}
-          className={`py-1.5 px-3 rounded-lg text-sm font-medium transition-colors ${
-            !isHanger
-              ? 'bg-salt-navy hover:bg-salt-navy-hover text-white'
-              : 'bg-white text-salt-text-sec border border-[0.5px] border-salt-border'
-          }`}
-        >
-          Folded
-        </button>
       </div>
     </div>
   )

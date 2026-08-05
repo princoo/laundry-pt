@@ -7,36 +7,51 @@ interface Props {
   onChange: (serviceType: ServiceType) => void
 }
 
+// Radio, not checkbox: exactly one default is always in effect. Each option
+// carries its own description so the guest compares them side by side instead
+// of having to select one to find out what it means.
 export function ServiceTypeSelector({ serviceType, onChange }: Props) {
   return (
     <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-5">
-      <p className="text-[11px] uppercase tracking-wide text-salt-text-muted font-medium mb-3">
-        Service type
+      <p className="text-[11px] uppercase tracking-wide text-salt-text-muted font-medium">
+        Default service
       </p>
-      <div className="flex gap-2 overflow-x-auto flex-nowrap -mx-1 px-1">
+      <p className="text-xs text-salt-text-muted mb-3">
+        Sets the service for every item in your order. You can still change
+        individual items below.
+      </p>
+
+      <div className="flex flex-col gap-2">
         {SERVICE_TYPES.map((type) => {
           const isActive = type === serviceType
           return (
-            <button
+            <label
               key={type}
-              type="button"
-              onClick={() => onChange(type)}
-              className={`py-2 px-4 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                isActive
-                  ? 'bg-salt-navy hover:bg-salt-navy-hover text-white'
-                  : 'bg-white text-salt-text-sec border border-[0.5px] border-salt-border'
+              className={`flex items-start gap-2.5 rounded-lg px-3 py-2.5 cursor-pointer border border-[0.5px] transition-colors ${
+                isActive ? 'border-salt-navy bg-salt-cream' : 'border-salt-border bg-white'
               }`}
             >
-              {SERVICE_TYPE_LABELS[type]}
-            </button>
+              <input
+                type="radio"
+                name="defaultService"
+                checked={isActive}
+                onChange={() => onChange(type)}
+                className="mt-0.5 w-4 h-4 shrink-0 accent-salt-navy"
+              />
+              <span>
+                <span className="block text-sm font-medium text-salt-text">
+                  {SERVICE_TYPE_LABELS[type]}
+                </span>
+                <span className="block text-xs text-salt-text-sec mt-0.5">
+                  {SERVICE_TYPE_DESCRIPTIONS[type]}
+                </span>
+              </span>
+            </label>
           )
         })}
       </div>
-      <p className="mt-3 text-sm text-salt-text-sec">
-        {SERVICE_TYPE_DESCRIPTIONS[serviceType]}
-      </p>
 
-      <NextDayNotice serviceType={serviceType} />
+      <NextDayNotice serviceTypes={[serviceType]} />
     </div>
   )
 }

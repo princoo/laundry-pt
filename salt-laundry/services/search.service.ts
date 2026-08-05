@@ -21,7 +21,8 @@ export async function searchRequests(filters: SearchFilters) {
     where.guestName = { contains: filters.name.trim(), mode: 'insensitive' }
   }
   if (filters.status) where.status = filters.status
-  if (filters.serviceType) where.serviceType = filters.serviceType
+  // A request can mix services, so this matches requests CONTAINING the service.
+  if (filters.serviceType) where.items = { some: { serviceType: filters.serviceType } }
   if (filters.from || filters.to) {
     where.createdAt = {
       ...(filters.from ? { gte: filters.from } : {}),
@@ -33,14 +34,15 @@ export async function searchRequests(filters: SearchFilters) {
     where,
     orderBy: { createdAt: 'desc' },
     select: {
-      id: true, roomNumber: true, guestName: true, serviceType: true,
+      id: true, roomNumber: true, guestName: true,
       isExpress: true, status: true, totalAmount: true, createdAt: true,
-      items: { select: { quantity: true } },
+      items: { select: { quantity: true, serviceType: true } },
     },
   })
 
   const requests = rows.map(({ items, ...rest }) => ({
     ...rest,
+    serviceTypes: [...new Set(items.map((item) => item.serviceType))],
     totalItems: items.reduce((sum, item) => sum + item.quantity, 0),
   }))
 

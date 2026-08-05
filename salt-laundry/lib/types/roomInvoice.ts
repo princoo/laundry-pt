@@ -13,6 +13,7 @@ export interface RoomInvoiceFilters {
 
 export interface RoomInvoiceItem {
   id: string
+  serviceType: ServiceType
   quantity: number
   unitPrice: number
   subtotal: number
@@ -22,7 +23,6 @@ export interface RoomInvoiceItem {
 export interface RoomInvoiceRequest {
   id: string
   createdAt: string
-  serviceType: ServiceType
   isExpress: boolean
   grossAmount: number
   vatAmount: number

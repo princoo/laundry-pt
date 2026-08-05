@@ -1,7 +1,7 @@
 'use client'
 
 import { useRequestNotes } from '@/lib/hooks/useRequestNotes'
-import { formatTimestamp } from '@/lib/utils/formatting'
+import { NoteMeta } from '@/components/staff/NoteMeta'
 import type { RequestNote } from '@/lib/types/request'
 
 interface Props {
@@ -31,9 +31,7 @@ export function RequestNotes({ requestId, initialNotes }: Props) {
             }`}
           >
             <p className="text-sm text-salt-text">{note.content}</p>
-            <p className="text-[11px] text-salt-text-muted mt-1">
-              {formatTimestamp(note.createdAt)}
-            </p>
+            <NoteMeta author={note.author} createdAt={note.createdAt} />
           </div>
         ))}
       </div>

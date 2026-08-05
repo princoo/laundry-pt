@@ -1,7 +1,8 @@
-import type { RequestStatus, ServiceType } from '@prisma/client'
+import type { RequestStatus, Role, ServiceType } from '@prisma/client'
 
 export interface RequestDetailItem {
   id: string
+  serviceType: ServiceType
   quantity: number
   unitPrice: number
   subtotal: number
@@ -12,6 +13,7 @@ export interface RequestNote {
   id: string
   content: string
   createdAt: string
+  author: { name: string | null; role: Role } | null
 }
 
 export interface AlertEventRecord {
@@ -23,7 +25,6 @@ export interface RequestDetail {
   id: string
   roomNumber: string
   guestName: string | null
-  serviceType: ServiceType
   isExpress: boolean
   isHanger: boolean
   note: string | null

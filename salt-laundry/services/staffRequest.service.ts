@@ -7,6 +7,7 @@ import type { Role } from '@prisma/client'
 
 export const ITEM_DETAIL_SELECT = {
   id: true,
+  serviceType: true,
   quantity: true,
   unitPrice: true,
   subtotal: true,
