@@ -2,7 +2,7 @@ import type { ServiceType } from '@prisma/client'
 import { ServiceTypeSelector } from '@/components/guest/ServiceTypeSelector'
 import { GuestDetailsForm } from '@/components/guest/GuestDetailsForm'
 import { ItemList } from '@/components/guest/ItemList'
-import type { LaundryItemOption, Selections } from '@/lib/types/guestOrder'
+import type { LaundryItemOption, LockedRoom, Selections } from '@/lib/types/guestOrder'
 
 interface Props {
   defaultServiceType: ServiceType
@@ -14,7 +14,7 @@ interface Props {
   isLoading: boolean
   itemsError: string | null
   onRetryItems: () => void
-  readOnlyRoom?: string
+  lockedRoom?: LockedRoom
 }
 
 // Section order: details first, then the default service, then items.
@@ -28,11 +28,11 @@ export function GuestFormFields({
   isLoading,
   itemsError,
   onRetryItems,
-  readOnlyRoom,
+  lockedRoom,
 }: Props) {
   return (
     <div className="flex-1 flex flex-col gap-6">
-      <GuestDetailsForm readOnlyRoom={readOnlyRoom} />
+      <GuestDetailsForm lockedRoom={lockedRoom} />
 
       <ServiceTypeSelector
         serviceType={defaultServiceType}

@@ -10,7 +10,7 @@ import { useItems } from '@/lib/hooks/useItems'
 import { useSaveRequest } from '@/lib/hooks/useSaveRequest'
 import { useOrderSelections } from '@/lib/hooks/useOrderSelections'
 import { buildOrderSummary } from '@/lib/utils/orderSummary'
-import { EMPTY_DRAFT } from '@/lib/utils/guestDraft'
+import { EMPTY_DRAFT, resolveLockedRoom } from '@/lib/utils/guestDraft'
 import { guestDetailsSchema, type GuestDetailsValues } from '@/lib/validations/guestRequest.schema'
 import type { GuestOrderDraft, RequestFormMode } from '@/lib/types/guestOrder'
 
@@ -18,10 +18,12 @@ interface Props {
   mode: RequestFormMode
   requestId?: string
   initialData?: GuestOrderDraft   // edit mode only, and only once loaded
+  scannedRoom?: string            // create mode only: from the room's QR code
 }
 
-export function RequestForm({ mode, requestId, initialData }: Props) {
+export function RequestForm({ mode, requestId, initialData, scannedRoom }: Props) {
   const draft = initialData ?? EMPTY_DRAFT
+  const lockedRoom = resolveLockedRoom(mode, draft, scannedRoom)
   const [isExpress, setIsExpress] = useState(draft.isExpress)
   const { items, isLoading, error: itemsError, refetch: refetchItems } = useItems()
   const {
@@ -34,7 +36,10 @@ export function RequestForm({ mode, requestId, initialData }: Props) {
     resolver: zodResolver(guestDetailsSchema),
     mode: 'onChange',
     defaultValues: {
-      roomNumber: draft.roomNumber, guestName: draft.guestName,
+      // A locked room reaches the payload from here — the field renders as text,
+      // so there's no registered input to read it back from.
+      roomNumber: lockedRoom?.number ?? draft.roomNumber,
+      guestName: draft.guestName,
       note: draft.note, isHanger: draft.isHanger,
     },
   })
@@ -56,8 +61,7 @@ export function RequestForm({ mode, requestId, initialData }: Props) {
           items={items} selections={selections}
           onQuantityChange={changeQuantity} onServiceChange={changeService}
           isLoading={isLoading} itemsError={itemsError} onRetryItems={refetchItems}
-          // The room a request belongs to is fixed once it exists.
-          readOnlyRoom={mode === 'edit' ? draft.roomNumber : undefined}
+          lockedRoom={lockedRoom}
         />
         <div className="w-full lg:w-80 lg:sticky lg:top-20 lg:self-start">
           <OrderSummary
@@ -66,7 +70,8 @@ export function RequestForm({ mode, requestId, initialData }: Props) {
             isExpress={isExpress} onIsExpressChange={setIsExpress}
             canSubmit={canSubmit}
             submission={{
-              mode, isSaving, saveError, onDismissError: dismissError, onSubmit,
+              mode, isRoomLocked: Boolean(lockedRoom),
+              isSaving, saveError, onDismissError: dismissError, onSubmit,
             }}
           />
         </div>

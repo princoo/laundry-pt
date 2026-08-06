@@ -4,17 +4,18 @@ import { useFormContext } from 'react-hook-form'
 import type { GuestDetailsValues } from '@/lib/validations/guestRequest.schema'
 import { FieldError } from '@/components/ui/FieldError'
 import { ReadOnlyRoomField } from '@/components/guest/ReadOnlyRoomField'
+import type { LockedRoom } from '@/lib/types/guestOrder'
 
 const inputClasses =
   'w-full border border-[0.5px] border-salt-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-salt-navy bg-white'
 
 interface Props {
-  // Set on an edit: the room is shown, not asked for. Moving a request to
-  // another room would hand it to a different guest.
-  readOnlyRoom?: string
+  // Set when the room is already decided (edit or QR scan): it's shown, not asked
+  // for. The value still reaches the payload through the form's default values.
+  lockedRoom?: LockedRoom
 }
 
-export function GuestDetailsForm({ readOnlyRoom }: Props) {
+export function GuestDetailsForm({ lockedRoom }: Props) {
   const {
     register,
     formState: { errors },
@@ -27,8 +28,8 @@ export function GuestDetailsForm({ readOnlyRoom }: Props) {
       </p>
 
       <div className="flex flex-col md:flex-row gap-4">
-        {readOnlyRoom ? (
-          <ReadOnlyRoomField roomNumber={readOnlyRoom} />
+        {lockedRoom ? (
+          <ReadOnlyRoomField room={lockedRoom} />
         ) : (
           <div className="flex-1">
             <label htmlFor="roomNumber" className="block text-sm text-salt-text mb-1.5">

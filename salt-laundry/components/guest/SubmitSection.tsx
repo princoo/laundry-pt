@@ -1,9 +1,10 @@
 import { X } from 'lucide-react'
-import { SAVE_LABELS } from '@/lib/constants/requestForm'
+import { SAVE_LABELS, SUBMIT_HINTS } from '@/lib/constants/requestForm'
 import type { RequestFormMode } from '@/lib/types/guestOrder'
 
 export interface SubmissionProps {
   mode: RequestFormMode
+  isRoomLocked: boolean
   isSaving: boolean
   saveError: string | null
   onSubmit: () => void
@@ -16,6 +17,7 @@ interface Props extends SubmissionProps {
 
 export function SubmitSection({
   mode,
+  isRoomLocked,
   canSubmit,
   isSaving,
   saveError,
@@ -23,6 +25,7 @@ export function SubmitSection({
   onDismissError,
 }: Props) {
   const labels = SAVE_LABELS[mode]
+  const hint = SUBMIT_HINTS[isRoomLocked ? 'roomKnown' : 'asksRoom']
 
   return (
     <>
@@ -48,7 +51,7 @@ export function SubmitSection({
       </button>
 
       {!canSubmit && !isSaving && (
-        <p className="hidden md:block text-xs text-salt-text-muted text-center">{labels.hint}</p>
+        <p className="hidden md:block text-xs text-salt-text-muted text-center">{hint}</p>
       )}
     </>
   )

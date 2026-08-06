@@ -29,6 +29,15 @@ export type Selections = Record<string, ItemSelection>
 // changing one that hasn't been collected yet.
 export type RequestFormMode = 'create' | 'edit'
 
+// Why a room is shown rather than asked for: the guest scanned that room's QR
+// code, or they're editing a request that already belongs to a room.
+export type RoomLockReason = 'scan' | 'edit'
+
+export interface LockedRoom {
+  number: string
+  reason: RoomLockReason
+}
+
 // The form's whole working state. In edit mode it's rebuilt from the saved
 // request so the form opens exactly as the guest left it.
 export interface GuestOrderDraft {

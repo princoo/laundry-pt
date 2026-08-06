@@ -1,6 +1,8 @@
 import type { ServiceType } from '@prisma/client'
 import { uniqueServiceTypes } from '@/lib/utils/serviceSummary'
-import type { GuestOrderDraft, Selections } from '@/lib/types/guestOrder'
+import type {
+  GuestOrderDraft, LockedRoom, RequestFormMode, Selections,
+} from '@/lib/types/guestOrder'
 
 // The saved request, as the edit endpoint returns it.
 export interface EditableRequest {
@@ -37,6 +39,18 @@ export function toGuestOrderDraft(request: EditableRequest): GuestOrderDraft {
       ])
     ),
   }
+}
+
+// Whether the form shows the room instead of asking for it. An edit is always
+// locked — moving a request would hand it to a different guest. A new request is
+// locked when the guest came from a room's QR code, which already names the room.
+export function resolveLockedRoom(
+  mode: RequestFormMode,
+  draft: GuestOrderDraft,
+  scannedRoom?: string
+): LockedRoom | undefined {
+  if (mode === 'edit') return { number: draft.roomNumber, reason: 'edit' }
+  return scannedRoom ? { number: scannedRoom, reason: 'scan' } : undefined
 }
 
 // Where the bulk service control starts. On an order whose lines all agree it
