@@ -2,7 +2,7 @@ import type { RequestFormMode, RoomLockReason } from '@/lib/types/guestOrder'
 
 // Why the room field is read-only, told to the guest looking at it.
 export const ROOM_LOCK_HINTS: Record<RoomLockReason, string> = {
-  scan: 'Your room number is already set.',
+  scan: 'Your room number is scanned.',
   edit: "The room on a request can't be changed.",
 }
 
