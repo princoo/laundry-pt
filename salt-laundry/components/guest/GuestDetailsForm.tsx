@@ -52,7 +52,7 @@ export function GuestDetailsForm({ lockedRoom }: Props) {
           <input
             id="guestName"
             type="text"
-            placeholder="e.g. J. Okafor"
+            placeholder="Enter your name here"
             className={inputClasses}
             {...register('guestName')}
           />

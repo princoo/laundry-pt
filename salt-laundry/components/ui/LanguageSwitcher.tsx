@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useRef, useState } from 'react'
-import { Check, ChevronDown, Globe } from 'lucide-react'
+import { Check, ChevronDown } from 'lucide-react'
 import { LANGUAGES } from '@/lib/constants/languages'
 import { useLanguage } from '@/lib/hooks/useLanguage'
 import { useClickOutside } from '@/lib/hooks/useClickOutside'
@@ -25,7 +25,7 @@ export function LanguageSwitcher() {
         aria-expanded={isOpen}
         className="flex items-center gap-1.5 text-sm font-medium text-salt-text-sec hover:text-salt-text rounded-lg px-2.5 py-1.5 transition-colors"
       >
-        <Globe className="w-4 h-4 shrink-0" />
+        <span className="text-base leading-none shrink-0" aria-hidden="true">{active.flag}</span>
         {active.short}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -46,9 +46,12 @@ export function LanguageSwitcher() {
                   selected ? 'text-salt-navy font-medium' : 'text-salt-text-sec hover:text-salt-text'
                 }`}
               >
-                <span>
-                  {option.label}
-                  <span className="text-salt-text-muted"> · {option.short}</span>
+                <span className="flex items-center gap-2">
+                  <span className="text-base leading-none shrink-0" aria-hidden="true">{option.flag}</span>
+                  <span>
+                    {option.label}
+                    <span className="text-salt-text-muted"> · {option.short}</span>
+                  </span>
                 </span>
                 {selected && <Check className="w-4 h-4 shrink-0" />}
               </button>
