@@ -7,7 +7,8 @@ export interface NavLinkItem {
 export const STAFF_NAV_LINKS: NavLinkItem[] = [
   { href: '/staff', label: 'Dashboard', exact: true },
   { href: '/staff/search', label: 'Search' },
-  { href: '/staff/invoices', label: 'Room invoice' },
+  // Hidden for now — the page and its API still work at /staff/invoices.
+  // { href: '/staff/invoices', label: 'Room invoice' },
 ]
 
 // Lives in the desktop account menu, and inline in the mobile menu.
