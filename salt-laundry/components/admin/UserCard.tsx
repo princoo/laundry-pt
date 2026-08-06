@@ -38,7 +38,7 @@ export function UserCard({
         <RoleBadge role={user.role} />
       </div>
 
-      <div className="flex items-center justify-between pt-3 border-t border-[0.5px] border-salt-border">
+      <div className="flex items-center justify-between pt-3 border-t border-salt-border">
         <div className="flex items-center gap-3">
           <UserStatusDot isActive={user.isActive} />
           {user.role === 'HOUSEKEEPER' && (
@@ -59,7 +59,6 @@ export function UserCard({
           isCurrentUser={isCurrentUser}
           onEdit={onEdit}
           onResetPassword={onResetPassword}
-          editHoverClass="hover:bg-salt-cream"
         />
       </div>
     </div>

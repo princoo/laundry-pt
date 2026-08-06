@@ -62,6 +62,8 @@ export function UserRow({
           isCurrentUser={isCurrentUser}
           onEdit={onEdit}
           onResetPassword={onResetPassword}
+          // The row itself hovers to cream, so the trigger lifts the other way.
+          hoverClass="hover:bg-white"
         />
       </td>
     </tr>

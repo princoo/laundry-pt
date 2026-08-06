@@ -1,4 +1,5 @@
-import { Pencil } from 'lucide-react'
+import { KeyRound, Pencil } from 'lucide-react'
+import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu'
 import type { AdminUser } from '@/lib/hooks/useAdminUsers'
 
 interface Props {
@@ -6,7 +7,7 @@ interface Props {
   isCurrentUser: boolean
   onEdit: (user: AdminUser) => void
   onResetPassword: (user: AdminUser) => void
-  editHoverClass?: string
+  hoverClass?: string
 }
 
 // Shared by the desktop table row and the mobile card. Admins cannot reset
@@ -16,27 +17,26 @@ export function UserActions({
   isCurrentUser,
   onEdit,
   onResetPassword,
-  editHoverClass = 'hover:bg-white',
+  hoverClass,
 }: Props) {
+  const items: ActionMenuItem[] = [
+    { label: 'Edit user', icon: Pencil, onSelect: () => onEdit(user) },
+  ]
+
+  if (!isCurrentUser) {
+    items.push({
+      label: 'Reset password',
+      icon: KeyRound,
+      onSelect: () => onResetPassword(user),
+      toneClass: 'text-amber-600',
+    })
+  }
+
   return (
-    <div className="flex items-center gap-2">
-      {!isCurrentUser && (
-        <button
-          type="button"
-          onClick={() => onResetPassword(user)}
-          className="text-amber-600 text-sm hover:underline whitespace-nowrap"
-        >
-          Reset password
-        </button>
-      )}
-      <button
-        type="button"
-        onClick={() => onEdit(user)}
-        aria-label={`Edit ${user.name || user.email}`}
-        className={`w-8 h-8 inline-flex items-center justify-center rounded-md text-salt-text-sec hover:text-salt-navy ${editHoverClass} transition-colors`}
-      >
-        <Pencil className="w-4 h-4" />
-      </button>
-    </div>
+    <ActionMenu
+      label={`Actions for ${user.name || user.email}`}
+      items={items}
+      hoverClass={hoverClass}
+    />
   )
 }

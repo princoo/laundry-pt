@@ -45,10 +45,10 @@ export function StaffNav({ userName, role }: Props) {
             </NavLink>
           ))}
           {role === 'ADMIN' && <NavGroupDropdown label="Manage" items={ADMIN_NAV_LINKS} />}
-          <LanguageSwitcher />
           <NotificationBell />
-          {role && <RoleBadge role={role} />}
           {userName && <UserMenu userName={userName} />}
+          {role && <RoleBadge role={role} />}
+          <LanguageSwitcher />
         </div>
 
         <div className="flex md:hidden items-center gap-1 shrink-0">

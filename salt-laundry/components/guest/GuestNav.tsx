@@ -30,8 +30,8 @@ export function GuestNav({ active }: Props) {
           <NavLink href="/" active={active === 'new'}>New request</NavLink>
           <NavLink href="/track" active={active === 'track'}>Track order</NavLink>
           <div className="h-6 w-px bg-salt-border mx-1" />
-          <LanguageSwitcher />
           <StaffAccessLink />
+          <LanguageSwitcher />
         </div>
 
         {/* Guests need the language picker without opening the menu first. */}
