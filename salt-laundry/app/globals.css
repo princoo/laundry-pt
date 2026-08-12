@@ -1,13 +1,21 @@
 @import "tailwindcss";
 @config "../tailwind.config.ts";
 
-* { box-sizing: border-box; }
-html { scrollbar-gutter: stable; }
-body { background-color: #f5f4f1; }
+* {
+  box-sizing: border-box;
+}
+html {
+  scrollbar-gutter: stable;
+}
+body {
+  background-color: #f5f4f1;
+}
 
-/* Invoices are printed on white paper — the cream page tint is screen-only. */
+/* Invoices are printed on white paper- the cream page tint is screen-only. */
 @media print {
-  body { background-color: #ffffff; }
+  body {
+    background-color: #ffffff;
+  }
 }
 
 .modal-scroll {

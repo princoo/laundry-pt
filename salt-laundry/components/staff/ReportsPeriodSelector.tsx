@@ -1,37 +1,45 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { QUICK_RANGES, type QuickRange } from '@/lib/utils/dateRange'
+import { useState } from "react";
+import { QUICK_RANGES, type QuickRange } from "@/lib/utils/dateRange";
 
 // Local rather than INPUT_CLASSES: these two sit inline in a filter row, so
 // they are tighter (py-2) and not full-width. The text sizing must still match
-// it — under 16px makes iOS Safari zoom the viewport on focus.
+// it- under 16px makes iOS Safari zoom the viewport on focus.
 const inputClasses =
-  'border border-[0.5px] border-salt-border rounded-lg px-3 py-2 text-base sm:text-sm focus:outline-none focus:border-salt-navy bg-white'
+  "border border-[0.5px] border-salt-border rounded-lg px-3 py-2 text-base sm:text-sm focus:outline-none focus:border-salt-navy bg-white";
 
 interface Props {
-  from: string
-  to: string
-  onFromChange: (value: string) => void
-  onToChange: (value: string) => void
-  onGenerate: () => void
-  onQuickRange: (quick: QuickRange) => void
-  isLoading: boolean
+  from: string;
+  to: string;
+  onFromChange: (value: string) => void;
+  onToChange: (value: string) => void;
+  onGenerate: () => void;
+  onQuickRange: (quick: QuickRange) => void;
+  isLoading: boolean;
 }
 
 export function ReportsPeriodSelector({
-  from, to, onFromChange, onToChange, onGenerate, onQuickRange, isLoading,
+  from,
+  to,
+  onFromChange,
+  onToChange,
+  onGenerate,
+  onQuickRange,
+  isLoading,
 }: Props) {
-  const [activeQuick, setActiveQuick] = useState<QuickRange | null>('This month')
+  const [activeQuick, setActiveQuick] = useState<QuickRange | null>(
+    "This month",
+  );
 
   function handleDateChange(setter: (value: string) => void, value: string) {
-    setActiveQuick(null)
-    setter(value)
+    setActiveQuick(null);
+    setter(value);
   }
 
   function handleQuickRange(quick: QuickRange) {
-    setActiveQuick(quick)
-    onQuickRange(quick)
+    setActiveQuick(quick);
+    onQuickRange(quick);
   }
 
   return (
@@ -39,12 +47,26 @@ export function ReportsPeriodSelector({
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div className="flex flex-wrap gap-3">
           <div>
-            <label className="block text-xs text-salt-text-muted mb-1">From</label>
-            <input type="date" value={from} onChange={(e) => handleDateChange(onFromChange, e.target.value)} className={inputClasses} />
+            <label className="block text-xs text-salt-text-muted mb-1">
+              From
+            </label>
+            <input
+              type="date"
+              value={from}
+              onChange={(e) => handleDateChange(onFromChange, e.target.value)}
+              className={inputClasses}
+            />
           </div>
           <div>
-            <label className="block text-xs text-salt-text-muted mb-1">To</label>
-            <input type="date" value={to} onChange={(e) => handleDateChange(onToChange, e.target.value)} className={inputClasses} />
+            <label className="block text-xs text-salt-text-muted mb-1">
+              To
+            </label>
+            <input
+              type="date"
+              value={to}
+              onChange={(e) => handleDateChange(onToChange, e.target.value)}
+              className={inputClasses}
+            />
           </div>
         </div>
         <button
@@ -53,7 +75,7 @@ export function ReportsPeriodSelector({
           disabled={isLoading}
           className="bg-salt-navy hover:bg-salt-navy-hover transition-colors text-white rounded-lg px-5 py-2 text-sm font-medium disabled:opacity-60 w-full sm:w-auto"
         >
-          {isLoading ? 'Generating…' : 'Generate report'}
+          {isLoading ? "Generating…" : "Generate report"}
         </button>
       </div>
 
@@ -65,8 +87,8 @@ export function ReportsPeriodSelector({
             onClick={() => handleQuickRange(quick)}
             className={`text-xs rounded-full px-3 py-1.5 border border-[0.5px] transition-colors ${
               activeQuick === quick
-                ? 'bg-salt-navy border-salt-navy text-white'
-                : 'text-salt-text-sec border-salt-border hover:border-salt-navy hover:text-salt-navy'
+                ? "bg-salt-navy border-salt-navy text-white"
+                : "text-salt-text-sec border-salt-border hover:border-salt-navy hover:text-salt-navy"
             }`}
           >
             {quick}
@@ -74,5 +96,5 @@ export function ReportsPeriodSelector({
         ))}
       </div>
     </div>
-  )
+  );
 }

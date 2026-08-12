@@ -1,20 +1,26 @@
-import type { RefObject } from 'react'
+import type { RefObject } from "react";
 
 interface Props {
-  room: string
-  url: string | null
-  containerRef: RefObject<HTMLDivElement | null>
+  room: string;
+  url: string | null;
+  containerRef: RefObject<HTMLDivElement | null>;
   // Set on the outer element so the whole card can be captured as an image.
-  cardRef?: RefObject<HTMLDivElement | null>
+  cardRef?: RefObject<HTMLDivElement | null>;
   // Smaller variant used on the bulk sheet; same layout, tighter sizing.
-  compact?: boolean
+  compact?: boolean;
 }
 
-// The one card used everywhere — single generator, bulk sheet, print, and PNG
-// export — so a room card looks identical however it's produced. The logo sits
+// The one card used everywhere- single generator, bulk sheet, print, and PNG
+// export- so a room card looks identical however it's produced. The logo sits
 // above the code; the "scan" line and room number sit below it.
-export function RoomQrCard({ room, url, containerRef, cardRef, compact = false }: Props) {
-  const hasRoom = !!url
+export function RoomQrCard({
+  room,
+  url,
+  containerRef,
+  cardRef,
+  compact = false,
+}: Props) {
+  const hasRoom = !!url;
 
   return (
     <div
@@ -72,7 +78,7 @@ export function RoomQrCard({ room, url, containerRef, cardRef, compact = false }
           compact ? "mt-1 text-base" : "mt-3 text-2xl"
         }`}
       >
-        {hasRoom ? `Room ${room}` : "Room —"}
+        {hasRoom ? `Room ${room}` : "Room-"}
       </p>
     </div>
   );

@@ -27,7 +27,7 @@ export const items = [
 // Stand-ins for profiles SOA would provision. The soaId values are obviously
 // fake so a seeded row is never mistaken for a real one; a later provisioning
 // call carrying the real soaId creates a separate user rather than adopting
-// these. No passwords — sign-in goes through SOA.
+// these. No passwords- sign-in goes through SOA.
 export const users = [
   {
     soaId: "seed-soa-admin",

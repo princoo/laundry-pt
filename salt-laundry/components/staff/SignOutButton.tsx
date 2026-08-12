@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import { signOut } from 'next-auth/react'
-import { SIGNED_IN_HOME } from '@/lib/constants/soa'
+import { signOut } from "next-auth/react";
+import { SIGNED_IN_HOME } from "@/lib/constants/soa";
 
-// Clears the laundry session, then walks straight back into /staff — which,
+// Clears the laundry session, then walks straight back into /staff- which,
 // with no session, is what hands the user to SOA. There is no laundry sign-in
 // page to land on any more.
 export function SignOutButton() {
@@ -15,5 +15,5 @@ export function SignOutButton() {
     >
       Sign out
     </button>
-  )
+  );
 }

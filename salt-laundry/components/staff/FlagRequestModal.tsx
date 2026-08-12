@@ -1,23 +1,28 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Modal } from '@/components/ui/Modal'
+import { useState } from "react";
+import { Modal } from "@/components/ui/Modal";
 
 interface Props {
-  isSaving: boolean
-  error: string | null
-  onSubmit: (reason: string) => void
-  onClose: () => void
+  isSaving: boolean;
+  error: string | null;
+  onSubmit: (reason: string) => void;
+  onClose: () => void;
 }
 
-const MAX_REASON = 300
+const MAX_REASON = 300;
 
-// ConfirmModal takes no input, so this builds on Modal directly — same shape as
+// ConfirmModal takes no input, so this builds on Modal directly- same shape as
 // ReassignModal. The reason is required: it is what the person who has to fix
 // the request reads, and it is the only part of the flag that reaches the notes.
-export function FlagRequestModal({ isSaving, error, onSubmit, onClose }: Props) {
-  const [reason, setReason] = useState('')
-  const trimmed = reason.trim()
+export function FlagRequestModal({
+  isSaving,
+  error,
+  onSubmit,
+  onClose,
+}: Props) {
+  const [reason, setReason] = useState("");
+  const trimmed = reason.trim();
 
   return (
     <Modal title="Flag for changes" onClose={onClose}>
@@ -50,9 +55,9 @@ export function FlagRequestModal({ isSaving, error, onSubmit, onClose }: Props) 
           disabled={trimmed.length < 5 || isSaving}
           className="bg-salt-navy hover:bg-salt-navy-hover transition-colors text-white rounded-lg px-4 py-2 text-sm disabled:opacity-60"
         >
-          {isSaving ? 'Flagging…' : 'Flag for changes'}
+          {isSaving ? "Flagging…" : "Flag for changes"}
         </button>
       </div>
     </Modal>
-  )
+  );
 }

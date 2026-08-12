@@ -1,21 +1,21 @@
-import type { Prisma } from '@prisma/client'
+import type { Prisma } from "@prisma/client";
 
 // The line shape stored in RequestRevision.items. Mirrors RequestItem minus its
 // id, which is not stable: editing deletes every line and recreates it, so a
 // line's durable identity is (laundryItemId, serviceType), not its row id.
 export interface RevisionItem {
-  laundryItemId: string
-  nameEn: string
-  serviceType: string
-  quantity: number
-  unitPrice: number
-  subtotal: number
+  laundryItemId: string;
+  nameEn: string;
+  serviceType: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
 }
 
 // Records what a request looks like *right now*, immediately before an edit
 // overwrites it.
 //
-// Must be called inside the same transaction as the edit, and before it — the
+// Must be called inside the same transaction as the edit, and before it- the
 // edit overwrites the totals in place and replaces every line row, so there is
 // no later moment at which the previous state can still be read. Sharing the
 // transaction also means a rejected edit rolls the snapshot back with it, so a
@@ -27,7 +27,7 @@ export async function snapshotRequest(
   tx: Prisma.TransactionClient,
   requestId: string,
   editedById: string | null,
-  reason?: string | null
+  reason?: string | null,
 ) {
   const existing = await tx.request.findUnique({
     where: { id: requestId },
@@ -53,10 +53,10 @@ export async function snapshotRequest(
         },
       },
     },
-  })
-  if (!existing) return null
+  });
+  if (!existing) return null;
 
-  const { items, ...request } = existing
+  const { items, ...request } = existing;
 
   return tx.requestRevision.create({
     data: {
@@ -69,5 +69,5 @@ export async function snapshotRequest(
         nameEn: laundryItem.nameEn,
       })) as unknown as Prisma.InputJsonValue,
     },
-  })
+  });
 }

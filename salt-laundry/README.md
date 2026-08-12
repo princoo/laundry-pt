@@ -1,8 +1,8 @@
-# SALT of Akagera — Laundry Request System
+# SALT of Akagera- Laundry Request System
 
 A hotel laundry request system replacing a paper form workflow at SALT of Akagera, Rwanda.
 Guests submit laundry requests from their room; laundry staff receive and manage them on a
-live dashboard. No payment processing — costs are tracked and added to the room bill at
+live dashboard. No payment processing- costs are tracked and added to the room bill at
 checkout.
 
 Built with Next.js 16 (App Router), TypeScript, Prisma on PostgreSQL, Tailwind, and
@@ -21,7 +21,7 @@ pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) for the guest form. The staff
-dashboard is at `/staff` and requires a SOA session — see below.
+dashboard is at `/staff` and requires a SOA session- see below.
 
 ## Sign-in
 
@@ -38,7 +38,7 @@ The laundry has no login page and stores no passwords. Staff authenticate agains
    the URL with the original path.
 
 The session expires at exactly the moment SOA's token does, capped at one hour. What each
-person can see and do is decided by the `LAUNDRY_*` permissions SOA returns — the laundry
+person can see and do is decided by the `LAUNDRY_*` permissions SOA returns- the laundry
 has no roles of its own.
 
 Accounts are created, updated and deactivated only by SOA, calling
@@ -51,30 +51,31 @@ Guest pages (`/`, `/track`, `/confirmation`) and their APIs are fully public.
 
 Copy these into `.env.local`.
 
-| Variable | What it is |
-|---|---|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `NEXTAUTH_SECRET` | Secret Auth.js signs the session cookie with |
-| `NEXTAUTH_URL` | This app's own origin, for Auth.js |
-| `APP_URL` | This app's public origin, used to build the return URL sent to SOA |
-| `SOA_API_URL` | Base URL of the SOA API — `/api/auth/me` is appended to it |
-| `SOA_SIGNIN_URL` | SOA's sign-in page, where an unauthenticated visitor is sent |
-| `SOA_REDIRECT_PARAM` | Name of the query parameter SOA reads the return URL from |
-| `SOA_PROFILE_URL` | Where staff manage their own details; linked from `/staff/profile`. Leave empty to hide the link |
-| `SOA_PROVISION_API_KEY` | Shared key the provisioning endpoints check `X-SOA-Api-Key` against |
+| Variable                | What it is                                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------------ |
+| `DATABASE_URL`          | PostgreSQL connection string                                                                     |
+| `NEXTAUTH_SECRET`       | Secret Auth.js signs the session cookie with                                                     |
+| `NEXTAUTH_URL`          | This app's own origin, for Auth.js                                                               |
+| `APP_URL`               | This app's public origin, used to build the return URL sent to SOA                               |
+| `SOA_API_URL`           | Base URL of the SOA API- `/api/auth/me` is appended to it                                        |
+| `SOA_SIGNIN_URL`        | SOA's sign-in page, where an unauthenticated visitor is sent                                     |
+| `SOA_REDIRECT_PARAM`    | Name of the query parameter SOA reads the return URL from                                        |
+| `SOA_PROFILE_URL`       | Where staff manage their own details; linked from `/staff/profile`. Leave empty to hide the link |
+| `SOA_PROVISION_API_KEY` | Shared key the provisioning endpoints check `X-SOA-Api-Key` against                              |
 
 No SOA URL or parameter name is hardcoded anywhere, so pointing the app at the real SOA
 instance is a config change and nothing more.
 
 ## Scripts
 
-| Command | What it does |
-|---|---|
-| `pnpm dev` | Development server |
-| `pnpm build` | `prisma generate` then a production build |
-| `pnpm start` | Serve the production build |
-| `pnpm lint` | ESLint |
-| `pnpm prisma db seed` | Reseed the catalogue and staff accounts |
+| Command               | What it does                              |
+| --------------------- | ----------------------------------------- |
+| `pnpm dev`            | Development server                        |
+| `pnpm build`          | `prisma generate` then a production build |
+| `pnpm start`          | Serve the production build                |
+| `pnpm lint`           | ESLint                                    |
+| `pnpm prisma db seed` | Reseed the catalogue and staff accounts   |
+
 # SALT Laundry
 
 A hotel laundry management system for **SALT of Akagera** (Rwanda). Guests submit
@@ -104,8 +105,9 @@ Built with **Next.js 16 (App Router)**, **React 19**, **Prisma 7 / PostgreSQL**,
 There are two audiences, split at the app level.
 
 ### Guests (public, no login)
+
 - Fill in a room number, pick items from a catalogue, and choose a service per
-  item — **Normal**, **Dry-cleaning**, or **Pressing**.
+  item- **Normal**, **Dry-cleaning**, or **Pressing**.
 - Optionally mark the whole order **Express** (+30%) or request **hanging** delivery.
 - See a live price breakdown (items → express uplift → 15% VAT → total) and an
   estimated same-day return time.
@@ -113,13 +115,14 @@ There are two audiences, split at the app level.
   `PENDING` (before pickup).
 
 ### Staff (authenticated dashboard at `/staff`)
+
 Three roles, each seeing progressively more:
 
-| Role | Can do |
-| --- | --- |
-| **Housekeeper** | See the request queue and their assigned tasks, advance a request through its lifecycle, add notes. |
-| **Supervisor** | Everything a housekeeper can, plus reassign requests, view the live staff overview, and see reports. |
-| **Admin** | Everything, plus manage the item catalogue and user accounts (create users, reset passwords, toggle roles). |
+| Role            | Can do                                                                                                      |
+| --------------- | ----------------------------------------------------------------------------------------------------------- |
+| **Housekeeper** | See the request queue and their assigned tasks, advance a request through its lifecycle, add notes.         |
+| **Supervisor**  | Everything a housekeeper can, plus reassign requests, view the live staff overview, and see reports.        |
+| **Admin**       | Everything, plus manage the item catalogue and user accounts (create users, reset passwords, toggle roles). |
 
 Operational features include real-time notifications (Server-Sent Events),
 automatic load-balanced assignment to housekeepers, SLA/overdue alerting, PDF
@@ -129,16 +132,16 @@ invoices, and revenue/service reporting.
 
 ## Tech stack
 
-| Layer | Choice |
-| --- | --- |
-| Framework | Next.js 16 (App Router, React Server Components) |
-| Language | TypeScript 5 |
-| UI | React 19, Tailwind CSS 4, `lucide-react` icons, Nunito font |
-| Auth | NextAuth 5 (Credentials provider, JWT sessions) |
-| ORM / DB | Prisma 7 with the `@prisma/adapter-pg` driver adapter → PostgreSQL |
-| Validation | Zod 4 + `react-hook-form` |
-| Email | Nodemailer (Gmail SMTP) for password-reset links |
-| PDF | `jspdf` + `html2canvas` for invoice downloads |
+| Layer      | Choice                                                             |
+| ---------- | ------------------------------------------------------------------ |
+| Framework  | Next.js 16 (App Router, React Server Components)                   |
+| Language   | TypeScript 5                                                       |
+| UI         | React 19, Tailwind CSS 4, `lucide-react` icons, Nunito font        |
+| Auth       | NextAuth 5 (Credentials provider, JWT sessions)                    |
+| ORM / DB   | Prisma 7 with the `@prisma/adapter-pg` driver adapter → PostgreSQL |
+| Validation | Zod 4 + `react-hook-form`                                          |
+| Email      | Nodemailer (Gmail SMTP) for password-reset links                   |
+| PDF        | `jspdf` + `html2canvas` for invoice downloads                      |
 
 ---
 
@@ -165,13 +168,13 @@ Open [http://localhost:3000](http://localhost:3000) for the guest form, or
 
 **Seeded accounts** (from [`prisma/seed.ts`](prisma/seed.ts)):
 
-| Role | Email | Password |
-| --- | --- | --- |
-| Admin | `admin@salt.rw` | `Admin1234!` |
-| Supervisor | `supervisor@salt.rw` | `Supervisor1234!` |
+| Role        | Email                 | Password           |
+| ----------- | --------------------- | ------------------ |
+| Admin       | `admin@salt.rw`       | `Admin1234!`       |
+| Supervisor  | `supervisor@salt.rw`  | `Supervisor1234!`  |
 | Housekeeper | `housekeeper@salt.rw` | `Housekeeper1234!` |
 
-> The seed creates the 23 laundry items **with null prices** — an admin sets
+> The seed creates the 23 laundry items **with null prices**- an admin sets
 > per-service prices in the catalogue before orders can be priced.
 
 ---
@@ -180,33 +183,33 @@ Open [http://localhost:3000](http://localhost:3000) for the guest form, or
 
 Create a `.env` (and `.env.local` for demo flags) in the project root:
 
-| Variable | Purpose |
-| --- | --- |
-| `DATABASE_URL` | PostgreSQL connection string. |
-| `NEXTAUTH_SECRET` | Secret used to sign NextAuth JWTs. |
-| `NEXTAUTH_URL` | Base URL of the app for NextAuth callbacks. |
-| `APP_URL` | Absolute base URL, used for Open Graph images and reset-link emails. |
-| `GMAIL_USER` | Gmail address used to send password-reset emails. |
-| `GMAIL_APP_PASSWORD` | Gmail app password for SMTP. |
-| `DEMO_MODE` | **Testing only.** `true` bypasses the password check server-side. |
+| Variable                | Purpose                                                                    |
+| ----------------------- | -------------------------------------------------------------------------- |
+| `DATABASE_URL`          | PostgreSQL connection string.                                              |
+| `NEXTAUTH_SECRET`       | Secret used to sign NextAuth JWTs.                                         |
+| `NEXTAUTH_URL`          | Base URL of the app for NextAuth callbacks.                                |
+| `APP_URL`               | Absolute base URL, used for Open Graph images and reset-link emails.       |
+| `GMAIL_USER`            | Gmail address used to send password-reset emails.                          |
+| `GMAIL_APP_PASSWORD`    | Gmail app password for SMTP.                                               |
+| `DEMO_MODE`             | **Testing only.** `true` bypasses the password check server-side.          |
 | `NEXT_PUBLIC_DEMO_MODE` | **Testing only.** `true` enables `?email=` auto-login and the demo banner. |
 
-> ⚠️ **Never set `DEMO_MODE` / `NEXT_PUBLIC_DEMO_MODE` in production** — they
+> ⚠️ **Never set `DEMO_MODE` / `NEXT_PUBLIC_DEMO_MODE` in production**- they
 > disable password verification. See [Demo mode](docs/DEVELOPMENT.md#demo-mode).
 
 ---
 
 ## Scripts
 
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Start the Next.js dev server. |
-| `npm run build` | `prisma generate` then production build. |
-| `npm start` | Serve the production build. |
-| `npm run lint` | Run ESLint. |
-| `npx prisma migrate dev` | Create/apply a migration in development. |
-| `npx prisma db seed` | Seed catalogue items and demo users. |
-| `npx prisma studio` | Open Prisma Studio to browse the database. |
+| Command                  | Description                                |
+| ------------------------ | ------------------------------------------ |
+| `npm run dev`            | Start the Next.js dev server.              |
+| `npm run build`          | `prisma generate` then production build.   |
+| `npm start`              | Serve the production build.                |
+| `npm run lint`           | Run ESLint.                                |
+| `npx prisma migrate dev` | Create/apply a migration in development.   |
+| `npx prisma db seed`     | Seed catalogue items and demo users.       |
+| `npx prisma studio`      | Open Prisma Studio to browse the database. |
 
 ---
 
@@ -214,7 +217,7 @@ Create a `.env` (and `.env.local` for demo flags) in the project root:
 
 ```
 salt-laundry/
-├── app/                    # Next.js App Router — routes, layouts, API handlers
+├── app/                    # Next.js App Router- routes, layouts, API handlers
 │   ├── (guest)/            # Public guest request form (route group)
 │   ├── track/              # Order tracking + guest edit
 │   ├── confirmation/       # Post-submit confirmation
@@ -239,7 +242,7 @@ salt-laundry/
 └── public/                 # Static assets
 ```
 
-**The layering rule:** `app/api/*` route handlers stay thin — they authenticate
+**The layering rule:** `app/api/*` route handlers stay thin- they authenticate
 (via [`lib/utils/guards.ts`](lib/utils/guards.ts)), validate input with a Zod
 schema, then delegate to a function in `services/`. All Prisma access lives in
 `services/`. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
@@ -262,7 +265,7 @@ flowchart TB
             Hooks["Client hooks<br/>lib/hooks"]
         end
 
-        MW["proxy.ts — auth middleware<br/>gates /staff & /api/staff · /api/admin"]
+        MW["proxy.ts- auth middleware<br/>gates /staff & /api/staff · /api/admin"]
 
         subgraph api["Route handlers · app/api"]
             direction TB
@@ -271,7 +274,7 @@ flowchart TB
             Zod["Zod schemas<br/>lib/validations"]
         end
 
-        Services["Services — business logic<br/>services/**  (all Prisma access)"]
+        Services["Services- business logic<br/>services/**  (all Prisma access)"]
         NextAuth["NextAuth 5<br/>lib/auth.ts · JWT sessions"]
     end
 
@@ -319,10 +322,10 @@ Full detail on each lives in [docs/DOMAIN.md](docs/DOMAIN.md).
 
 ## Documentation
 
-| Doc | Contents |
-| --- | --- |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | App layering, request flow, directory conventions, real-time notifications. |
-| [docs/DOMAIN.md](docs/DOMAIN.md) | Roles, request statuses & transitions, services, pricing, SLA alerts, assignment. |
-| [docs/DATABASE.md](docs/DATABASE.md) | Prisma models, relations, enums, and migration history. |
-| [docs/API.md](docs/API.md) | Every API route, its method, auth requirement, and purpose. |
-| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Local setup, env vars, demo mode, seeding, coding conventions. |
+| Doc                                          | Contents                                                                          |
+| -------------------------------------------- | --------------------------------------------------------------------------------- |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | App layering, request flow, directory conventions, real-time notifications.       |
+| [docs/DOMAIN.md](docs/DOMAIN.md)             | Roles, request statuses & transitions, services, pricing, SLA alerts, assignment. |
+| [docs/DATABASE.md](docs/DATABASE.md)         | Prisma models, relations, enums, and migration history.                           |
+| [docs/API.md](docs/API.md)                   | Every API route, its method, auth requirement, and purpose.                       |
+| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)   | Local setup, env vars, demo mode, seeding, coding conventions.                    |

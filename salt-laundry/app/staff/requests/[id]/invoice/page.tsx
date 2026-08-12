@@ -1,49 +1,51 @@
-import type { Metadata } from 'next'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
-import { getRequestById } from '@/services/staffRequest.service'
-import { InvoiceMasthead } from '@/components/staff/InvoiceMasthead'
-import { SingleInvoiceInfoBlock } from '@/components/staff/SingleInvoiceInfoBlock'
-import { InvoiceItemsTable } from '@/components/staff/InvoiceItemsTable'
-import { InvoiceTotals } from '@/components/staff/InvoiceTotals'
-import { InvoiceFooter } from '@/components/staff/InvoiceFooter'
-import { InvoiceCard } from '@/components/staff/InvoiceCard'
-import { AccessDenied } from '@/components/ui/AccessDenied'
-import { formatReference } from '@/lib/utils/formatting'
-import { getCurrentUser } from '@/lib/utils/guards'
-import { hasPermission } from '@/lib/utils/permissions'
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { getRequestById } from "@/services/staffRequest.service";
+import { InvoiceMasthead } from "@/components/staff/InvoiceMasthead";
+import { SingleInvoiceInfoBlock } from "@/components/staff/SingleInvoiceInfoBlock";
+import { InvoiceItemsTable } from "@/components/staff/InvoiceItemsTable";
+import { InvoiceTotals } from "@/components/staff/InvoiceTotals";
+import { InvoiceFooter } from "@/components/staff/InvoiceFooter";
+import { InvoiceCard } from "@/components/staff/InvoiceCard";
+import { AccessDenied } from "@/components/ui/AccessDenied";
+import { formatReference } from "@/lib/utils/formatting";
+import { getCurrentUser } from "@/lib/utils/guards";
+import { hasPermission } from "@/lib/utils/permissions";
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const { id } = await params
-  const request = await getRequestById(id)
+  const { id } = await params;
+  const request = await getRequestById(id);
 
   return {
-    title: request ? `Invoice — Room ${request.roomNumber}` : 'Invoice',
+    title: request ? `Invoice- Room ${request.roomNumber}` : "Invoice",
     robots: { index: false, follow: false },
-  }
+  };
 }
 
 export default async function InvoicePage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }) {
-  const { id } = await params
+  const { id } = await params;
 
   // Server-rendered, so it carries its own gate rather than a PermissionGate.
-  const user = await getCurrentUser()
-  if (!hasPermission(user?.permissions, 'LAUNDRY_REQUESTS_INVOICES_VIEW')) {
-    return <AccessDenied />
+  const user = await getCurrentUser();
+  if (!hasPermission(user?.permissions, "LAUNDRY_REQUESTS_INVOICES_VIEW")) {
+    return <AccessDenied />;
   }
 
-  const request = await getRequestById(id)
+  const request = await getRequestById(id);
 
   if (!request) {
-    return <p className="text-sm text-salt-text-sec px-4 py-6">Request not found.</p>
+    return (
+      <p className="text-sm text-salt-text-sec px-4 py-6">Request not found.</p>
+    );
   }
 
   return (
@@ -56,7 +58,9 @@ export default async function InvoicePage({
         Back to request
       </Link>
 
-      <InvoiceCard filename={`${formatReference(request.seq, request.createdAt)}.pdf`}>
+      <InvoiceCard
+        filename={`${formatReference(request.seq, request.createdAt)}.pdf`}
+      >
         <InvoiceMasthead subtitle="Laundry service invoice" />
         <SingleInvoiceInfoBlock request={request} />
         <InvoiceItemsTable items={request.items} />
@@ -68,5 +72,5 @@ export default async function InvoicePage({
         <InvoiceFooter />
       </InvoiceCard>
     </div>
-  )
+  );
 }

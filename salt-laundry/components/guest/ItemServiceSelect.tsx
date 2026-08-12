@@ -1,14 +1,14 @@
-'use client'
+"use client";
 
-import type { ServiceType } from '@prisma/client'
-import { Select } from '@/components/ui/Select'
-import { SERVICE_TYPE_LABELS } from '@/lib/constants/services'
-import type { ItemServiceOption } from '@/lib/types/guestOrder'
+import type { ServiceType } from "@prisma/client";
+import { Select } from "@/components/ui/Select";
+import { SERVICE_TYPE_LABELS } from "@/lib/constants/services";
+import type { ItemServiceOption } from "@/lib/types/guestOrder";
 
 interface Props {
-  services: ItemServiceOption[]
-  value: ServiceType
-  onChange: (serviceType: ServiceType) => void
+  services: ItemServiceOption[];
+  value: ServiceType;
+  onChange: (serviceType: ServiceType) => void;
 }
 
 // Offers only the services this item is priced for. With a single option
@@ -19,11 +19,11 @@ export function ItemServiceSelect({ services, value, onChange }: Props) {
       <span className="block text-xs text-salt-text-sec text-right truncate">
         {SERVICE_TYPE_LABELS[services[0].type]}
       </span>
-    )
+    );
   }
 
   // The caller sizes the slot and this fills it, so every row's trigger comes out
-  // the same width and the popover — which copies the trigger — matches. `py-2`
+  // the same width and the popover- which copies the trigger- matches. `py-2`
   // lands the trigger on 33px, the same height as the stepper below it; the
   // tighter `px-2` is what lets "Dry-cleaning" clear the stepper's 120px width.
   return (
@@ -36,5 +36,5 @@ export function ItemServiceSelect({ services, value, onChange }: Props) {
       }))}
       className="px-2! py-2! text-xs!"
     />
-  )
+  );
 }

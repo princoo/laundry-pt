@@ -7,7 +7,7 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
   // Items have no natural key to upsert on, and prices are edited in the app
-  // after seeding — so a catalogue that already exists is left alone rather
+  // after seeding- so a catalogue that already exists is left alone rather
   // than duplicated or overwritten.
   if ((await prisma.laundryItem.count()) === 0) {
     for (const [index, item] of items.entries()) {

@@ -1,6 +1,6 @@
 -- The users table becomes a mirror of SOA staff profiles. Every account here
 -- was created by the laundry's own sign-up, has a soaId of nothing, and cannot
--- be matched to an SOA profile — so the table is cleared and reseeded rather
+-- be matched to an SOA profile- so the table is cleared and reseeded rather
 -- than migrated column by column. The database is pre-launch; there is no
 -- production account to preserve.
 --

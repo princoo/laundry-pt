@@ -8,7 +8,7 @@ datasource db {
 
 // A thin mirror of an SOA staff profile, written only by the provisioning
 // endpoints in app/api/integrations/soa/. SOA owns every field above
-// isHousekeeper; the laundry owns the two below it. Names only — no
+// isHousekeeper; the laundry owns the two below it. Names only- no
 // department id, no role ids. roleNames is display; permissions decide access.
 model User {
   id                 String        @id @default(cuid())
@@ -71,7 +71,7 @@ model Request {
   unassignedAt      DateTime?
   // "The paperwork does not match the bag." Deliberately not a RequestStatus:
   // status says where the physical items are, and a request needs correcting
-  // independently of that. Who may fix it follows from the two together —
+  // independently of that. Who may fix it follows from the two together-
   // the guest while PENDING, staff with LAUNDRY_REQUEST_EDIT thereafter.
   needsChanges      Boolean             @default(false)
   flaggedAt         DateTime?
@@ -125,7 +125,7 @@ model RequestItem {
   request       Request     @relation(fields: [requestId], references: [id], onDelete: Cascade)
   laundryItem   LaundryItem @relation(fields: [laundryItemId], references: [id])
 
-  // requestId is the hottest join in the app — almost every request read
+  // requestId is the hottest join in the app- almost every request read
   // includes its lines.
   @@index([requestId])
   @@index([laundryItemId])
@@ -153,7 +153,7 @@ model RequestNote {
 // row the previous quantities, services, unit prices and totals are gone the
 // instant an edit lands.
 //
-// One row per edit, so deliberately no @@unique — the opposite of
+// One row per edit, so deliberately no @@unique- the opposite of
 // RequestAlertEvent below, which collapses repeats of the same breach. Diffing
 // consecutive rows, or the newest row against the live request, is what yields
 // "edited / added / removed" when that view is built.
@@ -180,7 +180,7 @@ model RequestRevision {
   @@map("request_revisions")
 }
 
-// Frozen record of an SLA breach the moment it's first detected — kept even
+// Frozen record of an SLA breach the moment it's first detected- kept even
 // after the request is delivered, so a rushed fix can't erase that it happened.
 model RequestAlertEvent {
   id         String          @id @default(cuid())

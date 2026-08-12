@@ -14,11 +14,11 @@ import {
 const NO_TOKEN =
   "This link arrived without a sign-in token. Start again from SOA.";
 const REFUSED =
-  "That sign-in could not be completed. It may have expired — start again.";
+  "That sign-in could not be completed. It may have expired- start again.";
 
 // Trades the token SOA sent back for a laundry session, then leaves for the
 // page the user actually asked for. Every exit from here is a replace, never
-// a push — the token must not survive in the address bar or in history.
+// a push- the token must not survive in the address bar or in history.
 export function useSoaSignIn() {
   const router = useRouter();
   const params = useSearchParams();
