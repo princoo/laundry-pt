@@ -3,7 +3,7 @@ import { canManageRequest } from '@/lib/utils/requestAccess'
 import { formatReference } from '@/lib/utils/formatting'
 import { getNotesForRequest } from '@/services/note.service'
 import { getAlertEventsForRequest } from '@/services/requestAlert.service'
-import type { Role } from '@prisma/client'
+import { hasPermission } from '@/lib/utils/permissions'
 
 export const ITEM_DETAIL_SELECT = {
   id: true,
@@ -24,16 +24,20 @@ export async function getRequestById(id: string) {
   })
 }
 
-// Composes the full request-detail payload, gating notes to assignees/managers
-// and SLA alert history to supervisors — the shape the detail page renders.
-export async function getRequestDetailForUser(id: string, user: { id: string; role: Role }) {
+// Composes the full request-detail payload, gating notes to whoever may manage
+// the request and SLA alert history to whoever sees the whole queue — the
+// shape the detail page renders.
+export async function getRequestDetailForUser(
+  id: string,
+  user: { id: string; permissions?: readonly string[] }
+) {
   const found = await getRequestById(id)
   if (!found) return null
 
   const canManage = canManageRequest(found.assignedToId, user)
-  const isSupervisor = user.role === 'SUPERVISOR' || user.role === 'ADMIN'
+  const seesWholeQueue = hasPermission(user.permissions, 'LAUNDRY_REQUESTS_VIEW_ALL')
   const notes = canManage ? await getNotesForRequest(id) : []
-  const alertEvents = isSupervisor ? await getAlertEventsForRequest(id) : undefined
+  const alertEvents = seesWholeQueue ? await getAlertEventsForRequest(id) : undefined
 
   return {
     ...found,

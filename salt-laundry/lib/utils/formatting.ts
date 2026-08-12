@@ -55,9 +55,9 @@ export function summarizeItemNames(names: string[]): string {
 
 export function offShiftConfirmMessage(name: string | null, activeTaskCount: number): string {
   const who = name ?? 'This housekeeper'
-  if (activeTaskCount === 0) return `${who} will stop receiving new tasks.`
+  if (activeTaskCount === 0) return `${who} will stop appearing in the assignment picker.`
   const tasks = activeTaskCount === 1 ? '1 active task' : `${activeTaskCount} active tasks`
-  return `${who} will stop receiving new tasks. ${tasks} will be reassigned to other housekeepers.`
+  return `${who} will stop appearing in the assignment picker. ${tasks} stay with them until you reassign them.`
 }
 
 export function getInitials(name: string | null, email: string): string {

@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
-import { AdminAccessDenied } from '@/components/admin/AdminAccessDenied'
+import { AccessDenied } from '@/components/ui/AccessDenied'
 import { ItemDetailTopBar } from '@/components/admin/ItemDetailTopBar'
 import { ItemDetailCard } from '@/components/admin/ItemDetailCard'
 import { ItemPriceGrid } from '@/components/admin/ItemPriceGrid'
@@ -14,19 +13,20 @@ import { ErrorToast } from '@/components/ui/ErrorToast'
 import { FetchError } from '@/components/ui/FetchError'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { useAdminItemDetail } from '@/lib/hooks/useAdminItemDetail'
+import { usePermissions } from '@/lib/hooks/usePermissions'
 
 export default function StaffItemDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { can, isLoading: isSessionLoading } = usePermissions()
   const {
     item, isLoading, notFound, fetchError, isUpdating, actionError,
     toggleActive, removeItem, refetch, clearError,
   } = useAdminItemDetail(id)
   const [isEditing, setIsEditing] = useState(false)
   const [isConfirmingRemove, setIsConfirmingRemove] = useState(false)
-  if (status !== 'loading' && (session?.user as any)?.role !== 'ADMIN') {
-    return <AdminAccessDenied />
+  if (!isSessionLoading && !can('LAUNDRY_REQUEST_ITEMS_CATALOGUE_VIEW')) {
+    return <AccessDenied />
   }
 
   const handleRemove = async () => {

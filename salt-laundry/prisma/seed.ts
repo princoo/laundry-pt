@@ -1,80 +1,31 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import bcrypt from "bcryptjs";
+import { items, users } from "./seedData";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
-const items = [
-  { nameEn: "Shirt", nameFr: "Chemise" },
-  { nameEn: "Blouse", nameFr: "Chemisier" },
-  { nameEn: "Trousers", nameFr: "Pantalon" },
-  { nameEn: "Skirt", nameFr: "Jupe" },
-  { nameEn: "Dress", nameFr: "Robe" },
-  { nameEn: "Shorts", nameFr: "Short" },
-  { nameEn: "Polo shirt", nameFr: "Polo" },
-  { nameEn: "T-Shirt", nameFr: "T-Shirt" },
-  { nameEn: "Tank top", nameFr: "Débardeur" },
-  { nameEn: "Socks", nameFr: "Chaussettes" },
-  { nameEn: "Slip", nameFr: "Caleçon" },
-  { nameEn: "Panties", nameFr: "Culotte" },
-  { nameEn: "Bra", nameFr: "Soutien-gorge" },
-  { nameEn: "Pyjamas", nameFr: "Pyjama" },
-  { nameEn: "Night dress", nameFr: "Chemise de nuit" },
-  { nameEn: "Swim shorts", nameFr: "Maillot de bain" },
-  { nameEn: "Suit", nameFr: "Complet" },
-  { nameEn: "Jacket", nameFr: "Veste" },
-  { nameEn: "Tie", nameFr: "Cravatte" },
-  { nameEn: "Silk shirt", nameFr: "Chemise en soie" },
-  { nameEn: "Silk blouse", nameFr: "Chemisier en soie" },
-  { nameEn: "Silk dress", nameFr: "Robe en soie" },
-  { nameEn: "Lady's suit", nameFr: "Tailleur" },
-];
-
 async function main() {
-  for (const [index, item] of items.entries()) {
-    await prisma.laundryItem.create({
-      data: {
-        nameEn: item.nameEn,
-        nameFr: item.nameFr,
-        priceNormal: null,
-        priceDryClean: null,
-        pricePressing: null,
-        isActive: true,
-        sortOrder: index + 1,
-      },
-    });
+  // Items have no natural key to upsert on, and prices are edited in the app
+  // after seeding — so a catalogue that already exists is left alone rather
+  // than duplicated or overwritten.
+  if ((await prisma.laundryItem.count()) === 0) {
+    for (const [index, item] of items.entries()) {
+      await prisma.laundryItem.create({
+        data: { ...item, isActive: true, sortOrder: index + 1 },
+      });
+    }
   }
 
-  await prisma.user.create({
-    data: {
-      email: "admin@salt.rw",
-      name: "SALT Admin",
-      password: await bcrypt.hash("Admin1234!", 12),
-      role: "ADMIN",
-      mustChangePassword: false,
-    },
-  });
-
-  await prisma.user.create({
-    data: {
-      email: "supervisor@salt.rw",
-      name: "Alice Uwase",
-      password: await bcrypt.hash("Supervisor1234!", 12),
-      role: "SUPERVISOR",
-      mustChangePassword: false,
-    },
-  });
-
-  await prisma.user.create({
-    data: {
-      email: "housekeeper@salt.rw",
-      name: "Jean Baptiste",
-      password: await bcrypt.hash("Housekeeper1234!", 12),
-      role: "HOUSEKEEPER",
-      mustChangePassword: false,
-    },
-  });
+  // Upserted on soaId so reseeding is not a duplicate-key crash.
+  for (const user of users) {
+    const name = `${user.firstName} ${user.secondName}`;
+    await prisma.user.upsert({
+      where: { soaId: user.soaId },
+      create: { ...user, name },
+      update: { ...user, name },
+    });
+  }
 }
 
 main()

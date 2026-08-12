@@ -7,10 +7,14 @@ import { StaffOverviewOffShiftRow } from '@/components/staff/StaffOverviewOffShi
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { ErrorToast } from '@/components/ui/ErrorToast'
 import { useStaffOverview, type OnShiftRow } from '@/lib/hooks/useStaffOverview'
+import { usePermissions } from '@/lib/hooks/usePermissions'
 import { offShiftConfirmMessage } from '@/lib/utils/formatting'
 
 export function StaffOverviewPanel() {
   const [isOpen, setIsOpen] = useState(false)
+  // Seeing who is on shift and changing it are separate permissions; without
+  // the second one the rows read as information and carry no toggle.
+  const canManageShifts = usePermissions().can('LAUNDRY_HOUSEKEEPERS_SHIFTS_MANAGE')
   const [showOffShift, setShowOffShift] = useState(false)
   const [pendingOffShift, setPendingOffShift] = useState<OnShiftRow | null>(null)
   const { onShift, offShift, markOnShift, markOffShift, toastMessage, dismissToast } =
@@ -41,7 +45,7 @@ export function StaffOverviewPanel() {
               key={row.id}
               name={row.name}
               activeTaskCount={row.activeTaskCount}
-              onMarkOffShift={() => setPendingOffShift(row)}
+              onMarkOffShift={canManageShifts ? () => setPendingOffShift(row) : undefined}
             />
           ))}
           {onShift.length === 0 && (
@@ -60,7 +64,7 @@ export function StaffOverviewPanel() {
             <StaffOverviewOffShiftRow
               key={row.id}
               name={row.name}
-              onMarkOnShift={() => markOnShift(row.id)}
+              onMarkOnShift={canManageShifts ? () => markOnShift(row.id) : undefined}
             />
           ))}
         </div>

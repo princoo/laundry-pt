@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/utils/guards'
+import { requirePermission } from '@/lib/utils/guards'
 import { generateReport } from '@/services/report.service'
 
 export async function GET(request: Request) {
-  const authError = await requireAdmin()
+  const authError = await requirePermission('LAUNDRY_REPORTS_VIEW')
   if (authError) return authError
 
   const { searchParams } = new URL(request.url)

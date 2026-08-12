@@ -1,24 +1,23 @@
 'use client'
 
 import { useParams } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 import { RequestDetailTopBar } from '@/components/staff/RequestDetailTopBar'
 import { RequestDetailContent } from '@/components/staff/RequestDetailContent'
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton'
 import { ErrorToast } from '@/components/ui/ErrorToast'
 import { FetchError } from '@/components/ui/FetchError'
 import { useRequestDetail } from '@/lib/hooks/useRequestDetail'
+import { usePermissions } from '@/lib/hooks/usePermissions'
 
 export default function RequestDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { data: session } = useSession()
-  const user = session?.user as any
+  const { can } = usePermissions()
   const {
     request, isLoading, notFound, fetchError, isUpdating, actionError,
     updateStatus, refetch, clearError,
   } = useRequestDetail(id)
 
-  const canReassign = user?.role === 'SUPERVISOR' || user?.role === 'ADMIN'
+  const canReassign = can('LAUNDRY_REQUEST_HOUSEKEEPER_ASSIGN')
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">

@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react'
 import type { RequestNote } from '@/lib/types/request'
+import { apiFetch } from '@/lib/apiClient'
 
 export function useRequestNotes(requestId: string, initialNotes: RequestNote[]) {
   const [notes, setNotes] = useState<RequestNote[]>(initialNotes)
@@ -14,7 +15,7 @@ export function useRequestNotes(requestId: string, initialNotes: RequestNote[]) 
     setIsSubmitting(true)
     setError(null)
     try {
-      const res = await fetch(`/api/staff/requests/${requestId}/notes`, {
+      const res = await apiFetch(`/api/staff/requests/${requestId}/notes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: newNote }),

@@ -6,29 +6,31 @@ datasource db {
   provider = "postgresql"
 }
 
+// A thin mirror of an SOA staff profile, written only by the provisioning
+// endpoints in app/api/integrations/soa/. SOA owns every field above
+// isHousekeeper; the laundry owns the two below it. Names only — no
+// department id, no role ids. roleNames is display; permissions decide access.
 model User {
-  id                String              @id @default(cuid())
-  email             String              @unique
-  name              String?
-  password          String
-  role              Role                @default(HOUSEKEEPER)
-  isActive          Boolean             @default(true)
-  isAvailable       Boolean             @default(true)
-  mustChangePassword  Boolean           @default(true)
-  passwordResetToken  String?           @unique
-  passwordResetExpiry DateTime?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  assignedRequests  Request[]           @relation("AssignedRequests")
-  unassignedRequests Request[]          @relation("UnassignedRequests")
-  authoredNotes     RequestNote[]       @relation("NoteAuthor")
-  @@map("users")
-}
+  id                 String        @id @default(cuid())
+  soaId              String        @unique
+  staffId            String?
+  firstName          String?
+  secondName         String?
+  name               String?
+  email              String        @unique
+  phoneNumber        String?
+  departmentName     String?
+  roleNames          String[]
+  isHousekeeper      Boolean       @default(false)
+  isActive           Boolean       @default(true)
+  isAvailable        Boolean       @default(true)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  assignedRequests   Request[]     @relation("AssignedRequests")
+  unassignedRequests Request[]     @relation("UnassignedRequests")
+  authoredNotes      RequestNote[] @relation("NoteAuthor")
 
-enum Role {
-  ADMIN
-  SUPERVISOR
-  HOUSEKEEPER
+  @@map("users")
 }
 
 model LaundryItem {
@@ -63,7 +65,6 @@ model Request {
   returnedAt        DateTime?
   assignedToId      String?
   assignedAt        DateTime?
-  assignmentMethod  AssignmentMethod?
   unassignedFromId  String?
   unassignedAt      DateTime?
   assignedTo        User?               @relation("AssignedRequests", fields: [assignedToId], references: [id])
@@ -72,11 +73,6 @@ model Request {
   notes             RequestNote[]
   alertEvents       RequestAlertEvent[]
   @@map("requests")
-}
-
-enum AssignmentMethod {
-  AUTO
-  MANUAL
 }
 
 enum ServiceType {

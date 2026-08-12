@@ -2,24 +2,27 @@
 
 import { usePathname } from 'next/navigation'
 import { NavLink } from '@/components/ui/NavLink'
-import { RoleBadge } from '@/components/staff/RoleBadge'
+import { RoleBadge } from '@/components/ui/RoleBadge'
 import { SignOutButton } from '@/components/staff/SignOutButton'
 import { MobileManageSection } from '@/components/staff/MobileManageSection'
-import { STAFF_NAV_LINKS, PROFILE_NAV_LINK, HOME_NAV_LINK } from '@/lib/constants/navigation'
-import { isLinkActive } from '@/lib/utils/navigation'
+import { STAFF_NAV_LINKS, MANAGE_NAV_LINKS, PROFILE_NAV_LINK, HOME_NAV_LINK } from '@/lib/constants/navigation'
+import { isLinkActive, visibleLinks } from '@/lib/utils/navigation'
+import { usePermissions } from '@/lib/hooks/usePermissions'
 
 interface Props {
-  role?: string
+  roleNames?: string[]
   userName?: string
   onNavigate: () => void
 }
 
-export function MobileNavMenu({ role, userName, onNavigate }: Props) {
+export function MobileNavMenu({ roleNames = [], userName, onNavigate }: Props) {
   const pathname = usePathname()
+  const { permissions } = usePermissions()
+  const manageLinks = visibleLinks(MANAGE_NAV_LINKS, permissions)
 
   return (
     <div className="md:hidden border-t border-[0.5px] border-salt-border px-4 py-3 flex flex-col gap-1 bg-white">
-      {[...STAFF_NAV_LINKS, PROFILE_NAV_LINK].map((link) => (
+      {[...visibleLinks(STAFF_NAV_LINKS, permissions), PROFILE_NAV_LINK].map((link) => (
         <NavLink
           key={link.href}
           href={link.href}
@@ -31,7 +34,9 @@ export function MobileNavMenu({ role, userName, onNavigate }: Props) {
         </NavLink>
       ))}
 
-      {role === 'ADMIN' && <MobileManageSection onNavigate={onNavigate} />}
+      {manageLinks.length > 0 && (
+        <MobileManageSection links={manageLinks} onNavigate={onNavigate} />
+      )}
 
       <NavLink
         href={HOME_NAV_LINK.href}
@@ -45,7 +50,7 @@ export function MobileNavMenu({ role, userName, onNavigate }: Props) {
       <div className="border-t border-salt-border mt-2 pt-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {userName && <span className="text-sm text-salt-text truncate">{userName}</span>}
-          {role && <RoleBadge role={role} />}
+          <RoleBadge roleNames={roleNames} />
         </div>
         <SignOutButton />
       </div>

@@ -8,7 +8,10 @@ import { InvoiceItemsTable } from '@/components/staff/InvoiceItemsTable'
 import { InvoiceTotals } from '@/components/staff/InvoiceTotals'
 import { InvoiceFooter } from '@/components/staff/InvoiceFooter'
 import { InvoiceCard } from '@/components/staff/InvoiceCard'
+import { AccessDenied } from '@/components/ui/AccessDenied'
 import { formatReference } from '@/lib/utils/formatting'
+import { getCurrentUser } from '@/lib/utils/guards'
+import { hasPermission } from '@/lib/utils/permissions'
 
 export async function generateMetadata({
   params,
@@ -30,6 +33,13 @@ export default async function InvoicePage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+
+  // Server-rendered, so it carries its own gate rather than a PermissionGate.
+  const user = await getCurrentUser()
+  if (!hasPermission(user?.permissions, 'LAUNDRY_REQUESTS_INVOICES_VIEW')) {
+    return <AccessDenied />
+  }
+
   const request = await getRequestById(id)
 
   if (!request) {

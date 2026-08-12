@@ -1,4 +1,4 @@
-import type { RequestStatus, Role, ServiceType } from '@prisma/client'
+import type { RequestStatus, ServiceType } from '@prisma/client'
 
 export interface RequestDetailItem {
   id: string
@@ -13,7 +13,7 @@ export interface RequestNote {
   id: string
   content: string
   createdAt: string
-  author: { name: string | null; role: Role } | null
+  author: { name: string | null; roleNames: string[] } | null
 }
 
 export interface AlertEventRecord {

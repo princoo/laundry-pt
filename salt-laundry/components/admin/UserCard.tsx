@@ -1,65 +1,58 @@
-import { getInitials } from '@/lib/utils/formatting'
-import { ActiveToggle } from '@/components/ui/ActiveToggle'
-import { RoleBadge } from '@/components/admin/RoleBadge'
-import { UserActions } from '@/components/admin/UserActions'
+import { UserAvatar } from '@/components/admin/UserAvatar'
+import { UserContact } from '@/components/admin/UserContact'
+import { UserFlagToggle } from '@/components/admin/UserFlagToggle'
 import { UserStatusDot } from '@/components/admin/UserStatusDot'
-import type { AdminUser } from '@/lib/hooks/useAdminUsers'
+import { RoleBadge } from '@/components/ui/RoleBadge'
+import type { StaffUser } from '@/lib/types/staffUser'
 
 interface Props {
-  user: AdminUser
+  user: StaffUser
   isCurrentUser: boolean
-  onEdit: (user: AdminUser) => void
-  onResetPassword: (user: AdminUser) => void
   onToggleAvailability: (id: string, nextIsAvailable: boolean) => void
+  onToggleHousekeeper: (id: string, nextIsHousekeeper: boolean) => void
 }
 
 export function UserCard({
-  user,
-  isCurrentUser,
-  onEdit,
-  onResetPassword,
-  onToggleAvailability,
+  user, isCurrentUser, onToggleAvailability, onToggleHousekeeper,
 }: Props) {
   return (
     <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-4 flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 shrink-0 rounded-full bg-salt-green-light text-salt-green text-xs font-medium flex items-center justify-center">
-            {getInitials(user.name, user.email)}
-          </div>
+          <UserAvatar name={user.name} email={user.email} size="md" />
           <div className="min-w-0">
             <div className="text-salt-text truncate">
               {user.name || user.email}
               {isCurrentUser && <span className="text-salt-text-muted"> (You)</span>}
             </div>
-            <div className="text-sm text-salt-text-sec truncate">{user.email}</div>
+            <UserContact email={user.email} phoneNumber={user.phoneNumber} />
+            <div className="text-xs text-salt-text-muted truncate">
+              {[user.departmentName, user.staffId && `Staff no. ${user.staffId}`]
+                .filter(Boolean)
+                .join(' · ')}
+            </div>
           </div>
         </div>
-        <RoleBadge role={user.role} />
+        <RoleBadge roleNames={user.roleNames} shape="pill" />
       </div>
 
-      <div className="flex items-center justify-between pt-3 border-t border-salt-border">
-        <div className="flex items-center gap-3">
-          <UserStatusDot isActive={user.isActive} />
-          {user.role === 'HOUSEKEEPER' && (
-            <div className="flex items-center gap-2">
-              <ActiveToggle
-                checked={user.isAvailable}
-                onChange={() => onToggleAvailability(user.id, !user.isAvailable)}
-                offColorClass="bg-amber-400"
-              />
-              <span className="text-xs text-salt-text-sec">
-                {user.isAvailable ? 'On shift' : 'Off shift'}
-              </span>
-            </div>
-          )}
-        </div>
-        <UserActions
-          user={user}
-          isCurrentUser={isCurrentUser}
-          onEdit={onEdit}
-          onResetPassword={onResetPassword}
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-salt-border">
+        <UserStatusDot isActive={user.isActive} />
+        <UserFlagToggle
+          checked={user.isHousekeeper}
+          onChange={() => onToggleHousekeeper(user.id, !user.isHousekeeper)}
+          onLabel="Housekeeper"
+          offLabel="Not a housekeeper"
         />
+        {user.isHousekeeper && (
+          <UserFlagToggle
+            checked={user.isAvailable}
+            onChange={() => onToggleAvailability(user.id, !user.isAvailable)}
+            onLabel="On shift"
+            offLabel="Off shift"
+            offColorClass="bg-amber-400"
+          />
+        )}
       </div>
     </div>
   )

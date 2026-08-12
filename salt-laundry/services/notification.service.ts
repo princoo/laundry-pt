@@ -1,29 +1,27 @@
 import { prisma } from '@/lib/prisma'
 import { formatReference } from '@/lib/utils/formatting'
 import { uniqueServiceTypes } from '@/lib/utils/serviceSummary'
-import type { AssignmentMethod, ServiceType } from '@prisma/client'
+import type { ServiceType } from '@prisma/client'
 
 const NOTIFICATION_SELECT = {
   id: true, seq: true, roomNumber: true, guestName: true,
   isExpress: true, totalAmount: true, createdAt: true,
   items: { select: { serviceType: true } },
 }
-const ASSIGNED_SELECT = { ...NOTIFICATION_SELECT, assignedAt: true, assignmentMethod: true }
-
-const KIND_BY_METHOD: Record<AssignmentMethod, 'auto_assigned' | 'manual_assigned'> =
-  { AUTO: 'auto_assigned', MANUAL: 'manual_assigned' }
+const ASSIGNED_SELECT = { ...NOTIFICATION_SELECT, assignedAt: true }
 
 // A notification shows the request's distinct services, not its lines.
 type AssignedRow = {
   items: { serviceType: ServiceType }[]
-  seq: number; createdAt: Date; assignedAt: Date | null; assignmentMethod: AssignmentMethod | null
+  seq: number; createdAt: Date; assignedAt: Date | null
 }
 
+// Every assignment comes from a supervisor, so there is only one kind of it.
 function mapAssigned<T extends AssignedRow>(rows: T[]) {
-  return rows.map(({ seq, createdAt, assignedAt, assignmentMethod, items, ...rest }) => ({
+  return rows.map(({ seq, createdAt, assignedAt, items, ...rest }) => ({
     ...rest,
     serviceTypes: uniqueServiceTypes(items),
-    kind: KIND_BY_METHOD[assignmentMethod ?? 'AUTO'],
+    kind: 'assigned' as const,
     timestamp: assignedAt!,
     reference: formatReference(seq, createdAt),
   }))

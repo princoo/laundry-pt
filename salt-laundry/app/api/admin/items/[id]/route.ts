@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/utils/guards'
+import { requirePermission } from '@/lib/utils/guards'
 import { getItemById, updateItem, softDeleteItem } from '@/services/item.service'
 import { updateItemSchema } from '@/lib/validations/item.schema'
 
@@ -7,7 +7,7 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAdmin()
+  const authError = await requirePermission('LAUNDRY_REQUEST_ITEMS_CATALOGUE_VIEW')
   if (authError) return authError
 
   const { id } = await params
@@ -20,7 +20,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAdmin()
+  const authError = await requirePermission('LAUNDRY_REQUEST_ITEMS_CATALOGUE_MANAGE')
   if (authError) return authError
 
   const { id } = await params
@@ -49,7 +49,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAdmin()
+  const authError = await requirePermission('LAUNDRY_REQUEST_ITEMS_CATALOGUE_MANAGE')
   if (authError) return authError
 
   const { id } = await params

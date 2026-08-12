@@ -1,6 +1,6 @@
 import type { ServiceType } from '@prisma/client'
 
-export type NotificationKind = 'new' | 'auto_assigned' | 'manual_assigned' | 'unassigned'
+export type NotificationKind = 'new' | 'assigned' | 'unassigned'
 
 export interface StaffNotification {
   kind: NotificationKind

@@ -1,6 +1,6 @@
-import { RoleBadge } from '@/components/admin/RoleBadge'
+import { RoleBadge } from '@/components/ui/RoleBadge'
 import { getInitials } from '@/lib/utils/user'
-import type { OwnProfile } from '@/lib/hooks/useProfile'
+import type { OwnProfile } from '@/lib/types/staffUser'
 
 interface Props {
   profile: OwnProfile
@@ -23,7 +23,7 @@ export function ProfileHeaderCard({ profile }: Props) {
       </div>
 
       <div className="shrink-0">
-        <RoleBadge role={profile.role} />
+        <RoleBadge roleNames={profile.roleNames} shape="pill" />
       </div>
     </section>
   )

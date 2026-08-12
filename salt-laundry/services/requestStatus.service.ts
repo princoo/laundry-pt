@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { STATUS_TRANSITIONS } from '@/lib/constants/statuses'
 import { canManageRequest } from '@/lib/utils/requestAccess'
 import { ITEM_DETAIL_SELECT } from '@/services/staffRequest.service'
-import type { RequestStatus, Role } from '@prisma/client'
+import type { RequestStatus } from '@prisma/client'
 
 export class InvalidStatusTransitionError extends Error {}
 export class ForbiddenRequestAccessError extends Error {}
@@ -10,7 +10,7 @@ export class ForbiddenRequestAccessError extends Error {}
 export async function updateRequestStatus(
   id: string,
   nextStatus: RequestStatus,
-  actor: { id: string; role: Role }
+  actor: { id: string; permissions?: readonly string[] }
 ) {
   const existing = await prisma.request.findUnique({ where: { id } })
   if (!existing) return null

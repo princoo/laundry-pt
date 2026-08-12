@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react'
 import { EMPTY_ROOM_INVOICE_FILTERS } from '@/lib/constants/invoiceFilters'
 import type { RoomInvoiceData, RoomInvoiceFilters } from '@/lib/types/roomInvoice'
+import { apiFetch } from '@/lib/apiClient'
 
 function buildQuery(filters: RoomInvoiceFilters): string {
   const qs = new URLSearchParams({ room: filters.room.trim() })
@@ -26,7 +27,7 @@ export function useRoomInvoice() {
     setIsLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/staff/invoices?${buildQuery(filters)}`)
+      const res = await apiFetch(`/api/staff/invoices?${buildQuery(filters)}`)
       if (!res.ok) throw new Error('Failed to generate invoice')
       setData(await res.json())
       setApplied({ ...filters, room: filters.room.trim() })

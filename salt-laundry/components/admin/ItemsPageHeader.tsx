@@ -1,3 +1,5 @@
+import { PermissionGate } from '@/components/ui/PermissionGate'
+
 interface Props {
   total: number
   activeCount: number
@@ -18,13 +20,15 @@ export function ItemsPageHeader({ total, activeCount, showCount, onAdd }: Props)
           </p>
         )}
       </div>
-      <button
-        type="button"
-        onClick={onAdd}
-        className="bg-salt-navy hover:bg-salt-navy-hover transition-colors text-white rounded-lg px-4 py-2 text-sm shrink-0"
-      >
-        Add item
-      </button>
+      <PermissionGate permission="LAUNDRY_REQUEST_ITEMS_CATALOGUE_MANAGE">
+        <button
+          type="button"
+          onClick={onAdd}
+          className="bg-salt-navy hover:bg-salt-navy-hover transition-colors text-white rounded-lg px-4 py-2 text-sm shrink-0"
+        >
+          Add item
+        </button>
+      </PermissionGate>
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getCurrentUser, requireAuth } from '@/lib/utils/guards'
+import { getCurrentUser, requirePermission } from '@/lib/utils/guards'
 import { getRequestsQueue } from '@/services/staffRequestQueue.service'
 import { recordDetectedAlerts } from '@/services/requestAlert.service'
 import { DEFAULT_SORT, type SortOrder } from '@/lib/constants/queue'
@@ -11,7 +11,7 @@ const VALID_STATUSES: RequestStatus[] = [
 ]
 
 export async function GET(request: Request) {
-  const authError = await requireAuth()
+  const authError = await requirePermission('LAUNDRY_REQUEST_VIEW')
   if (authError) return authError
 
   await recordDetectedAlerts()
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     ...pageParams,
     sort,
     actorId: user?.id,
-    actorRole: user?.role,
+    actorPermissions: user?.permissions,
     assignedToFilter,
   })
 

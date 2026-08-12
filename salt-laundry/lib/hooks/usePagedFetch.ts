@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { apiFetch } from '@/lib/apiClient'
 
 interface PageMeta {
   total: number
@@ -24,7 +25,7 @@ export function usePagedFetch<T>(
   const refetch = useCallback(() => {
     let cancelled = false
 
-    fetch(`${path}?page=${page}`)
+    apiFetch(`${path}?page=${page}`)
       .then((res) => {
         if (!res.ok) throw new Error(errorMessage)
         return res.json()

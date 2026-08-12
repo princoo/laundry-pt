@@ -1,81 +1,58 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
-import bcrypt from 'bcryptjs'
-import { prisma } from '@/lib/prisma'
-import { getOwnProfile } from '@/services/account.service'
-import { DEMO_MODE } from '@/lib/constants/demoMode'
+import { authorizeSoa, type SoaSessionUser } from '@/lib/soaAuthorize'
+import { isExpired } from '@/lib/utils/soaSignIn'
+import {
+  AUTHENTICATE_PATH, SESSION_MAX_AGE_SECONDS, SOA_PROVIDER_ID,
+} from '@/lib/constants/soa'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
+    // Not a password check any more: the credential is the short-lived token
+    // SOA hands back on the return leg, and SOA is what verifies it.
     Credentials({
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email) return null
-        const user = await prisma.user.findUnique({
-          where: { email: String(credentials.email).toLowerCase() },
-        })
-        if (!user || !user.isActive) return null
-
-        // ── DEMO MODE: password check disabled — TESTING ONLY ────────────
-        // DEMO_MODE=true accepts any password once the email above resolves,
-        // and forces mustChangePassword false so a demo never hits the
-        // change-password wall. Turn the flag off to restore the check below.
-        if (DEMO_MODE) {
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name ?? '',
-            role: user.role,
-            mustChangePassword: false,
-          }
-        }
-        // ── END DEMO MODE — do not delete, disable with the flag ─────────
-
-        // ORIGINAL AUTH — runs whenever DEMO_MODE is not 'true'. Do not remove.
-        if (!credentials?.password) return null
-        const valid = await bcrypt.compare(String(credentials.password), user.password)
-        if (!valid) return null
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name ?? '',
-          role: user.role,
-          mustChangePassword: user.mustChangePassword,
-        }
-      },
+      id: SOA_PROVIDER_ID,
+      name: 'SOA',
+      credentials: { token: {}, expiresAt: {} },
+      authorize: (credentials) => authorizeSoa(credentials?.token, credentials?.expiresAt),
     }),
   ],
-  session: { strategy: 'jwt' },
+  session: { strategy: 'jwt', maxAge: SESSION_MAX_AGE_SECONDS },
   callbacks: {
-    async jwt({ token, user, trigger }) {
+    jwt({ token, user }) {
       if (user) {
-        token.role = (user as any).role
-        token.id = (user as any).id
-        token.mustChangePassword = (user as any).mustChangePassword
+        const soa = user as SoaSessionUser
+        Object.assign(token, {
+          id: soa.id, soaId: soa.soaId, departmentName: soa.departmentName,
+          roleNames: soa.roleNames, permissions: soa.permissions, expiresAt: soa.expiresAt,
+        })
       }
-      // The client calls update() after a password change or profile edit —
-      // re-read the record so the token stops lagging behind the database.
-      if (trigger === 'update' && token.id) {
-        const fresh = await getOwnProfile(token.id as string)
-        if (fresh) {
-          token.name = fresh.name
-          token.email = fresh.email
-          token.mustChangePassword = fresh.mustChangePassword
-        }
-      }
+      // Nothing refreshes the token mid-session: SOA owns every field on it and
+      // an edit there reaches the laundry on the next sign-in, which is at most
+      // an hour away.
+      //
+      // Auth.js re-signs the cookie on every read with its own maxAge, so the
+      // JWT's `exp` claim always rolls forward and cannot hold SOA's. Keeping
+      // the SOA expiry in a field of our own and dropping the token here is
+      // what ends the session at the same moment SOA's ends.
+      // A cookie with no soaId was minted by the old password sign-in, before
+      // SOA owned this. It is not a session any more.
+      if (!token.soaId || isExpired(token.expiresAt as number | undefined)) return null
       return token
     },
     session({ session, token }) {
       if (session.user) {
-        (session.user as any).role = token.role
-        ;(session.user as any).id = token.id
-        ;(session.user as any).mustChangePassword = token.mustChangePassword
+        Object.assign(session.user, {
+          id: token.id,
+          soaId: token.soaId,
+          departmentName: token.departmentName ?? null,
+          roleNames: token.roleNames ?? [],
+          permissions: token.permissions ?? [],
+          expiresAt: token.expiresAt ?? null,
+        })
       }
       return session
     },
   },
-  pages: { signIn: '/staff/login' },
+  pages: { signIn: AUTHENTICATE_PATH },
 })

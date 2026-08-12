@@ -1,4 +1,5 @@
-import { getCurrentUser } from '@/lib/utils/guards'
+import { getCurrentUser, requirePermission } from '@/lib/utils/guards'
+import { isExpired } from '@/lib/utils/soaSignIn'
 import { getOpenAssignments } from '@/services/notification.service'
 import {
   collectNotifications, initialCursors, type StreamCursors,
@@ -9,6 +10,9 @@ export const dynamic = 'force-dynamic'
 const POLL_INTERVAL_MS = 8000
 
 export async function GET(request: Request) {
+  const authError = await requirePermission('LAUNDRY_REQUEST_VIEW')
+  if (authError) return authError
+
   const user = await getCurrentUser()
   if (!user) return new Response('Unauthorized', { status: 401 })
 
@@ -27,8 +31,8 @@ export async function GET(request: Request) {
       }
 
       // Next.js does not reliably invoke cancel() on the Node runtime when a
-      // client disconnects, so the request's abort signal is the cleanup hook
-      // that actually fires. Without it the interval polls the database forever.
+      // client disconnects, so the abort signal is the cleanup hook that
+      // actually fires. Without it the interval polls the database forever.
       request.signal.addEventListener('abort', stop)
 
       // Throws once the client is gone — that is how we learn to stop polling.
@@ -42,7 +46,8 @@ export async function GET(request: Request) {
         .catch(() => {})
 
       intervalId = setInterval(async () => {
-        if (closed) return
+        // Ends with the SOA session rather than outliving it.
+        if (closed || isExpired(user.expiresAt)) return stop()
 
         let batch
         try {

@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react'
 import { usePagedFetch } from '@/lib/hooks/usePagedFetch'
+import { apiFetch } from '@/lib/apiClient'
 
 export interface AdminItem {
   id: string
@@ -27,7 +28,7 @@ export function useAdminItems(page: number) {
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, isActive } : i)))
     adjustActiveCount(isActive ? 1 : -1)
     try {
-      const res = await fetch(`/api/admin/items/${id}`, {
+      const res = await apiFetch(`/api/admin/items/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive }),

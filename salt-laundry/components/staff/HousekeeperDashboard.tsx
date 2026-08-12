@@ -34,10 +34,12 @@ export function HousekeeperDashboard() {
       ) : error ? (
         <FetchError message={error} onRetry={refetch} />
       ) : requests.length === 0 ? (
-        <EmptyQueue filter={status} />
+        <EmptyQueue filter={status} hint="Tasks appear here once a supervisor assigns them to you." />
       ) : (
         <>
-          {requests.map((request) => <RequestCard key={request.id} request={request} />)}
+          {requests.map((request) => (
+            <RequestCard key={request.id} request={request} isMyTask />
+          ))}
           <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         </>
       )}

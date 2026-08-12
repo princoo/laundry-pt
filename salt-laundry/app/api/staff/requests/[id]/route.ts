@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getCurrentUser, requireAuth } from '@/lib/utils/guards'
+import { getCurrentUser, requirePermission } from '@/lib/utils/guards'
 import { getRequestDetailForUser } from '@/services/staffRequest.service'
 import {
   updateRequestStatus,
@@ -12,7 +12,7 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAuth()
+  const authError = await requirePermission('LAUNDRY_REQUEST_VIEW')
   if (authError) return authError
 
   const { id } = await params
@@ -29,7 +29,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAuth()
+  const authError = await requirePermission('LAUNDRY_REQUEST_PROCESS')
   if (authError) return authError
 
   const { id } = await params

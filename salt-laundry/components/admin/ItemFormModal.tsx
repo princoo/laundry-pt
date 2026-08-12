@@ -7,6 +7,7 @@ import { itemFormSchema, type ItemFormValues } from '@/lib/validations/item.sche
 import { buildItemPayload } from '@/lib/utils/item'
 import { Modal } from '@/components/ui/Modal'
 import { ItemFormFields } from '@/components/admin/ItemFormFields'
+import { apiFetch } from '@/lib/apiClient'
 import type { AdminItem } from '@/lib/hooks/useAdminItems'
 
 interface Props {
@@ -33,7 +34,7 @@ export function ItemFormModal({ item, onClose, onSaved }: Props) {
     setSubmitError(null)
     const payload = buildItemPayload(values)
     const url = item ? `/api/admin/items/${item.id}` : '/api/admin/items'
-    const res = await fetch(url, {
+    const res = await apiFetch(url, {
       method: item ? 'PATCH' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

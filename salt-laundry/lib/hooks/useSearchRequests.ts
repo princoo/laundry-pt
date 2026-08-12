@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import type { RequestStatus, ServiceType } from '@prisma/client'
+import { apiFetch } from '@/lib/apiClient'
 
 export interface SearchFilters {
   room: string
@@ -50,7 +51,7 @@ export function useSearchRequests() {
     setIsLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/staff/search?${buildQuery(activeFilters)}`)
+      const res = await apiFetch(`/api/staff/search?${buildQuery(activeFilters)}`)
       if (!res.ok) throw new Error('Search failed')
       const data = await res.json()
       setResults(data.requests)

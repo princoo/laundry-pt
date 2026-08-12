@@ -5,9 +5,15 @@ export const REQUEST_STATUSES = [
   'PENDING', 'COLLECTED', 'IN_PROGRESS', 'READY', 'DELIVERED', 'CANCELLED',
 ] as const satisfies readonly RequestStatus[]
 
-export const ACTIVE_STATUSES: RequestStatus[] = [
+// The lifecycle in order, for the progress stepper. Ends at DELIVERED because
+// CANCELLED isn't a step — it's an exit.
+export const LIFECYCLE_STEPS: RequestStatus[] = [
   'PENDING', 'COLLECTED', 'IN_PROGRESS', 'READY', 'DELIVERED',
 ]
+
+// Work still on a housekeeper's plate — the basis of every active-task count.
+// Same members as TRACKABLE_STATUSES today, but they answer different questions.
+export const ACTIVE_STATUSES: RequestStatus[] = ['PENDING', 'COLLECTED', 'IN_PROGRESS', 'READY']
 
 // Orders still in progress for a room — used to find "my order" by room number
 // alone, since a room's request is always finished before the next guest arrives.

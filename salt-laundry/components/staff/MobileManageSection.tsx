@@ -4,18 +4,18 @@ import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { ChevronDown } from 'lucide-react'
 import { NavLink } from '@/components/ui/NavLink'
-import { ADMIN_NAV_LINKS } from '@/lib/constants/navigation'
+import type { NavLinkItem } from '@/lib/constants/navigation'
 import { isLinkActive } from '@/lib/utils/navigation'
 
 interface Props {
+  // Already filtered by the caller — this section only draws what it is given.
+  links: NavLinkItem[]
   onNavigate: () => void
 }
 
-export function MobileManageSection({ onNavigate }: Props) {
+export function MobileManageSection({ links, onNavigate }: Props) {
   const pathname = usePathname()
-  const [isOpen, setIsOpen] = useState(
-    ADMIN_NAV_LINKS.some((link) => isLinkActive(pathname, link))
-  )
+  const [isOpen, setIsOpen] = useState(links.some((link) => isLinkActive(pathname, link)))
 
   return (
     <div>
@@ -29,7 +29,7 @@ export function MobileManageSection({ onNavigate }: Props) {
       </button>
       {isOpen && (
         <div className="pl-3 flex flex-col gap-1">
-          {ADMIN_NAV_LINKS.map((link) => (
+          {links.map((link) => (
             <NavLink
               key={link.href}
               href={link.href}

@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server'
-import { requireSupervisor } from '@/lib/utils/guards'
-import { setHousekeeperAvailability, AdminAvailabilityError } from '@/services/availability.service'
+import { requirePermission } from '@/lib/utils/guards'
+import { setHousekeeperAvailability, NotAHousekeeperError } from '@/services/availability.service'
+import { availabilityUpdateSchema } from '@/lib/validations/staffFlags.schema'
+import { openTasksWarning } from '@/lib/utils/user'
 
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireSupervisor()
+  const authError = await requirePermission('LAUNDRY_HOUSEKEEPERS_SHIFTS_MANAGE')
   if (authError) return authError
 
   const { id } = await params
@@ -17,27 +19,21 @@ export async function PATCH(
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { isAvailable } = body as { isAvailable?: unknown }
-  if (typeof isAvailable !== 'boolean') {
-    return NextResponse.json({ error: 'isAvailable must be a boolean' }, { status: 400 })
+  const parsed = availabilityUpdateSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
   }
 
   try {
-    const result = await setHousekeeperAvailability(id, isAvailable)
+    const result = await setHousekeeperAvailability(id, parsed.data.isAvailable)
     if (!result) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
-    return NextResponse.json({
-      isAvailable: result.isAvailable,
-      ...(isAvailable || result.openTasks === 0
-        ? {}
-        : {
-            message: `${result.name} marked as off shift. Their ${result.openTasks} open task(s) stay assigned — reassign them if someone else should take over.`,
-          }),
-    })
+    const message = openTasksWarning(result.openTasks, `${result.name} is off shift`)
+    return NextResponse.json({ isAvailable: result.isAvailable, ...(message ? { message } : {}) })
   } catch (error) {
-    if (error instanceof AdminAvailabilityError) {
+    if (error instanceof NotAHousekeeperError) {
       return NextResponse.json(
-        { error: 'Cannot change availability of an admin account' },
+        { error: 'Only housekeepers have a shift to be on' },
         { status: 400 }
       )
     }

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { RequestStatus } from '@prisma/client'
 import type { TrackedRequest } from '@/lib/types/request'
+import { apiFetch } from '@/lib/apiClient'
 
 export function useRequestDetail(id: string) {
   const [request, setRequest] = useState<TrackedRequest | null>(null)
@@ -16,7 +17,7 @@ export function useRequestDetail(id: string) {
 
   const fetchRequest = useCallback(() => {
     let cancelled = false
-    fetch(`/api/staff/requests/${id}`)
+    apiFetch(`/api/staff/requests/${id}`)
       .then(async (res) => {
         if (res.status === 404) {
           if (!cancelled) setNotFound(true)
@@ -45,7 +46,7 @@ export function useRequestDetail(id: string) {
     setIsUpdating(true)
     setActionError(null)
     try {
-      const res = await fetch(`/api/staff/requests/${id}`, {
+      const res = await apiFetch(`/api/staff/requests/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),

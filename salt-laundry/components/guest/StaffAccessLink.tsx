@@ -22,8 +22,9 @@ export function StaffAccessLink() {
   }
 
   return (
+    // No laundry sign-in page: /staff with no session is what redirects to SOA.
     <Link
-      href="/staff/login"
+      href="/staff"
       aria-label="Staff sign in"
       className="w-9 h-9 flex items-center justify-center rounded-full bg-salt-cream text-salt-text-sec hover:text-salt-text transition-colors"
     >

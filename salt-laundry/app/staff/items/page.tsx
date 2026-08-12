@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useSession } from 'next-auth/react'
-import { AdminAccessDenied } from '@/components/admin/AdminAccessDenied'
+import { AccessDenied } from '@/components/ui/AccessDenied'
 import { ItemsPageHeader } from '@/components/admin/ItemsPageHeader'
 import { ItemsTable } from '@/components/admin/ItemsTable'
 import { ItemFormModal } from '@/components/admin/ItemFormModal'
@@ -13,17 +12,18 @@ import { FetchError } from '@/components/ui/FetchError'
 import { usePagedList } from '@/lib/hooks/usePagedList'
 import { useClampPage } from '@/lib/hooks/useClampPage'
 import { useAdminItems, type AdminItem } from '@/lib/hooks/useAdminItems'
+import { usePermissions } from '@/lib/hooks/usePermissions'
 
 export default function StaffItemsPage() {
-  const { data: session, status } = useSession()
+  const { can, isLoading: isSessionLoading } = usePermissions()
   const { page, setPage } = usePagedList()
   const { items, total, totalPages, activeCount, isLoading, fetchError, error,
     toggleActive, refetch, clearError } = useAdminItems(page)
   const [modalItem, setModalItem] = useState<AdminItem | 'new' | null>(null)
   useClampPage(page, totalPages, setPage)
 
-  if (status !== 'loading' && (session?.user as any)?.role !== 'ADMIN') {
-    return <AdminAccessDenied />
+  if (!isSessionLoading && !can('LAUNDRY_REQUEST_ITEMS_CATALOGUE_VIEW')) {
+    return <AccessDenied />
   }
 
   return (

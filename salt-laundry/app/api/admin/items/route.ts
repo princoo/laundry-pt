@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/utils/guards'
+import { requirePermission } from '@/lib/utils/guards'
 import { getAllItems, createItem } from '@/services/item.service'
 import { createItemSchema } from '@/lib/validations/item.schema'
 import { parsePageParams, buildPageMeta } from '@/lib/utils/pagination'
 
+// The /api/admin prefix is a leftover — "admin" is no longer a concept. Renaming
+// the path is churn that would collide with the rest of the permission work, so
+// it stays until a later phase.
 export async function GET(request: Request) {
-  const authError = await requireAdmin()
+  const authError = await requirePermission('LAUNDRY_REQUEST_ITEMS_CATALOGUE_VIEW')
   if (authError) return authError
 
   const { searchParams } = new URL(request.url)
@@ -16,7 +19,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const authError = await requireAdmin()
+  const authError = await requirePermission('LAUNDRY_REQUEST_ITEMS_CATALOGUE_MANAGE')
   if (authError) return authError
 
   let body: unknown
