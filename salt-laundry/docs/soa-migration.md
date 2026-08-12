@@ -58,39 +58,44 @@ safe but miserable to debug.
 | `LAUNDRY_HOUSEKEEPERS_SHIFTS_MANAGE` | Availability toggle, and the `isHousekeeper` flag |
 | `LAUNDRY_REPORTS_VIEW` | `/staff/reports` |
 | `LAUNDRY_REPORTS_EXPORT` | *planned* — PDF export button on the reports page |
-| `LAUNDRY_REQUEST_EDIT` | *planned* — staff editing a request from the dashboard, at any status |
-| `QR_CODE_GENERATION` | *planned* — a new page, not yet specified |
+| `LAUNDRY_REQUEST_EDIT` | Staff correcting a request flagged for changes; clearing the flag |
+| `QR_CODE_GENERATION` | `/staff/qrcode` — printable room QR codes |
 
-**Three permissions are ahead of the features they gate.** Confirmed 12 August 2026 as
-deliberate, not mistakes. Define all three as constants so the set matches SOA exactly,
-leave them unused, and wire them up when the features land. None of them are in this
-migration.
+**One permission is still ahead of the feature it gates.** Originally three, recorded on
+12 August 2026 as deliberate rather than mistakes; two have since been wired up. Keep
+`LAUNDRY_REPORTS_EXPORT` defined so the set matches SOA exactly, leave it unused, and wire
+it when the feature lands.
 
-- **`LAUNDRY_REPORTS_EXPORT`** is the cheapest of the three when wanted:
-  `lib/hooks/usePdfDownload.ts` and `components/ui/DownloadPdfButton.tsx` already exist and
-  are used on the invoice pages, so it is largely wiring an existing control to
-  `/staff/reports`.
+- **`LAUNDRY_REPORTS_EXPORT`** is cheap when wanted: `lib/hooks/usePdfDownload.ts` and
+  `components/ui/DownloadPdfButton.tsx` already exist and are used on the invoice pages, so
+  it is largely wiring an existing control to `/staff/reports`.
 - **`LAUNDRY_REQUEST_EDIT`** is *not* the existing edit route.
   `/api/requests/[id]/edit` is the guest editing their own request from the public tracking
-  page, limited to `PENDING`. The planned staff feature edits at **any** status, which is a
-  separate service and route. See the design note below before building it.
+  page, limited to `PENDING`. The staff route is `/api/staff/requests/[id]/edit` — a
+  separate service and route. Never gate the public one with this permission.
 - **`QR_CODE_GENERATION`** has no prefix because it is shared with other SOA sub-systems.
   Match the string exactly regardless.
 
-### Design note for `LAUNDRY_REQUEST_EDIT`
+### Design note for `LAUNDRY_REQUEST_EDIT` — resolved
 
-Editing a request at any status collides with two existing invariants, and whoever builds
-it needs a decision on both first:
+Editing a request after the guest has committed collides with two existing invariants.
+Both were decided on 12 August 2026, and "edit regardless of status" was **not** what was
+built:
 
-1. `RequestItem.unitPrice` is a frozen snapshot, never updated after creation. Editing the
-   items on a delivered request either re-prices it — changing a total the guest may
-   already have been billed for at checkout — or keeps the old prices and produces a
-   request whose lines no longer match its total.
-2. Room invoices aggregate requests. An edit after an invoice has been produced changes a
-   document already handed to a guest.
+1. `RequestItem.unitPrice` is a frozen snapshot. Rather than re-pricing, a staff
+   correction *carries* the price of every line already on the request and prices only new
+   lines from today's catalogue — see `carriedPrices` in
+   `services/requestPricing.service.ts`. So a catalogue change can never silently move the
+   price of a line nobody touched.
+2. Room invoices aggregate requests, and a delivered request's amount is already on the
+   guest's room bill. So `DELIVERED` and `CANCELLED` are locked: they cannot be flagged and
+   cannot be corrected, and an open flag blocks the `READY → DELIVERED` transition
+   (`services/requestStatus.service.ts`).
 
-Neither is a reason not to build it, but "edit regardless of status" is a billing decision
-before it is a UI one.
+Editing is therefore gated on a request having been explicitly *flagged for changes*
+(`Request.needsChanges`), not merely on holding the permission. Every edit — guest or
+staff — writes a `RequestRevision` holding the pre-edit state, which is what makes the
+change history in `services/requestHistory.service.ts` possible.
 
 **`LAUNDRY_REQUEST_VIEW` is the baseline.** SOA has no general "may use the laundry"
 permission, so this one doubles as it — someone who cannot view a request has no business

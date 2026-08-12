@@ -1,9 +1,11 @@
 import { AlertBanner } from '@/components/staff/AlertBanner'
 import { AssignmentCard } from '@/components/staff/AssignmentCard'
 import { RequestStatusCard } from '@/components/staff/RequestStatusCard'
+import { NeedsChangesCard } from '@/components/staff/NeedsChangesCard'
 import { RequestNotes } from '@/components/staff/RequestNotes'
 import { RequestTimestamps } from '@/components/staff/RequestTimestamps'
 import { AlertHistoryPanel } from '@/components/staff/AlertHistoryPanel'
+import { RequestHistoryPanel } from '@/components/staff/RequestHistoryPanel'
 import { RequestHeaderCard } from '@/components/ui/RequestHeaderCard'
 import { ItemBreakdownCard } from '@/components/ui/ItemBreakdownCard'
 import { uniqueServiceTypes } from '@/lib/utils/serviceSummary'
@@ -27,6 +29,14 @@ export function RequestDetailContent({
       <AlertBanner
         request={{ ...request, serviceTypes: uniqueServiceTypes(request.items) }}
       />
+
+      {/* Above the split, beside the SLA banner: both answer "is something
+          wrong with this request?" before the detail is worth reading. */}
+      {request.canManage && (
+        <div className="mb-4">
+          <NeedsChangesCard request={request} onChanged={onChanged} />
+        </div>
+      )}
 
       <div className="lg:flex lg:gap-6 lg:items-start">
         <div className="flex-1 min-w-0 space-y-4">
@@ -58,6 +68,7 @@ export function RequestDetailContent({
             completedAt={request.completedAt}
             returnedAt={request.returnedAt}
           />
+          {request.history && <RequestHistoryPanel changes={request.history} />}
           {request.alertEvents && <AlertHistoryPanel events={request.alertEvents} />}
         </div>
       </div>

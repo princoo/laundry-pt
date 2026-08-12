@@ -1,4 +1,5 @@
 import type { RequestStatus, ServiceType } from '@prisma/client'
+import type { RequestChange } from '@/lib/utils/requestHistory'
 
 export interface RequestDetailItem {
   id: string
@@ -42,6 +43,16 @@ export interface RequestDetail {
   notes: RequestNote[]
   canManage?: boolean
   alertEvents?: AlertEventRecord[]
+  // The guest is told their request needs changes, so this is always present.
+  // Optional to tolerate a payload cached from before the field existed.
+  needsChanges?: boolean
+  // Staff only — the public track endpoints omit these deliberately, see
+  // services/trackRequest.service.ts.
+  flaggedAt?: string | null
+  flagReason?: string | null
+  flaggedBy?: { id: string; name: string | null } | null
+  // Staff only, gated with notes. Newest change first.
+  history?: RequestChange[]
 }
 
 export interface TrackedRequest extends RequestDetail {

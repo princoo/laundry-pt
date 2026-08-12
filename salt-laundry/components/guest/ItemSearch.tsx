@@ -40,7 +40,9 @@ export function ItemSearch({ items, selections, defaultServiceType, onAdd }: Pro
         aria-autocomplete="list"
         // Focus stays put, so the highlight is announced from here.
         aria-activedescendant={isOpen ? `${OPTION_ID_PREFIX}${results[highlight]?.id}` : undefined}
-        className="w-full border border-[0.5px] border-salt-border rounded-lg pl-9 pr-3 py-2.5 text-sm bg-white focus:outline-none focus:border-salt-navy"
+        // Not INPUT_CLASSES: the leading search icon needs pl-9 rather than
+        // px-3. Text sizing matches it — under 16px zooms iOS Safari on focus.
+        className="w-full border border-[0.5px] border-salt-border rounded-lg pl-9 pr-3 py-2.5 text-base sm:text-sm bg-white focus:outline-none focus:border-salt-navy"
       />
 
       {isOpen && (

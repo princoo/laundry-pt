@@ -11,11 +11,21 @@ export interface NavLinkItem {
 }
 
 export const STAFF_NAV_LINKS: NavLinkItem[] = [
-  { href: '/staff', label: 'Dashboard', exact: true, permission: 'LAUNDRY_REQUEST_VIEW' },
-  { href: '/staff/search', label: 'Search', permission: 'LAUNDRY_REQUESTS_SEARCH' },
+  {
+    href: "/staff",
+    label: "Dashboard",
+    exact: true,
+    permission: "LAUNDRY_REQUEST_VIEW",
+  },
+  {
+    href: "/staff/search",
+    label: "Search",
+    permission: "LAUNDRY_REQUESTS_SEARCH",
+  },
+  { href: "/staff/qrcode", label: "QR Code", permission: "QR_CODE_GENERATION" },
   // Hidden for now — the page and its API still work at /staff/invoices.
   // { href: '/staff/invoices', label: 'Room invoice', permission: 'LAUNDRY_REQUESTS_INVOICES_VIEW' },
-]
+];
 
 // Lives in the desktop account menu, and inline in the mobile menu.
 export const PROFILE_NAV_LINK: NavLinkItem = { href: '/staff/profile', label: 'Profile' }

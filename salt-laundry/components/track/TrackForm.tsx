@@ -5,15 +5,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Search } from 'lucide-react'
 import { trackRequestSchema, type TrackRequestValues } from '@/lib/validations/trackRequest.schema'
 import { FieldError } from '@/components/ui/FieldError'
+import { INPUT_CLASSES } from '@/lib/constants/formStyles'
 
 interface Props {
   defaultValues?: Partial<TrackRequestValues>
   isSubmitting: boolean
   onSubmit: (values: TrackRequestValues) => void
 }
-
-const inputClasses =
-  'w-full border border-[0.5px] border-salt-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-salt-navy bg-white'
 
 export function TrackForm({ defaultValues, isSubmitting, onSubmit }: Props) {
   const { register, handleSubmit, formState: { errors } } = useForm<TrackRequestValues>({
@@ -32,7 +30,7 @@ export function TrackForm({ defaultValues, isSubmitting, onSubmit }: Props) {
     >
       <div className="flex-1">
         <label htmlFor="roomNumber" className="block text-sm text-salt-text mb-1.5">Room</label>
-        <input id="roomNumber" placeholder="214" className={inputClasses} {...register('roomNumber')} />
+        <input id="roomNumber" placeholder="214" className={INPUT_CLASSES} {...register('roomNumber')} />
         <FieldError message={errors.roomNumber?.message} />
       </div>
       <div className="flex-1">
@@ -40,7 +38,7 @@ export function TrackForm({ defaultValues, isSubmitting, onSubmit }: Props) {
         <input
           id="reference"
           placeholder="LDY-2026-0142"
-          className={inputClasses}
+          className={INPUT_CLASSES}
           {...register('reference')}
         />
         <FieldError message={errors.reference?.message} />

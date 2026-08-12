@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { countActiveAlerts } from '@/services/requestAlert.service'
 import { hasPermission } from '@/lib/utils/permissions'
+import { startOfHotelDay } from '@/lib/utils/hotelTime'
 
 interface Actor {
   id: string
@@ -8,8 +9,9 @@ interface Actor {
 }
 
 export async function getStaffStats(actor: Actor) {
-  const startOfToday = new Date()
-  startOfToday.setUTCHours(0, 0, 0, 0)
+  // "Today" is the hotel's day. On UTC this used to start at 02:00 Kigali, so
+  // anything delivered late the previous evening counted toward today.
+  const startOfToday = startOfHotelDay()
 
   const assignedFilter = hasPermission(actor.permissions, 'LAUNDRY_REQUESTS_VIEW_ALL')
     ? {}

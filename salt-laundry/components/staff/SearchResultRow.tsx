@@ -1,4 +1,5 @@
 import { StatusBadge } from '@/components/ui/StatusBadge'
+import { HOTEL_TIMEZONE } from '@/lib/constants/timezone'
 import { ExpressBadge } from '@/components/ui/ExpressBadge'
 import { getServiceLabel } from '@/lib/utils/serviceSummary'
 import { formatCurrency } from '@/lib/utils/formatting'
@@ -12,8 +13,12 @@ interface Props {
 export function SearchResultRow({ request, onClick }: Props) {
   const { roomNumber, guestName, serviceTypes, isExpress, status, totalAmount, createdAt, totalItems } = request
   const date = new Date(createdAt)
-  const day = date.toLocaleDateString('en-RW', { day: 'numeric', month: 'short' })
-  const time = date.toLocaleTimeString('en-RW', { hour: '2-digit', minute: '2-digit' })
+  const day = date.toLocaleDateString('en-RW', {
+    day: 'numeric', month: 'short', timeZone: HOTEL_TIMEZONE,
+  })
+  const time = date.toLocaleTimeString('en-RW', {
+    hour: '2-digit', minute: '2-digit', timeZone: HOTEL_TIMEZONE,
+  })
 
   return (
     <tr

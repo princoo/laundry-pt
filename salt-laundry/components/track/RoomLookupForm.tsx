@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Search } from 'lucide-react'
 import { trackByRoomSchema, type TrackByRoomValues } from '@/lib/validations/trackRequest.schema'
 import { FieldError } from '@/components/ui/FieldError'
+import { INPUT_CLASSES } from '@/lib/constants/formStyles'
 
 interface Props {
   defaultRoom?: string
@@ -29,7 +30,7 @@ export function RoomLookupForm({ defaultRoom, isSubmitting, onSubmit }: Props) {
         <input
           id="roomNumber"
           placeholder="214"
-          className="w-full border border-[0.5px] border-salt-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-salt-navy bg-white"
+          className={INPUT_CLASSES}
           {...register('roomNumber')}
         />
         <FieldError message={errors.roomNumber?.message} />

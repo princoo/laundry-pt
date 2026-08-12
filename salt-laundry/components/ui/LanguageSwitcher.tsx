@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { Check, ChevronDown } from 'lucide-react'
 import { LANGUAGES } from '@/lib/constants/languages'
+import { Flag } from '@/components/ui/Flag'
 import { useLanguage } from '@/lib/hooks/useLanguage'
 import { useClickOutside } from '@/lib/hooks/useClickOutside'
 
@@ -25,13 +26,13 @@ export function LanguageSwitcher() {
         aria-expanded={isOpen}
         className="flex items-center gap-1.5 text-sm font-medium text-salt-text-sec hover:text-salt-text rounded-lg px-2.5 py-1.5 transition-colors"
       >
-        <span className="text-base leading-none shrink-0" aria-hidden="true">{active.flag}</span>
+        <Flag code={active.code} className="w-5 h-auto rounded-xs shrink-0" />
         {active.short}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-11 w-44 bg-white border border-[0.5px] border-salt-border rounded-lg shadow-sm py-1.5 flex flex-col z-50">
+        <div className="absolute right-0 top-11 w-44 bg-white border-[0.5px] border-salt-border rounded-lg shadow-sm py-1.5 flex flex-col z-50">
           {LANGUAGES.map((option) => {
             const selected = option.code === active.code
             return (
@@ -47,7 +48,7 @@ export function LanguageSwitcher() {
                 }`}
               >
                 <span className="flex items-center gap-2">
-                  <span className="text-base leading-none shrink-0" aria-hidden="true">{option.flag}</span>
+                  <Flag code={option.code} className="w-5 h-auto rounded-xs shrink-0" />
                   <span>
                     {option.label}
                     <span className="text-salt-text-muted"> · {option.short}</span>

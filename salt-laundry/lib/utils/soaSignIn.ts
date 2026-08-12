@@ -29,19 +29,23 @@ function toSeconds(value: number): number {
 }
 
 // The session ends with the SOA token, so the two systems can never disagree
-// about whether someone is signed in. A value in the past or unparseable is
-// ignored and anything further out is capped: a bad parameter must shorten a
-// session, never extend one.
-export function sessionExpiry(expiresAt: unknown): number {
-  const cap = nowSeconds() + SESSION_MAX_AGE_SECONDS
+// about whether someone is signed in. A bad parameter must shorten a session,
+// never extend one — so an unparseable or already-past value is refused
+// outright (null) rather than falling back to the cap, which would hand a full
+// hour to anyone who stripped `&expiresAt=` off the return URL. Anything
+// further out than the cap is capped.
+export function sessionExpiry(expiresAt: unknown): number | null {
   const parsed = Number(expiresAt)
-  if (!Number.isFinite(parsed)) return cap
+  if (!Number.isFinite(parsed)) return null
 
   const seconds = toSeconds(parsed)
-  if (seconds <= nowSeconds()) return cap
-  return Math.min(Math.floor(seconds), cap)
+  if (seconds <= nowSeconds()) return null
+  return Math.min(Math.floor(seconds), nowSeconds() + SESSION_MAX_AGE_SECONDS)
 }
 
+// Fails closed: anything that is not a number is treated as expired. This is
+// the one check that ends a session, so an absent or malformed expiry must
+// never read as "still valid".
 export function isExpired(expiresAt: number | null | undefined): boolean {
-  return typeof expiresAt === 'number' && expiresAt <= nowSeconds()
+  return typeof expiresAt !== 'number' || expiresAt <= nowSeconds()
 }

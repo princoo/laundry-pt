@@ -3,6 +3,7 @@ import { canManageRequest } from '@/lib/utils/requestAccess'
 import { formatReference } from '@/lib/utils/formatting'
 import { getNotesForRequest } from '@/services/note.service'
 import { getAlertEventsForRequest } from '@/services/requestAlert.service'
+import { getRequestHistory } from '@/services/requestHistory.service'
 import { hasPermission } from '@/lib/utils/permissions'
 
 export const ITEM_DETAIL_SELECT = {
@@ -20,6 +21,9 @@ export async function getRequestById(id: string) {
     include: {
       items: { select: ITEM_DETAIL_SELECT },
       assignedTo: { select: { id: true, name: true } },
+      // Staff-only, unlike the public track payload — whoever has to act on a
+      // flag needs to see who raised it and why.
+      flaggedBy: { select: { id: true, name: true } },
     },
   })
 }
@@ -38,6 +42,10 @@ export async function getRequestDetailForUser(
   const seesWholeQueue = hasPermission(user.permissions, 'LAUNDRY_REQUESTS_VIEW_ALL')
   const notes = canManage ? await getNotesForRequest(id) : []
   const alertEvents = seesWholeQueue ? await getAlertEventsForRequest(id) : undefined
+  // Gated with the notes rather than the alert history: it is the same kind of
+  // thing — the record of what people did to this request — and it carries
+  // prices, so it is not for anyone outside the queue.
+  const history = canManage ? await getRequestHistory(id) : undefined
 
   return {
     ...found,
@@ -45,5 +53,6 @@ export async function getRequestDetailForUser(
     notes,
     canManage,
     ...(alertEvents && { alertEvents }),
+    ...(history && { history }),
   }
 }

@@ -1,4 +1,5 @@
 import { formatCurrency } from '@/lib/utils/formatting'
+import { vatLabel } from '@/lib/utils/pricing'
 import { SERVICE_TYPE_LABELS } from '@/lib/constants/services'
 import { groupLinesByService, type SelectedLine } from '@/lib/utils/orderSummary'
 
@@ -36,7 +37,7 @@ export function PriceBreakdown({ selectedLines, gross, vat, total }: Props) {
           <span>{formatCurrency(gross)}</span>
         </div>
         <div className="flex items-center justify-between text-sm text-salt-text-muted">
-          <span>VAT 15%</span>
+          <span>{vatLabel(gross, vat)}</span>
           <span>{formatCurrency(vat)}</span>
         </div>
       </div>

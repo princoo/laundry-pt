@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { aggregateByServiceType } from '@/lib/utils/reportStats'
+import { hotelDateKey } from '@/lib/utils/hotelTime'
 import type { Report, ReportItemStat } from '@/lib/types/report'
 
 export interface ReportFilters {
@@ -45,7 +46,9 @@ export async function generateReport(filters: ReportFilters): Promise<Report> {
 
   const byDay: Record<string, number> = {}
   for (const r of requests) {
-    const day = r.createdAt.toISOString().split('T')[0]
+    // Dated the way the hotel dates it. toISOString() buckets by UTC day, which
+    // files the first two hours of every Kigali evening under the day before.
+    const day = hotelDateKey(r.createdAt)
     byDay[day] = (byDay[day] ?? 0) + r.totalAmount
   }
   const revenueByDay = Object.entries(byDay)

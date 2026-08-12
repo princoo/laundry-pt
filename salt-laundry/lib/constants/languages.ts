@@ -8,14 +8,12 @@ export interface LanguageOption {
   short: string
   // Full name, shown in the dropdown list.
   label: string
-  // Emoji flag of the country the language is associated with.
-  flag: string
 }
 
 export const LANGUAGES: LanguageOption[] = [
-  { code: 'EN', short: 'EN', label: 'English', flag: '🇬🇧' },
-  { code: 'FR', short: 'FR', label: 'Français', flag: '🇫🇷' },
-  { code: 'RW', short: 'KINY', label: 'Kinyarwanda', flag: '🇷🇼' },
+  { code: 'EN', short: 'EN', label: 'English' },
+  { code: 'FR', short: 'FR', label: 'Français' },
+  { code: 'RW', short: 'KINY', label: 'Kinyarwanda' },
 ]
 
 export const DEFAULT_LANGUAGE: LanguageCode = 'EN'
