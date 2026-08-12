@@ -8,7 +8,6 @@ interface Props {
   searchParams: Promise<{ room?: string | string[] }>
 }
 
-// The QR code in each room links here as /?room=<number>.
 export default async function Home({ searchParams }: Props) {
   const { room } = await searchParams
   const scannedRoom = readRoomParam(room)
