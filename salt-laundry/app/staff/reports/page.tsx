@@ -1,7 +1,6 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
-import { AdminAccessDenied } from '@/components/admin/AdminAccessDenied'
+import { AccessDenied } from '@/components/ui/AccessDenied'
 import { ReportsPeriodSelector } from '@/components/staff/ReportsPeriodSelector'
 import { ReportsSummaryCards } from '@/components/staff/ReportsSummaryCards'
 import { ReportsRevenueChart } from '@/components/staff/ReportsRevenueChart'
@@ -13,15 +12,16 @@ import { ReportsEmptyState } from '@/components/staff/ReportsEmptyState'
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton'
 import { FetchError } from '@/components/ui/FetchError'
 import { useReports } from '@/lib/hooks/useReports'
+import { usePermissions } from '@/lib/hooks/usePermissions'
 
 export default function ReportsPage() {
-  const { data: session, status } = useSession()
+  const { can, isLoading: isSessionLoading } = usePermissions()
   const { from, setFrom, to, setTo, report, isLoading, error, generate, applyQuickRange } = useReports()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const role = (session?.user as any)?.role
 
-  if (status !== 'loading' && role !== 'ADMIN') {
-    return <AdminAccessDenied />
+  // LAUNDRY_REPORTS_EXPORT exists in the permission set but has no surface yet
+  // — the PDF button on this page is a later phase, not this one.
+  if (!isSessionLoading && !can('LAUNDRY_REPORTS_VIEW')) {
+    return <AccessDenied />
   }
 
   return (

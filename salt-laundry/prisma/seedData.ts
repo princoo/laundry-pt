@@ -1,0 +1,65 @@
+export const items = [
+  { nameEn: "Shirt", nameFr: "Chemise" },
+  { nameEn: "Blouse", nameFr: "Chemisier" },
+  { nameEn: "Trousers", nameFr: "Pantalon" },
+  { nameEn: "Skirt", nameFr: "Jupe" },
+  { nameEn: "Dress", nameFr: "Robe" },
+  { nameEn: "Shorts", nameFr: "Short" },
+  { nameEn: "Polo shirt", nameFr: "Polo" },
+  { nameEn: "T-Shirt", nameFr: "T-Shirt" },
+  { nameEn: "Tank top", nameFr: "Débardeur" },
+  { nameEn: "Socks", nameFr: "Chaussettes" },
+  { nameEn: "Slip", nameFr: "Caleçon" },
+  { nameEn: "Panties", nameFr: "Culotte" },
+  { nameEn: "Bra", nameFr: "Soutien-gorge" },
+  { nameEn: "Pyjamas", nameFr: "Pyjama" },
+  { nameEn: "Night dress", nameFr: "Chemise de nuit" },
+  { nameEn: "Swim shorts", nameFr: "Maillot de bain" },
+  { nameEn: "Suit", nameFr: "Complet" },
+  { nameEn: "Jacket", nameFr: "Veste" },
+  { nameEn: "Tie", nameFr: "Cravatte" },
+  { nameEn: "Silk shirt", nameFr: "Chemise en soie" },
+  { nameEn: "Silk blouse", nameFr: "Chemisier en soie" },
+  { nameEn: "Silk dress", nameFr: "Robe en soie" },
+  { nameEn: "Lady's suit", nameFr: "Tailleur" },
+];
+
+// Stand-ins for profiles SOA would provision. The soaId values are obviously
+// fake so a seeded row is never mistaken for a real one; a later provisioning
+// call carrying the real soaId creates a separate user rather than adopting
+// these. No passwords — sign-in goes through SOA.
+export const users = [
+  {
+    soaId: "seed-soa-admin",
+    staffId: "SALT-001",
+    firstName: "SALT",
+    secondName: "Admin",
+    email: "admin@salt.rw",
+    phoneNumber: "+250780000001",
+    departmentName: "Administration",
+    roleNames: ["ADMIN"],
+    isHousekeeper: false,
+  },
+  {
+    soaId: "seed-soa-supervisor",
+    staffId: "SALT-002",
+    firstName: "Alice",
+    secondName: "Uwase",
+    email: "supervisor@salt.rw",
+    phoneNumber: "+250780000002",
+    departmentName: "Housekeeping",
+    roleNames: ["SUPERVISOR"],
+    isHousekeeper: false,
+  },
+  {
+    soaId: "seed-soa-housekeeper",
+    staffId: "SALT-003",
+    firstName: "Jean",
+    secondName: "Baptiste",
+    email: "housekeeper@salt.rw",
+    phoneNumber: "+250780000003",
+    departmentName: "Housekeeping",
+    roleNames: ["HOUSEKEEPER"],
+    isHousekeeper: true,
+  },
+];

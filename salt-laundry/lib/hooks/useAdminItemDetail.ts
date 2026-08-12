@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import type { AdminItem } from '@/lib/hooks/useAdminItems'
+import { apiFetch } from '@/lib/apiClient'
 
 export interface AdminItemDetail extends AdminItem {
   timesOrdered: number
@@ -19,7 +20,7 @@ export function useAdminItemDetail(id: string) {
 
   const fetchItem = useCallback(() => {
     let cancelled = false
-    fetch(`/api/admin/items/${id}`)
+    apiFetch(`/api/admin/items/${id}`)
       .then(async (res) => {
         if (res.status === 404) {
           if (!cancelled) setNotFound(true)
@@ -42,7 +43,7 @@ export function useAdminItemDetail(id: string) {
   const toggleActive = useCallback(async (isActive: boolean) => {
     setItem((prev) => (prev ? { ...prev, isActive } : prev))
     try {
-      const res = await fetch(`/api/admin/items/${id}`, {
+      const res = await apiFetch(`/api/admin/items/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive }),
@@ -58,7 +59,7 @@ export function useAdminItemDetail(id: string) {
     setIsUpdating(true)
     setActionError(null)
     try {
-      const res = await fetch(`/api/admin/items/${id}`, { method: 'DELETE' })
+      const res = await apiFetch(`/api/admin/items/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
       return true
     } catch {

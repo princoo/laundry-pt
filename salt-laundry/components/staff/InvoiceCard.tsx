@@ -4,6 +4,7 @@ import { useRef } from 'react'
 import type { ReactNode } from 'react'
 import { PrintButton } from '@/components/ui/PrintButton'
 import { DownloadPdfButton } from '@/components/ui/DownloadPdfButton'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 
 interface Props {
   filename: string
@@ -21,11 +22,15 @@ export function InvoiceCard({
   const ref = useRef<HTMLDivElement>(null)
   const isTop = actionsPosition === 'top'
 
+  // Reading an invoice and putting one in a guest's hand are separate
+  // permissions, so the sheet renders either way and only the actions are gated.
   const actions = showActions ? (
-    <div className={`print:hidden flex flex-col sm:flex-row gap-3 ${isTop ? 'sm:shrink-0' : 'justify-center mt-8'}`}>
-      <PrintButton />
-      <DownloadPdfButton targetRef={ref} filename={filename} />
-    </div>
+    <PermissionGate permission="LAUNDRY_REQUESTS_INVOICES_PRINT">
+      <div className={`print:hidden flex flex-col sm:flex-row gap-3 ${isTop ? 'sm:shrink-0' : 'justify-center mt-8'}`}>
+        <PrintButton />
+        <DownloadPdfButton targetRef={ref} filename={filename} />
+      </div>
+    </PermissionGate>
   ) : null
 
   return (

@@ -3,7 +3,8 @@ import { UserMinus } from 'lucide-react'
 interface Props {
   name: string | null
   activeTaskCount: number
-  onMarkOffShift: () => void
+  // Absent when the viewer may see the roster but not manage shifts.
+  onMarkOffShift?: () => void
 }
 
 export function StaffOverviewOnShiftRow({ name, activeTaskCount, onMarkOffShift }: Props) {
@@ -14,15 +15,17 @@ export function StaffOverviewOnShiftRow({ name, activeTaskCount, onMarkOffShift 
         {name}
       </span>
       <span className="text-salt-text-sec whitespace-nowrap">{activeTaskCount} active</span>
-      <button
-        type="button"
-        onClick={onMarkOffShift}
-        aria-label="Mark off shift"
-        title="Mark off shift"
-        className="w-7 h-7 flex items-center justify-center rounded-lg border border-[0.5px] border-salt-border text-amber-600 hover:bg-amber-50 transition-colors shrink-0"
-      >
-        <UserMinus className="w-3.5 h-3.5" />
-      </button>
+      {onMarkOffShift && (
+        <button
+          type="button"
+          onClick={onMarkOffShift}
+          aria-label="Mark off shift"
+          title="Mark off shift"
+          className="w-7 h-7 flex items-center justify-center rounded-lg border border-[0.5px] border-salt-border text-amber-600 hover:bg-amber-50 transition-colors shrink-0"
+        >
+          <UserMinus className="w-3.5 h-3.5" />
+        </button>
+      )}
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react'
-import { ACTIVE_STATUSES, STATUS_LABELS } from '@/lib/constants/statuses'
+import { LIFECYCLE_STEPS, STATUS_LABELS } from '@/lib/constants/statuses'
 import { formatEventTimestamp } from '@/lib/utils/formatting'
 import type { RequestStatus } from '@prisma/client'
 
@@ -21,7 +21,7 @@ export function StatusStepper({ status, collectedAt, completedAt, returnedAt }: 
     DELIVERED: { label: 'Returned at', value: returnedAt },
   }
 
-  const currentIndex = ACTIVE_STATUSES.indexOf(status)
+  const currentIndex = LIFECYCLE_STEPS.indexOf(status)
   const currentTimestamp = timestampByStatus[status]
 
   const labelClass = (index: number) => {
@@ -33,7 +33,7 @@ export function StatusStepper({ status, collectedAt, completedAt, returnedAt }: 
   return (
     <div>
       <div className="flex items-start overflow-x-auto">
-        {ACTIVE_STATUSES.map((step, index) => (
+        {LIFECYCLE_STEPS.map((step, index) => (
           <div key={step} className="flex items-center flex-1 last:flex-none">
             <div className="flex flex-col items-center w-14 sm:w-16">
               <div
@@ -52,7 +52,7 @@ export function StatusStepper({ status, collectedAt, completedAt, returnedAt }: 
                 {STATUS_LABELS[step]}
               </span>
             </div>
-            {index < ACTIVE_STATUSES.length - 1 && (
+            {index < LIFECYCLE_STEPS.length - 1 && (
               <div className="flex-1 border-t border-[0.5px] border-salt-border mx-0.5 sm:mx-1 mt-3.5 sm:mt-4" />
             )}
           </div>

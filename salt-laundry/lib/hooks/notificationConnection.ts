@@ -1,5 +1,6 @@
 'use client'
 
+import { redirectToSignIn } from '@/lib/apiClient'
 import { NOTIFICATION_KIND_LABELS } from '@/lib/constants/notifications'
 import type { StaffNotification } from '@/lib/types/notification'
 
@@ -42,7 +43,16 @@ function connect() {
   eventSource.addEventListener('connected', () => setConnected(true))
   eventSource.addEventListener('new_requests', handleIncoming)
   eventSource.addEventListener('assigned_to_you', handleIncoming)
-  eventSource.onerror = () => setConnected(false)
+  eventSource.onerror = () => {
+    setConnected(false)
+    // A dropped connection retries itself; a refused one does not. Per the
+    // EventSource spec any non-200 — proxy.ts's 401 once the session lapses —
+    // closes the stream for good, so that is the signal to sign in again.
+    if (eventSource?.readyState === EventSource.CLOSED) {
+      disconnect()
+      redirectToSignIn()
+    }
+  }
 }
 
 function disconnect() {

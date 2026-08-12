@@ -3,6 +3,7 @@
 import { StatusFilter } from '@/components/staff/StatusFilter'
 import { AssigneeFilter } from '@/components/staff/AssigneeFilter'
 import { QueueMeta } from '@/components/staff/QueueMeta'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 
 interface Props {
   status: string
@@ -25,9 +26,13 @@ export function QueueFilterBar({
           deliveredToday={deliveredToday} lastUpdated={lastUpdated} onRefresh={onRefresh}
         />
       </div>
-      <div className="w-full sm:w-60">
-        <AssigneeFilter value={assignedTo} onChange={onAssignedToChange} />
-      </div>
+      {/* Filtering by assignee means naming the housekeepers, so it needs the
+          same permission as the roster itself. */}
+      <PermissionGate permission="LAUNDRY_HOUSEKEEPERS_VIEW">
+        <div className="w-full sm:w-60">
+          <AssigneeFilter value={assignedTo} onChange={onAssignedToChange} />
+        </div>
+      </PermissionGate>
     </div>
   )
 }

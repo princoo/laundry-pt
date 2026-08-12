@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { Pencil } from 'lucide-react'
 import { ActiveToggle } from '@/components/ui/ActiveToggle'
+import { PermissionGate } from '@/components/ui/PermissionGate'
 import { formatCurrency } from '@/lib/utils/formatting'
 import type { AdminItem } from '@/lib/hooks/useAdminItems'
 
@@ -47,17 +48,21 @@ export function ItemRow({ item, onToggle, onEdit }: Props) {
         <PriceCell price={item.pricePressing} />
       </td>
       <td className="py-4 px-5" onClick={(e) => e.stopPropagation()}>
-        <ActiveToggle checked={item.isActive} onChange={() => onToggle(item.id, !item.isActive)} />
+        <PermissionGate permission="LAUNDRY_REQUEST_ITEMS_CATALOGUE_MANAGE">
+          <ActiveToggle checked={item.isActive} onChange={() => onToggle(item.id, !item.isActive)} />
+        </PermissionGate>
       </td>
       <td className="py-4 px-5" onClick={(e) => e.stopPropagation()}>
-        <button
-          type="button"
-          onClick={() => onEdit(item)}
-          aria-label={`Edit ${item.nameEn}`}
-          className="w-8 h-8 inline-flex items-center justify-center rounded-md text-salt-text-sec hover:text-salt-navy hover:bg-salt-cream transition-colors"
-        >
-          <Pencil className="w-4 h-4" />
-        </button>
+        <PermissionGate permission="LAUNDRY_REQUEST_ITEMS_CATALOGUE_MANAGE">
+          <button
+            type="button"
+            onClick={() => onEdit(item)}
+            aria-label={`Edit ${item.nameEn}`}
+            className="w-8 h-8 inline-flex items-center justify-center rounded-md text-salt-text-sec hover:text-salt-navy hover:bg-salt-cream transition-colors"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
+        </PermissionGate>
       </td>
     </tr>
   )

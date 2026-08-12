@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { ACTIVE_STATUSES } from '@/services/assignment.service'
+import { ACTIVE_STATUSES } from '@/lib/constants/statuses'
 import { getAlertLevel, type AlertLevel } from '@/lib/utils/sla'
 import { uniqueServiceTypes } from '@/lib/utils/serviceSummary'
 import type { AlertEventLevel } from '@prisma/client'

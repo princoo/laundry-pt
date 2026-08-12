@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SALT of Akagera — Laundry Request System
 
-## Getting Started
+A hotel laundry request system replacing a paper form workflow at SALT of Akagera, Rwanda.
+Guests submit laundry requests from their room; laundry staff receive and manage them on a
+live dashboard. No payment processing — costs are tracked and added to the room bill at
+checkout.
 
-First, run the development server:
+Built with Next.js 16 (App Router), TypeScript, Prisma on PostgreSQL, Tailwind, and
+Auth.js v5.
+
+`CLAUDE.md` is the working reference for architecture and conventions.
+`docs/soa-migration.md` records how authentication got to be the way it is.
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+pnpm prisma migrate dev     # create the schema
+pnpm prisma db seed         # catalogue items and SOA-shaped staff accounts
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) for the guest form. The staff
+dashboard is at `/staff` and requires a SOA session — see below.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Sign-in
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The laundry has no login page and stores no passwords. Staff authenticate against SOA
+(the hotel's staff platform) and the laundry mirrors their account.
 
-## Learn More
+1. An unauthenticated request to any `/staff` page is caught by `proxy.ts` and redirected
+   to `SOA_SIGNIN_URL`, carrying a return URL that points back at the laundry's
+   `/authenticate` page with the originally requested path folded inside it.
+2. SOA signs the person in, checks they hold `LAUNDRY_REQUEST_VIEW`, and redirects to
+   `/authenticate?redirect=<path>&token=<jwt>&expiresAt=<unix ms>`.
+3. `/authenticate` calls `GET {SOA_API_URL}/api/auth/me` with that bearer token, upserts
+   the laundry's copy of the user, builds the session, discards the token, and replaces
+   the URL with the original path.
 
-To learn more about Next.js, take a look at the following resources:
+The session expires at exactly the moment SOA's token does, capped at one hour. What each
+person can see and do is decided by the `LAUNDRY_*` permissions SOA returns — the laundry
+has no roles of its own.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Accounts are created, updated and deactivated only by SOA, calling
+`POST /api/integrations/soa/users` and `PATCH /api/integrations/soa/users/[soaId]` with an
+`X-SOA-Api-Key` header. No screen in the laundry creates or edits a user.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Guest pages (`/`, `/track`, `/confirmation`) and their APIs are fully public.
 
-## Deploy on Vercel
+## Environment variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Copy these into `.env.local`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Variable | What it is |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `NEXTAUTH_SECRET` | Secret Auth.js signs the session cookie with |
+| `NEXTAUTH_URL` | This app's own origin, for Auth.js |
+| `APP_URL` | This app's public origin, used to build the return URL sent to SOA |
+| `SOA_API_URL` | Base URL of the SOA API — `/api/auth/me` is appended to it |
+| `SOA_SIGNIN_URL` | SOA's sign-in page, where an unauthenticated visitor is sent |
+| `SOA_REDIRECT_PARAM` | Name of the query parameter SOA reads the return URL from |
+| `SOA_PROFILE_URL` | Where staff manage their own details; linked from `/staff/profile`. Leave empty to hide the link |
+| `SOA_PROVISION_API_KEY` | Shared key the provisioning endpoints check `X-SOA-Api-Key` against |
+
+No SOA URL or parameter name is hardcoded anywhere, so pointing the app at the real SOA
+instance is a config change and nothing more.
+
+## Scripts
+
+| Command | What it does |
+|---|---|
+| `pnpm dev` | Development server |
+| `pnpm build` | `prisma generate` then a production build |
+| `pnpm start` | Serve the production build |
+| `pnpm lint` | ESLint |
+| `pnpm prisma db seed` | Reseed the catalogue and staff accounts |

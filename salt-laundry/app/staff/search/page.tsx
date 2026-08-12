@@ -8,11 +8,18 @@ import { SearchStateMessage } from '@/components/staff/SearchStateMessage'
 import { RequestDetailModal } from '@/components/staff/RequestDetailModal'
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton'
 import { FetchError } from '@/components/ui/FetchError'
+import { AccessDenied } from '@/components/ui/AccessDenied'
 import { useSearchRequests } from '@/lib/hooks/useSearchRequests'
+import { usePermissions } from '@/lib/hooks/usePermissions'
 
 export default function StaffSearchPage() {
+  const { can, isLoading: isSessionLoading } = usePermissions()
   const { filters, setFilters, results, billableTotal, isLoading, error, search, clear } = useSearchRequests()
   const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  if (!isSessionLoading && !can('LAUNDRY_REQUESTS_SEARCH')) {
+    return <AccessDenied />
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">

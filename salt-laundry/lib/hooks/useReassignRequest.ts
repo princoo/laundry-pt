@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { apiFetch } from '@/lib/apiClient'
 
 export function useReassignRequest(requestId: string, onReassigned: () => void, onClose: () => void) {
   const [selectedId, setSelectedId] = useState('')
@@ -13,24 +14,24 @@ export function useReassignRequest(requestId: string, onReassigned: () => void, 
     setIsSubmitting(true)
     setError(null)
     try {
-      const res = await fetch(`/api/staff/requests/${requestId}/assign`, {
+      const res = await apiFetch(`/api/staff/requests/${requestId}/assign`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ housekeeperId: selectedId }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data?.error ?? 'Could not reassign.')
+      if (!res.ok) throw new Error(data?.error ?? 'Could not save the assignment — try again.')
       if (note.trim()) {
-        await fetch(`/api/staff/requests/${requestId}/notes`, {
+        await apiFetch(`/api/staff/requests/${requestId}/notes`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: `Reassigned: ${note.trim()}` }),
+          body: JSON.stringify({ content: `Assigned: ${note.trim()}` }),
         })
       }
       onReassigned()
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not reassign.')
+      setError(err instanceof Error ? err.message : 'Could not save the assignment — try again.')
     } finally {
       setIsSubmitting(false)
     }

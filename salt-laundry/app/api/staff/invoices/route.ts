@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { requireAuth } from '@/lib/utils/guards'
+import { requirePermission } from '@/lib/utils/guards'
 import { getRoomInvoiceData } from '@/services/invoice.service'
 import { roomInvoiceQuerySchema } from '@/lib/validations/roomInvoice.schema'
 
 export async function GET(request: Request) {
-  const authError = await requireAuth()
+  const authError = await requirePermission('LAUNDRY_REQUESTS_INVOICES_VIEW')
   if (authError) return authError
 
   const { searchParams } = new URL(request.url)

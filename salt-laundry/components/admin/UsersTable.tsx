@@ -1,23 +1,18 @@
 import { UserRow } from '@/components/admin/UserRow'
 import { UserCard } from '@/components/admin/UserCard'
-import type { AdminUser } from '@/lib/hooks/useAdminUsers'
+import type { StaffUser } from '@/lib/types/staffUser'
 
 interface Props {
-  users: AdminUser[]
+  users: StaffUser[]
   currentUserId: string
-  onEdit: (user: AdminUser) => void
-  onResetPassword: (user: AdminUser) => void
   onToggleAvailability: (id: string, nextIsAvailable: boolean) => void
+  onToggleHousekeeper: (id: string, nextIsHousekeeper: boolean) => void
 }
 
-const HEADERS = ['Name', 'Email', 'Role', 'Status', 'On shift', 'Actions']
+const HEADERS = ['Name', 'Contact', 'Department', 'Roles', 'Status', 'Housekeeper', 'On shift']
 
 export function UsersTable({
-  users,
-  currentUserId,
-  onEdit,
-  onResetPassword,
-  onToggleAvailability,
+  users, currentUserId, onToggleAvailability, onToggleHousekeeper,
 }: Props) {
   if (users.length === 0) {
     return (
@@ -26,6 +21,15 @@ export function UsersTable({
       </div>
     )
   }
+
+  // The row and the card take the same props — one source for both so a new
+  // column cannot land on the desktop table and be forgotten on mobile.
+  const rowProps = (user: StaffUser) => ({
+    user,
+    isCurrentUser: user.id === currentUserId,
+    onToggleAvailability,
+    onToggleHousekeeper,
+  })
 
   return (
     <>
@@ -41,31 +45,13 @@ export function UsersTable({
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
-              <UserRow
-                key={user.id}
-                user={user}
-                isCurrentUser={user.id === currentUserId}
-                onEdit={onEdit}
-                onResetPassword={onResetPassword}
-                onToggleAvailability={onToggleAvailability}
-              />
-            ))}
+            {users.map((user) => <UserRow key={user.id} {...rowProps(user)} />)}
           </tbody>
         </table>
       </div>
 
       <div className="md:hidden flex flex-col gap-3">
-        {users.map((user) => (
-          <UserCard
-            key={user.id}
-            user={user}
-            isCurrentUser={user.id === currentUserId}
-            onEdit={onEdit}
-            onResetPassword={onResetPassword}
-            onToggleAvailability={onToggleAvailability}
-          />
-        ))}
+        {users.map((user) => <UserCard key={user.id} {...rowProps(user)} />)}
       </div>
     </>
   )

@@ -1,11 +1,18 @@
 'use client'
 
 import { useRoomInvoice } from '@/lib/hooks/useRoomInvoice'
+import { usePermissions } from '@/lib/hooks/usePermissions'
 import { RoomInvoiceFilterPanel } from '@/components/staff/RoomInvoiceFilterPanel'
 import { RoomInvoiceResult } from '@/components/staff/RoomInvoiceResult'
+import { AccessDenied } from '@/components/ui/AccessDenied'
 
 export default function RoomInvoicesPage() {
+  const { can, isLoading: isSessionLoading } = usePermissions()
   const { filters, setFilters, applied, data, isLoading, error, search, reset } = useRoomInvoice()
+
+  if (!isSessionLoading && !can('LAUNDRY_REQUESTS_INVOICES_VIEW')) {
+    return <AccessDenied />
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 print:max-w-none print:p-0">

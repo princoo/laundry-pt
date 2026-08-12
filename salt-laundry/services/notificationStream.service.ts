@@ -1,7 +1,7 @@
 import {
   getRequestsCreatedSince, getRequestsAssignedTo, getUnassignedNotifications,
 } from '@/services/notification.service'
-import type { Role } from '@prisma/client'
+import { hasPermission } from '@/lib/utils/permissions'
 
 export interface StreamCursors {
   newSince: Date
@@ -18,11 +18,14 @@ export function initialCursors(): StreamCursors {
 // purpose: the connection pool is capped at 3, and a background poller must not
 // take the whole pool away from user-facing requests.
 export async function collectNotifications(
-  actor: { id: string; role: Role },
+  actor: { id: string; permissions?: readonly string[] },
   cursors: StreamCursors,
 ) {
-  const created =
-    actor.role === 'HOUSEKEEPER' ? [] : await getRequestsCreatedSince(cursors.newSince)
+  // Only the whole-queue feed is permission-gated; assignment notifications are
+  // about the actor's own work and always go through.
+  const created = hasPermission(actor.permissions, 'LAUNDRY_REQUESTS_VIEW_ALL')
+    ? await getRequestsCreatedSince(cursors.newSince)
+    : []
   const assigned = await getRequestsAssignedTo(actor.id, cursors.assignedSince)
   const unassigned = await getUnassignedNotifications(actor.id, cursors.unassignedSince)
 

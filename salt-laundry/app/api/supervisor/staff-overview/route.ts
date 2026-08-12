@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { requireSupervisor } from '@/lib/utils/guards'
+import { requirePermission } from '@/lib/utils/guards'
 import { getStaffOverview } from '@/services/staffOverview.service'
 
 export async function GET() {
-  const authError = await requireSupervisor()
+  const authError = await requirePermission('LAUNDRY_HOUSEKEEPERS_VIEW')
   if (authError) return authError
 
   const overview = await getStaffOverview()

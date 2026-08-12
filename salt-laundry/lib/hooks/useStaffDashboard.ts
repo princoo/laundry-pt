@@ -5,6 +5,7 @@ import { useAutoRefresh } from '@/lib/hooks/useAutoRefresh'
 import { buildQueueQuery, type QueueQuery } from '@/lib/utils/staffQueueQuery'
 import { QUEUE_REFRESH_INTERVAL_MS } from '@/lib/constants/queue'
 import type { QueueRequest, QueueStats } from '@/lib/types/staffDashboard'
+import { apiFetch } from '@/lib/apiClient'
 
 export type { QueueRequest, QueueStats }
 
@@ -29,8 +30,8 @@ export function useStaffDashboard(params: QueueQuery) {
     setError(null)
     try {
       const [requestsRes, statsRes] = await Promise.all([
-        fetch(`/api/staff/requests?${query}`),
-        fetch('/api/staff/stats'),
+        apiFetch(`/api/staff/requests?${query}`),
+        apiFetch('/api/staff/stats'),
       ])
       if (!requestsRes.ok || !statsRes.ok) throw new Error('Failed to load dashboard')
       const requestsData = await requestsRes.json()

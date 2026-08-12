@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createGuestRequest } from '@/services/request.service'
 import { RequestValidationError } from '@/services/requestPricing.service'
-import { autoAssign } from '@/services/assignment.service'
 import { createGuestRequestSchema } from '@/lib/validations/guestRequest.schema'
 import { formatReference } from '@/lib/utils/formatting'
 
@@ -32,12 +31,6 @@ export async function POST(request: Request) {
         quantity,
       })),
     })
-
-    try {
-      await autoAssign(created.id)
-    } catch {
-      console.error('Auto-assignment failed for request', created.id)
-    }
 
     return NextResponse.json(
       {
