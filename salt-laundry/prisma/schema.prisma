@@ -6,29 +6,33 @@ datasource db {
   provider = "postgresql"
 }
 
+// A thin mirror of an SOA staff profile, written only by the provisioning
+// endpoints in app/api/integrations/soa/. SOA owns every field above
+// isHousekeeper; the laundry owns the two below it. Names only- no
+// department id, no role ids. roleNames is display; permissions decide access.
 model User {
-  id                String              @id @default(cuid())
-  email             String              @unique
-  name              String?
-  password          String
-  role              Role                @default(HOUSEKEEPER)
-  isActive          Boolean             @default(true)
-  isAvailable       Boolean             @default(true)
-  mustChangePassword  Boolean           @default(true)
-  passwordResetToken  String?           @unique
-  passwordResetExpiry DateTime?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  assignedRequests  Request[]           @relation("AssignedRequests")
-  unassignedRequests Request[]          @relation("UnassignedRequests")
-  authoredNotes     RequestNote[]       @relation("NoteAuthor")
-  @@map("users")
-}
+  id                 String        @id @default(cuid())
+  soaId              String        @unique
+  staffId            String?
+  firstName          String?
+  secondName         String?
+  name               String?
+  email              String        @unique
+  phoneNumber        String?
+  departmentName     String?
+  roleNames          String[]
+  isHousekeeper      Boolean       @default(false)
+  isActive           Boolean       @default(true)
+  isAvailable        Boolean       @default(true)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  assignedRequests   Request[]     @relation("AssignedRequests")
+  unassignedRequests Request[]     @relation("UnassignedRequests")
+  authoredNotes      RequestNote[] @relation("NoteAuthor")
+  flaggedRequests    Request[]         @relation("FlaggedRequests")
+  editedRevisions    RequestRevision[] @relation("RequestEditor")
 
-enum Role {
-  ADMIN
-  SUPERVISOR
-  HOUSEKEEPER
+  @@map("users")
 }
 
 model LaundryItem {
@@ -63,20 +67,36 @@ model Request {
   returnedAt        DateTime?
   assignedToId      String?
   assignedAt        DateTime?
-  assignmentMethod  AssignmentMethod?
   unassignedFromId  String?
   unassignedAt      DateTime?
+  // "The paperwork does not match the bag." Deliberately not a RequestStatus:
+  // status says where the physical items are, and a request needs correcting
+  // independently of that. Who may fix it follows from the two together-
+  // the guest while PENDING, staff with LAUNDRY_REQUEST_EDIT thereafter.
+  needsChanges      Boolean             @default(false)
+  flaggedAt         DateTime?
+  flaggedById       String?
+  flagReason        String?
+
   assignedTo        User?               @relation("AssignedRequests", fields: [assignedToId], references: [id])
   unassignedFrom    User?               @relation("UnassignedRequests", fields: [unassignedFromId], references: [id])
+  flaggedBy         User?               @relation("FlaggedRequests", fields: [flaggedById], references: [id])
   items             RequestItem[]
   notes             RequestNote[]
   alertEvents       RequestAlertEvent[]
-  @@map("requests")
-}
+  revisions         RequestRevision[]
 
-enum AssignmentMethod {
-  AUTO
-  MANUAL
+  // Every index below answers a query that exists today. Postgres does not
+  // index foreign keys on its own, so the relation columns need them too.
+  @@index([status, createdAt])       // queue filtered by status, report over DELIVERED, alert scan
+  @@index([assignedToId, createdAt]) // a housekeeper's own tasks; unassigned+PENDING count
+  @@index([createdAt])               // unfiltered queue and search, both sorted by it
+  @@index([status, returnedAt])      // "delivered today" on the dashboard
+  @@index([seq])                     // tracking a request by its printed reference
+  @@index([unassignedFromId])        // FK, read when showing who a task was taken from
+  @@index([needsChanges])            // the flagged-work filter on the queue
+  @@index([flaggedById])             // FK
+  @@map("requests")
 }
 
 enum ServiceType {
@@ -104,6 +124,11 @@ model RequestItem {
   subtotal      Int
   request       Request     @relation(fields: [requestId], references: [id], onDelete: Cascade)
   laundryItem   LaundryItem @relation(fields: [laundryItemId], references: [id])
+
+  // requestId is the hottest join in the app- almost every request read
+  // includes its lines.
+  @@index([requestId])
+  @@index([laundryItemId])
   @@map("request_items")
 }
 
@@ -117,10 +142,45 @@ model RequestNote {
   request   Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
   author    User?    @relation("NoteAuthor", fields: [authorId], references: [id])
 
+  @@index([requestId])
+  @@index([authorId])
   @@map("request_notes")
 }
 
-// Frozen record of an SLA breach the moment it's first detected — kept even
+// What a request looked like immediately BEFORE an edit, and who was about to
+// change it. Editing replaces every RequestItem row (they are deleted and
+// recreated with fresh ids) and overwrites the totals in place, so without this
+// row the previous quantities, services, unit prices and totals are gone the
+// instant an edit lands.
+//
+// One row per edit, so deliberately no @@unique- the opposite of
+// RequestAlertEvent below, which collapses repeats of the same breach. Diffing
+// consecutive rows, or the newest row against the live request, is what yields
+// "edited / added / removed" when that view is built.
+model RequestRevision {
+  id          String   @id @default(cuid())
+  requestId   String
+  editedById  String?  // null = the guest, who has no account
+  reason      String?
+  items       Json     // [{ laundryItemId, serviceType, quantity, unitPrice, subtotal }]
+  guestName   String?
+  note        String?
+  isHanger    Boolean
+  isExpress   Boolean
+  grossAmount Int
+  vatAmount   Int
+  totalAmount Int
+  createdAt   DateTime @default(now())
+
+  request     Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  editedBy    User?    @relation("RequestEditor", fields: [editedById], references: [id])
+
+  @@index([requestId, createdAt])
+  @@index([editedById])
+  @@map("request_revisions")
+}
+
+// Frozen record of an SLA breach the moment it's first detected- kept even
 // after the request is delivered, so a rushed fix can't erase that it happened.
 model RequestAlertEvent {
   id         String          @id @default(cuid())

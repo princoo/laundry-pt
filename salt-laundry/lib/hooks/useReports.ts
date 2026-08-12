@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { rangeFor, startOfMonth, toISODate, type QuickRange } from '@/lib/utils/dateRange'
 import type { Report } from '@/lib/types/report'
+import { apiFetch } from '@/lib/apiClient'
 
 export function useReports() {
   const [from, setFrom] = useState(() => toISODate(startOfMonth(new Date())))
@@ -16,7 +17,7 @@ export function useReports() {
     setError(null)
     try {
       const qs = new URLSearchParams({ from: rangeFrom, to: rangeTo })
-      const res = await fetch(`/api/admin/reports?${qs}`)
+      const res = await apiFetch(`/api/admin/reports?${qs}`)
       if (!res.ok) throw new Error('Failed to load report')
       setReport(await res.json())
     } catch {

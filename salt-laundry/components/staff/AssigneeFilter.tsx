@@ -1,7 +1,7 @@
 'use client'
 
 import { Select } from '@/components/ui/Select'
-import { useHousekeepers } from '@/lib/hooks/useHousekeepers'
+import { useHousekeepers, housekeeperOption } from '@/lib/hooks/useHousekeepers'
 
 const ALL = 'ALL'
 
@@ -19,7 +19,7 @@ export function AssigneeFilter({ value, onChange }: Props) {
       onChange={(next) => onChange(next === ALL ? undefined : next)}
       options={[
         { value: ALL, label: 'All housekeepers' },
-        ...housekeepers.map((h) => ({ value: h.id, label: h.name ?? h.email })),
+        ...housekeepers.map(housekeeperOption),
       ]}
     />
   )

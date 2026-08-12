@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
-import { requireAuth } from '@/lib/utils/guards'
+import { requirePermission } from '@/lib/utils/guards'
 import { getRoomInvoiceData } from '@/services/invoice.service'
 import { roomInvoiceQuerySchema } from '@/lib/validations/roomInvoice.schema'
+import { parseHotelDayStart, parseHotelDayEnd } from '@/lib/utils/hotelTime'
 
 export async function GET(request: Request) {
-  const authError = await requireAuth()
+  const authError = await requirePermission('LAUNDRY_REQUESTS_INVOICES_VIEW')
   if (authError) return authError
 
   const { searchParams } = new URL(request.url)
@@ -21,8 +22,10 @@ export async function GET(request: Request) {
     guestName,
     serviceType,
     isExpress: express === 'ALL' ? undefined : express === 'EXPRESS',
-    from: from ? new Date(`${from}T00:00:00.000`) : undefined,
-    to: to ? new Date(`${to}T23:59:59.999`) : undefined,
+    // Hotel time, like the reports endpoint. These parsed in the server's
+    // timezone, which is right only while the server happens to run in Kigali.
+    from: from ? parseHotelDayStart(from) ?? undefined : undefined,
+    to: to ? parseHotelDayEnd(to) ?? undefined : undefined,
   })
 
   return NextResponse.json(data)

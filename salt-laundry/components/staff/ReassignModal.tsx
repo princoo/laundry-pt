@@ -2,7 +2,7 @@
 
 import { Modal } from '@/components/ui/Modal'
 import { Select } from '@/components/ui/Select'
-import { useHousekeepers } from '@/lib/hooks/useHousekeepers'
+import { useHousekeepers, housekeeperOption } from '@/lib/hooks/useHousekeepers'
 import { useReassignRequest } from '@/lib/hooks/useReassignRequest'
 
 interface Props {
@@ -20,28 +20,33 @@ export function ReassignModal({
   const { selectedId, setSelectedId, note, setNote, isSubmitting, error, submit } =
     useReassignRequest(requestId, onReassigned, onClose)
   const options = housekeepers.filter((h) => h.id !== currentAssigneeId)
+  // A request starts with nobody on it, so this modal both hands work out for
+  // the first time and moves it between housekeepers.
+  const verb = currentAssigneeName ? 'Reassign' : 'Assign'
 
   return (
-    <Modal title="Reassign request" onClose={onClose}>
+    <Modal title={`${verb} request`} onClose={onClose}>
       <p className="text-sm text-salt-text-sec mb-3">
-        Currently assigned: {currentAssigneeName ?? 'Unassigned'}
+        {currentAssigneeName
+          ? `Currently assigned: ${currentAssigneeName}`
+          : 'Not assigned yet.'}
       </p>
       <div className="mb-3">
         <Select
           value={selectedId}
           onChange={setSelectedId}
           placeholder="Select a housekeeper…"
-          options={options.map((h) => ({ value: h.id, label: h.name ?? h.email }))}
+          options={options.map(housekeeperOption)}
         />
       </div>
       <p className="text-[11px] text-salt-text-muted mb-3">
-        Only showing housekeepers currently on shift.
+        Housekeepers who are off shift are marked, and can still be given work.
       </p>
       <textarea
         rows={3}
         value={note}
         onChange={(e) => setNote(e.target.value)}
-        placeholder="Reason for reassignment (optional)"
+        placeholder="Reason (optional)"
         className="w-full border border-[0.5px] border-salt-border rounded-lg px-3 py-2.5 text-sm bg-white"
       />
       {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
@@ -59,7 +64,7 @@ export function ReassignModal({
           disabled={!selectedId || isSubmitting}
           className="bg-salt-navy hover:bg-salt-navy-hover transition-colors text-white rounded-lg px-4 py-2 text-sm disabled:opacity-60"
         >
-          {isSubmitting ? 'Reassigning…' : 'Reassign'}
+          {isSubmitting ? `${verb}ing…` : verb}
         </button>
       </div>
     </Modal>

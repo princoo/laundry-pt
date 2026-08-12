@@ -6,8 +6,7 @@ const globalForPrisma = globalThis as unknown as {
   adapter?: PrismaPg
 }
 
-// Aiven caps this server at 20 connections (3 reserved for superusers) and the
-// cap is shared across every database on the instance. Keep the pool small so
+//  Keep the pool small so
 // parallel queries queue instead of exhausting it, and reuse it across HMR.
 const POOL_MAX = Number(process.env.DB_POOL_MAX ?? 3)
 

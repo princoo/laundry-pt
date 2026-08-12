@@ -1,40 +1,55 @@
-'use client'
+"use client";
 
-import { useSession } from 'next-auth/react'
-import { AdminAccessDenied } from '@/components/admin/AdminAccessDenied'
-import { ReportsPeriodSelector } from '@/components/staff/ReportsPeriodSelector'
-import { ReportsSummaryCards } from '@/components/staff/ReportsSummaryCards'
-import { ReportsRevenueChart } from '@/components/staff/ReportsRevenueChart'
-import { ReportsServiceTable } from '@/components/staff/ReportsServiceTable'
-import { ReportsServiceDonut } from '@/components/staff/ReportsServiceDonut'
-import { ReportsTopItemsTable } from '@/components/staff/ReportsTopItemsTable'
-import { ReportsTopRoomsTable } from '@/components/staff/ReportsTopRoomsTable'
-import { ReportsEmptyState } from '@/components/staff/ReportsEmptyState'
-import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton'
-import { FetchError } from '@/components/ui/FetchError'
-import { useReports } from '@/lib/hooks/useReports'
+import { AccessDenied } from "@/components/ui/AccessDenied";
+import { ReportsPeriodSelector } from "@/components/staff/ReportsPeriodSelector";
+import { ReportsSummaryCards } from "@/components/staff/ReportsSummaryCards";
+import { ReportsRevenueChart } from "@/components/staff/ReportsRevenueChart";
+import { ReportsServiceTable } from "@/components/staff/ReportsServiceTable";
+import { ReportsServiceDonut } from "@/components/staff/ReportsServiceDonut";
+import { ReportsTopItemsTable } from "@/components/staff/ReportsTopItemsTable";
+import { ReportsTopRoomsTable } from "@/components/staff/ReportsTopRoomsTable";
+import { ReportsEmptyState } from "@/components/staff/ReportsEmptyState";
+import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
+import { FetchError } from "@/components/ui/FetchError";
+import { useReports } from "@/lib/hooks/useReports";
+import { usePermissions } from "@/lib/hooks/usePermissions";
 
 export default function ReportsPage() {
-  const { data: session, status } = useSession()
-  const { from, setFrom, to, setTo, report, isLoading, error, generate, applyQuickRange } = useReports()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const role = (session?.user as any)?.role
+  const { can, isLoading: isSessionLoading } = usePermissions();
+  const {
+    from,
+    setFrom,
+    to,
+    setTo,
+    report,
+    isLoading,
+    error,
+    generate,
+    applyQuickRange,
+  } = useReports();
 
-  if (status !== 'loading' && role !== 'ADMIN') {
-    return <AdminAccessDenied />
+  // LAUNDRY_REPORTS_EXPORT exists in the permission set but has no surface yet
+  //- the PDF button on this page is a later phase, not this one.
+  if (!isSessionLoading && !can("LAUNDRY_REPORTS_VIEW")) {
+    return <AccessDenied />;
   }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <div className="mb-5 sm:mb-6">
         <h1 className="text-[22px] font-black text-salt-text">Reports</h1>
-        <p className="text-sm text-salt-text-sec mt-1">Revenue and activity for the period you choose below.</p>
+        <p className="text-sm text-salt-text-sec mt-1">
+          Revenue and activity for the period you choose below.
+        </p>
       </div>
 
       <ReportsPeriodSelector
-        from={from} to={to}
-        onFromChange={setFrom} onToChange={setTo}
-        onGenerate={generate} onQuickRange={applyQuickRange}
+        from={from}
+        to={to}
+        onFromChange={setFrom}
+        onToChange={setTo}
+        onGenerate={generate}
+        onQuickRange={applyQuickRange}
         isLoading={isLoading}
       />
 
@@ -53,7 +68,11 @@ export default function ReportsPage() {
               expressRevenue={report.expressRevenue}
             />
 
-            <ReportsRevenueChart revenueByDay={report.revenueByDay} from={from} to={to} />
+            <ReportsRevenueChart
+              revenueByDay={report.revenueByDay}
+              from={from}
+              to={to}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ReportsServiceTable
@@ -73,5 +92,5 @@ export default function ReportsPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 
 // Author is nullable: notes written before authorship existed, and the
 // automatic guest-edit audit note, have no User behind them.
-const AUTHOR_SELECT = { author: { select: { name: true, role: true } } } as const
+const AUTHOR_SELECT = { author: { select: { name: true, roleNames: true } } } as const
 
 export async function getNotesForRequest(requestId: string) {
   return prisma.requestNote.findMany({

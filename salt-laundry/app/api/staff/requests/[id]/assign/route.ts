@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server'
-import { requireSupervisor } from '@/lib/utils/guards'
+import { requirePermission } from '@/lib/utils/guards'
 import { getActiveHousekeeperById } from '@/services/user.service'
-import { manualReassign } from '@/services/assignment.service'
+import { assignRequest } from '@/services/assignment.service'
 import { getRequestById } from '@/services/staffRequest.service'
 
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireSupervisor()
+  const authError = await requirePermission('LAUNDRY_REQUEST_HOUSEKEEPER_ASSIGN')
   if (authError) return authError
 
   const { id } = await params
@@ -23,7 +23,7 @@ export async function PATCH(
   }
 
   try {
-    await manualReassign(id, housekeeperId)
+    await assignRequest(id, housekeeperId)
   } catch {
     return NextResponse.json({ error: 'Request not found' }, { status: 404 })
   }

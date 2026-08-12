@@ -1,10 +1,10 @@
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
-import { BrandLogo } from '@/components/ui/BrandLogo'
-import { HOME_NAV_LINK } from '@/lib/constants/navigation'
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { BrandLogo } from "@/components/ui/BrandLogo";
+import { HOME_NAV_LINK } from "@/lib/constants/navigation";
 
-// Minimal chrome for the standalone auth pages (sign in, forgot/reset
-// password, forced password change) — just the way back out, nothing else.
+// Minimal chrome for /authenticate, the one page outside both the guest form
+// and the staff dashboard- just the way back out, nothing else.
 export function AuthNav() {
   return (
     <nav className="bg-white border-b border-[0.5px] border-salt-border">
@@ -19,5 +19,5 @@ export function AuthNav() {
         </Link>
       </div>
     </nav>
-  )
+  );
 }

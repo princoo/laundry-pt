@@ -1,7 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import { formatReference } from '@/lib/utils/formatting'
 import { DEFAULT_SORT, type SortOrder } from '@/lib/constants/queue'
-import type { RequestStatus, Role } from '@prisma/client'
+import { hasPermission } from '@/lib/utils/permissions'
+import type { RequestStatus } from '@prisma/client'
 
 interface QueueParams {
   status?: RequestStatus
@@ -9,17 +10,17 @@ interface QueueParams {
   limit: number
   sort?: SortOrder
   actorId?: string
-  actorRole?: Role
+  actorPermissions?: readonly string[]
   assignedToFilter?: string
 }
 
 export async function getRequestsQueue({
-  status, page, limit, sort = DEFAULT_SORT, actorId, actorRole, assignedToFilter,
+  status, page, limit, sort = DEFAULT_SORT, actorId, actorPermissions, assignedToFilter,
 }: QueueParams) {
   const where: Record<string, unknown> = status ? { status } : {}
-  // Housekeepers only ever see their own tasks — there is no all-requests view.
+  // Without LAUNDRY_REQUESTS_VIEW_ALL an actor only ever sees their own tasks.
   // The empty-string fallback matches nothing rather than falling through to all rows.
-  if (actorRole === 'HOUSEKEEPER') {
+  if (!hasPermission(actorPermissions, 'LAUNDRY_REQUESTS_VIEW_ALL')) {
     where.assignedToId = actorId ?? ''
   } else if (assignedToFilter) {
     where.assignedToId = assignedToFilter

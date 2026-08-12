@@ -21,7 +21,7 @@ export function RequestDetailTopBar({ requestId }: Props) {
         className="flex items-center gap-1.5 text-salt-text-sec text-sm border border-[0.5px] border-salt-border rounded-lg px-3 py-1.5 hover:text-salt-text hover:bg-salt-cream transition-colors"
       >
         <Printer className="w-3.5 h-3.5" />
-        Print invoice
+        View invoice
       </Link>
     </div>
   )

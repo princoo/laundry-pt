@@ -6,21 +6,25 @@ import { Shirt, Menu, X } from 'lucide-react'
 import { BrandLogo } from '@/components/ui/BrandLogo'
 import { NavLink } from '@/components/ui/NavLink'
 import { NavGroupDropdown } from '@/components/staff/NavGroupDropdown'
-import { RoleBadge } from '@/components/staff/RoleBadge'
+import { RoleBadge } from '@/components/ui/RoleBadge'
 import { UserMenu } from '@/components/staff/UserMenu'
 import { NotificationBell } from '@/components/staff/NotificationBell'
 import { MobileNavMenu } from '@/components/staff/MobileNavMenu'
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher'
-import { STAFF_NAV_LINKS, ADMIN_NAV_LINKS } from '@/lib/constants/navigation'
+import { STAFF_NAV_LINKS, MANAGE_NAV_LINKS } from '@/lib/constants/navigation'
+import { visibleLinks } from '@/lib/utils/navigation'
+import { usePermissions } from '@/lib/hooks/usePermissions'
 
 interface Props {
   userName?: string
-  role?: string
+  roleNames?: string[]
 }
 
-export function StaffNav({ userName, role }: Props) {
+export function StaffNav({ userName, roleNames = [] }: Props) {
   const pathname = usePathname()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const { permissions } = usePermissions()
+  const manageLinks = visibleLinks(MANAGE_NAV_LINKS, permissions)
 
   return (
     <nav className="print:hidden sticky top-0 z-50 bg-white border-b border-[0.5px] border-salt-border">
@@ -35,7 +39,7 @@ export function StaffNav({ userName, role }: Props) {
         </div>
 
         <div className="hidden md:flex items-center gap-2">
-          {STAFF_NAV_LINKS.map((link) => (
+          {visibleLinks(STAFF_NAV_LINKS, permissions).map((link) => (
             <NavLink
               key={link.href}
               href={link.href}
@@ -44,10 +48,10 @@ export function StaffNav({ userName, role }: Props) {
               {link.label}
             </NavLink>
           ))}
-          {role === 'ADMIN' && <NavGroupDropdown label="Manage" items={ADMIN_NAV_LINKS} />}
+          {manageLinks.length > 0 && <NavGroupDropdown label="Manage" items={manageLinks} />}
           <NotificationBell />
           {userName && <UserMenu userName={userName} />}
-          {role && <RoleBadge role={role} />}
+          <RoleBadge roleNames={roleNames} />
           <LanguageSwitcher />
         </div>
 
@@ -66,7 +70,7 @@ export function StaffNav({ userName, role }: Props) {
       </div>
 
       {isMobileOpen && (
-        <MobileNavMenu role={role} userName={userName} onNavigate={() => setIsMobileOpen(false)} />
+        <MobileNavMenu roleNames={roleNames} userName={userName} onNavigate={() => setIsMobileOpen(false)} />
       )}
     </nav>
   )

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { requireAuth } from '@/lib/utils/guards'
+import { requirePermission } from '@/lib/utils/guards'
 import { searchRequests } from '@/services/search.service'
 import type { RequestStatus, ServiceType } from '@prisma/client'
 
@@ -9,7 +9,7 @@ const VALID_STATUSES: RequestStatus[] = [
 const VALID_SERVICES: ServiceType[] = ['NORMAL', 'DRY_CLEAN', 'PRESSING']
 
 export async function GET(request: Request) {
-  const authError = await requireAuth()
+  const authError = await requirePermission('LAUNDRY_REQUESTS_SEARCH')
   if (authError) return authError
 
   const { searchParams } = new URL(request.url)

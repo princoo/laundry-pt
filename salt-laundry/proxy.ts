@@ -1,42 +1,34 @@
-import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { soaSignInUrl } from "@/lib/utils/soaSignIn";
 
-// Staff pages reachable without a session — sign in and the reset flow.
-const PUBLIC_STAFF_PATHS = ['/staff/login', '/staff/forgot-password', '/staff/reset-password']
-const CHANGE_PASSWORD_PATH = '/staff/change-password'
-
+// Signing in is SOA's job now, so there is no public staff path left to let
+// through- an unauthenticated page request leaves the app entirely.
 export const proxy = auth((req) => {
-  const isLoggedIn = !!req.auth
-  const { pathname } = req.nextUrl
+  if (req.auth) return NextResponse.next();
 
-  if (PUBLIC_STAFF_PATHS.includes(pathname)) {
-    if (isLoggedIn && pathname === '/staff/login') {
-      return NextResponse.redirect(new URL('/staff', req.nextUrl))
-    }
-    return NextResponse.next()
+  const { pathname, search } = req.nextUrl;
+
+  // Data requests answer rather than redirect: the browser is already on a
+  // page, and the shared fetch wrapper turns this into the redirect instead.
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!isLoggedIn) {
-    if (pathname.startsWith('/api/')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const loginUrl = new URL('/staff/login', req.nextUrl)
-    loginUrl.searchParams.set('callbackUrl', pathname)
-    return NextResponse.redirect(loginUrl)
+  const signInUrl = soaSignInUrl(`${pathname}${search}`);
+  if (!signInUrl) {
+    return new NextResponse("Sign-in is not configured.", { status: 500 });
   }
+  return NextResponse.redirect(signInUrl);
+});
 
-  // Someone on a temporary password gets no staff page but the one that lets
-  // them replace it. Gating here rather than in the layout keeps the redirect
-  // out of a segment the target page shares — that loops the client router.
-  // API routes stay open so the change itself can be submitted.
-  const mustChangePassword = (req.auth?.user as any)?.mustChangePassword
-  if (mustChangePassword && pathname.startsWith('/staff') && pathname !== CHANGE_PASSWORD_PATH) {
-    return NextResponse.redirect(new URL(CHANGE_PASSWORD_PATH, req.nextUrl))
-  }
-
-  return NextResponse.next()
-})
-
+// /authenticate is deliberately absent- it is the page that creates the
+// session, so guarding it with a session check would lock everyone out.
 export const config = {
-  matcher: ['/staff/:path*', '/api/staff/:path*', '/api/admin/:path*'],
-}
+  matcher: [
+    "/staff/:path*",
+    "/api/staff/:path*",
+    "/api/admin/:path*",
+    "/api/supervisor/:path*",
+  ],
+};

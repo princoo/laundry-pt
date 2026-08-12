@@ -4,10 +4,9 @@ import { useFormContext } from 'react-hook-form'
 import type { GuestDetailsValues } from '@/lib/validations/guestRequest.schema'
 import { FieldError } from '@/components/ui/FieldError'
 import { ReadOnlyRoomField } from '@/components/guest/ReadOnlyRoomField'
+import { RoomSelect } from '@/components/guest/RoomSelect'
+import { INPUT_CLASSES } from '@/lib/constants/formStyles'
 import type { LockedRoom } from '@/lib/types/guestOrder'
-
-const inputClasses =
-  'w-full border border-[0.5px] border-salt-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-salt-navy bg-white'
 
 interface Props {
   // Set when the room is already decided (edit or QR scan): it's shown, not asked
@@ -35,27 +34,22 @@ export function GuestDetailsForm({ lockedRoom }: Props) {
             <label htmlFor="roomNumber" className="block text-sm text-salt-text mb-1.5">
               Room number*
             </label>
-            <input
-              id="roomNumber"
-              type="text"
-              placeholder="e.g. 214"
-              className={inputClasses}
-              {...register('roomNumber')}
-            />
+            <RoomSelect />
             <FieldError message={errors.roomNumber?.message} />
           </div>
         )}
         <div className="flex-1">
           <label htmlFor="guestName" className="block text-sm text-salt-text mb-1.5">
-            Name (optional)
+            Guest Name*
           </label>
           <input
             id="guestName"
             type="text"
-            placeholder="e.g. J. Okafor"
-            className={inputClasses}
+            placeholder="Enter your name here"
+            className={INPUT_CLASSES}
             {...register('guestName')}
           />
+          <FieldError message={errors.guestName?.message} />
         </div>
       </div>
     </div>

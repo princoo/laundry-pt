@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { apiFetch } from '@/lib/apiClient'
 
 export interface OnShiftRow {
   id: string
@@ -19,7 +20,7 @@ export function useStaffOverview(isOpen: boolean) {
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
   function load() {
-    fetch('/api/supervisor/staff-overview')
+    apiFetch('/api/supervisor/staff-overview')
       .then((res) => res.json())
       .then((data) => {
         setOnShift(data.onShift ?? [])
@@ -30,7 +31,7 @@ export function useStaffOverview(isOpen: boolean) {
   useEffect(() => { if (isOpen) load() }, [isOpen])
 
   async function setAvailability(id: string, isAvailable: boolean) {
-    const res = await fetch(`/api/staff/users/${id}/availability`, {
+    const res = await apiFetch(`/api/staff/users/${id}/availability`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isAvailable }),

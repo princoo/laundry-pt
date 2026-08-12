@@ -1,14 +1,14 @@
-import type { ReactNode } from 'react'
-import { AuthNav } from '@/components/ui/AuthNav'
+import type { ReactNode } from "react";
+import { AuthNav } from "@/components/ui/AuthNav";
 
 interface Props {
-  title: string
-  description: string
-  aside?: ReactNode
+  title: string;
+  description: string;
+  aside?: ReactNode;
   // Card background. White everywhere except screens that are a status rather
-  // than a form — the sign-in-in-progress card tints the whole card green.
-  cardClassName?: string
-  children: ReactNode
+  // than a form- the sign-in-in-progress card tints the whole card green.
+  cardClassName?: string;
+  children: ReactNode;
 }
 
 // Two-column frame for the standalone staff auth pages: context on the left,
@@ -17,7 +17,7 @@ export function AuthShell({
   title,
   description,
   aside,
-  cardClassName = 'bg-white',
+  cardClassName = "bg-white",
   children,
 }: Props) {
   return (
@@ -36,7 +36,11 @@ export function AuthShell({
               {description}
             </p>
 
-            {aside && <div className="mt-6 pt-6 border-t-[0.5px] border-salt-border">{aside}</div>}
+            {aside && (
+              <div className="mt-6 pt-6 border-t-[0.5px] border-salt-border">
+                {aside}
+              </div>
+            )}
           </div>
 
           <div
@@ -47,5 +51,5 @@ export function AuthShell({
         </div>
       </div>
     </div>
-  )
+  );
 }

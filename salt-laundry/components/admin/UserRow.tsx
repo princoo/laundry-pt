@@ -1,70 +1,66 @@
-import { getInitials } from '@/lib/utils/formatting'
-import { ActiveToggle } from '@/components/ui/ActiveToggle'
-import { RoleBadge } from '@/components/admin/RoleBadge'
-import { UserActions } from '@/components/admin/UserActions'
+import { UserAvatar } from '@/components/admin/UserAvatar'
+import { UserContact } from '@/components/admin/UserContact'
+import { UserFlagToggle } from '@/components/admin/UserFlagToggle'
 import { UserStatusDot } from '@/components/admin/UserStatusDot'
-import type { AdminUser } from '@/lib/hooks/useAdminUsers'
+import { RoleBadge } from '@/components/ui/RoleBadge'
+import type { StaffUser } from '@/lib/types/staffUser'
 
 interface Props {
-  user: AdminUser
+  user: StaffUser
   isCurrentUser: boolean
-  onEdit: (user: AdminUser) => void
-  onResetPassword: (user: AdminUser) => void
   onToggleAvailability: (id: string, nextIsAvailable: boolean) => void
+  onToggleHousekeeper: (id: string, nextIsHousekeeper: boolean) => void
 }
 
 export function UserRow({
-  user,
-  isCurrentUser,
-  onEdit,
-  onResetPassword,
-  onToggleAvailability,
+  user, isCurrentUser, onToggleAvailability, onToggleHousekeeper,
 }: Props) {
   return (
     <tr className="border-b border-[0.5px] border-salt-border last:border-0 hover:bg-salt-cream transition-colors">
       <td className="py-4 px-5">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 shrink-0 rounded-full bg-salt-green-light text-salt-green text-xs font-medium flex items-center justify-center">
-            {getInitials(user.name, user.email)}
+          <UserAvatar name={user.name} email={user.email} />
+          <div className="min-w-0">
+            <div className="text-salt-text">
+              {user.name || user.email}
+              {isCurrentUser && <span className="text-salt-text-muted"> (You)</span>}
+            </div>
+            {user.staffId && (
+              <div className="text-xs text-salt-text-muted">Staff no. {user.staffId}</div>
+            )}
           </div>
-          <span className="text-salt-text">
-            {user.name || user.email}
-            {isCurrentUser && <span className="text-salt-text-muted"> (You)</span>}
-          </span>
         </div>
       </td>
-      <td className="py-4 px-5 text-sm text-salt-text-sec">{user.email}</td>
       <td className="py-4 px-5">
-        <RoleBadge role={user.role} />
+        <UserContact email={user.email} phoneNumber={user.phoneNumber} />
+      </td>
+      <td className="py-4 px-5 text-sm text-salt-text-sec">{user.departmentName || '—'}</td>
+      <td className="py-4 px-5">
+        <RoleBadge roleNames={user.roleNames} shape="pill" />
       </td>
       <td className="py-4 px-5">
         <UserStatusDot isActive={user.isActive} />
       </td>
       <td className="py-4 px-5">
-        {user.role === 'HOUSEKEEPER' ? (
-          <div className="flex items-center gap-2">
-            <ActiveToggle
-              checked={user.isAvailable}
-              onChange={() => onToggleAvailability(user.id, !user.isAvailable)}
-              offColorClass="bg-amber-400"
-            />
-            <span className="text-xs text-salt-text-sec">
-              {user.isAvailable ? 'On shift' : 'Off shift'}
-            </span>
-          </div>
+        <UserFlagToggle
+          checked={user.isHousekeeper}
+          onChange={() => onToggleHousekeeper(user.id, !user.isHousekeeper)}
+          onLabel="Housekeeper"
+          offLabel="Not a housekeeper"
+        />
+      </td>
+      <td className="py-4 px-5">
+        {user.isHousekeeper ? (
+          <UserFlagToggle
+            checked={user.isAvailable}
+            onChange={() => onToggleAvailability(user.id, !user.isAvailable)}
+            onLabel="On shift"
+            offLabel="Off shift"
+            offColorClass="bg-amber-400"
+          />
         ) : (
           <span className="text-salt-text-muted text-sm">—</span>
         )}
-      </td>
-      <td className="py-4 px-5">
-        <UserActions
-          user={user}
-          isCurrentUser={isCurrentUser}
-          onEdit={onEdit}
-          onResetPassword={onResetPassword}
-          // The row itself hovers to cream, so the trigger lifts the other way.
-          hoverClass="hover:bg-white"
-        />
       </td>
     </tr>
   )

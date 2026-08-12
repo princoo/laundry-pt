@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getCurrentUser, requireAuth } from '@/lib/utils/guards'
+import { getCurrentUser, requirePermission } from '@/lib/utils/guards'
 import { getRequestById } from '@/services/staffRequest.service'
 import { addNoteToRequest } from '@/services/note.service'
 import { createNoteSchema } from '@/lib/validations/note.schema'
@@ -9,7 +9,7 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAuth()
+  const authError = await requirePermission('LAUNDRY_REQUEST_VIEW')
   if (authError) return authError
 
   const { id } = await params

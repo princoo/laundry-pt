@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
-import { getCurrentUser, requireAuth } from '@/lib/utils/guards'
+import { getCurrentUser, requirePermission } from '@/lib/utils/guards'
 import { getRequestDetailForUser } from '@/services/staffRequest.service'
 import {
   updateRequestStatus,
   InvalidStatusTransitionError,
   ForbiddenRequestAccessError,
+  RequestFlaggedError,
 } from '@/services/requestStatus.service'
 import { updateStatusSchema } from '@/lib/validations/statusUpdate.schema'
 
@@ -12,7 +13,7 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAuth()
+  const authError = await requirePermission('LAUNDRY_REQUEST_VIEW')
   if (authError) return authError
 
   const { id } = await params
@@ -29,7 +30,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAuth()
+  const authError = await requirePermission('LAUNDRY_REQUEST_PROCESS')
   if (authError) return authError
 
   const { id } = await params
@@ -58,6 +59,9 @@ export async function PATCH(
         { error: 'You can only update requests assigned to you' },
         { status: 403 }
       )
+    }
+    if (error instanceof RequestFlaggedError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
     }
     if (error instanceof InvalidStatusTransitionError) {
       return NextResponse.json({ error: 'Invalid status transition' }, { status: 400 })
