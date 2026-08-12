@@ -1,8 +1,33 @@
 import type { ServiceType } from '@prisma/client'
+import { lineKey } from '@/lib/utils/pricing'
 import type { ItemSelection, LaundryItemOption, Selections } from '@/lib/types/guestOrder'
 
 export function getUnitPrice(item: LaundryItemOption, serviceType: ServiceType): number {
   return item.services.find((service) => service.type === serviceType)?.price ?? 0
+}
+
+// Rewrites the catalogue a form prices against, so lines a request already
+// carries show the price the guest agreed to rather than today's.
+//
+// Applied once to the item list rather than threaded through every component
+// that displays a price: the item row, the search results and the order summary
+// all read from this same array, so overriding it here is what keeps the
+// previewed total equal to the one the server will save. Lines not carried —
+// anything newly added — are left at catalogue price, which is what they will
+// actually be charged at.
+export function applyCarriedPrices(
+  items: LaundryItemOption[],
+  carriedPrices?: ReadonlyMap<string, number>
+): LaundryItemOption[] {
+  if (!carriedPrices?.size) return items
+
+  return items.map((item) => ({
+    ...item,
+    services: item.services.map((service) => {
+      const carried = carriedPrices.get(lineKey(item.id, service.type))
+      return carried === undefined ? service : { ...service, price: carried }
+    }),
+  }))
 }
 
 export function supportsService(item: LaundryItemOption, serviceType: ServiceType): boolean {

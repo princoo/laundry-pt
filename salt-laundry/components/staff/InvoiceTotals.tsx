@@ -1,4 +1,5 @@
 import { formatCurrency } from '@/lib/utils/formatting'
+import { vatLabel } from '@/lib/utils/pricing'
 
 interface Props {
   grossAmount: number
@@ -18,7 +19,7 @@ export function InvoiceTotals({
         <span className="text-salt-text">{formatCurrency(grossAmount)}</span>
       </div>
       <div className="flex justify-between w-full max-w-[280px] text-salt-text-sec">
-        <span>VAT 15%</span>
+        <span>{vatLabel(grossAmount, vatAmount)}</span>
         <span className="text-salt-text">{formatCurrency(vatAmount)}</span>
       </div>
       <div

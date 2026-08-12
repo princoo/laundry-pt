@@ -5,6 +5,7 @@ import { Search } from 'lucide-react'
 import { Select } from '@/components/ui/Select'
 import { STATUS_LABELS } from '@/lib/constants/statuses'
 import { SERVICE_TYPE_LABELS } from '@/lib/constants/services'
+import { INPUT_CLASSES } from '@/lib/constants/formStyles'
 import type { SearchFilters } from '@/lib/hooks/useSearchRequests'
 import type { RequestStatus, ServiceType } from '@prisma/client'
 
@@ -12,9 +13,6 @@ const STATUSES: RequestStatus[] = [
   'PENDING', 'COLLECTED', 'IN_PROGRESS', 'READY', 'DELIVERED', 'CANCELLED',
 ]
 const SERVICES: ServiceType[] = ['NORMAL', 'DRY_CLEAN', 'PRESSING']
-
-const inputClasses =
-  'w-full border border-[0.5px] border-salt-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-salt-navy bg-white'
 
 interface Props {
   filters: SearchFilters
@@ -38,12 +36,12 @@ export function SearchFilterBar({ filters, onChange, onSearch, onClear, isLoadin
         <div>
           <label className="block text-xs text-salt-text-muted mb-1">Room</label>
           <input value={filters.room} onChange={(e) => set('room', e.target.value)} onKeyDown={onEnter}
-            placeholder="e.g. 214" className={inputClasses} />
+            placeholder="e.g. 214" className={INPUT_CLASSES} />
         </div>
         <div>
           <label className="block text-xs text-salt-text-muted mb-1">Guest name</label>
           <input value={filters.name} onChange={(e) => set('name', e.target.value)} onKeyDown={onEnter}
-            placeholder="e.g. J. Okafor" className={inputClasses} />
+            placeholder="e.g. J. Okafor" className={INPUT_CLASSES} />
         </div>
         <div>
           <label className="block text-xs text-salt-text-muted mb-1">Status</label>
@@ -57,11 +55,11 @@ export function SearchFilterBar({ filters, onChange, onSearch, onClear, isLoadin
         </div>
         <div>
           <label className="block text-xs text-salt-text-muted mb-1">From</label>
-          <input type="date" value={filters.from} onChange={(e) => set('from', e.target.value)} className={inputClasses} />
+          <input type="date" value={filters.from} onChange={(e) => set('from', e.target.value)} className={INPUT_CLASSES} />
         </div>
         <div>
           <label className="block text-xs text-salt-text-muted mb-1">To</label>
-          <input type="date" value={filters.to} onChange={(e) => set('to', e.target.value)} className={inputClasses} />
+          <input type="date" value={filters.to} onChange={(e) => set('to', e.target.value)} className={INPUT_CLASSES} />
         </div>
       </div>
 

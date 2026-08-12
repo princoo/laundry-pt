@@ -1,10 +1,18 @@
+import { HOTEL_TIMEZONE } from '@/lib/constants/timezone'
+import { hotelParts, isSameHotelDay } from '@/lib/utils/hotelTime'
+
 export function formatCurrency(amount: number): string {
   return `RWF ${amount.toLocaleString()}`
 }
 
+// Every timestamp in this app is shown in hotel time, pinned explicitly rather
+// than left to the runtime. Without it the same value renders in the server's
+// zone during SSR and the device's zone after hydration — two different strings
+// for one instant, and neither necessarily the hotel's.
 export function formatTimestamp(date: Date | string): string {
   return new Date(date).toLocaleString('en-RW', {
     day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+    timeZone: HOTEL_TIMEZONE,
   })
 }
 
@@ -18,12 +26,15 @@ export function timeAgo(date: Date | string): string {
 
 export function formatInvoiceDate(date: Date | string): string {
   return new Date(date).toLocaleDateString('en-GB', {
-    day: 'numeric', month: 'long', year: 'numeric',
+    day: 'numeric', month: 'long', year: 'numeric', timeZone: HOTEL_TIMEZONE,
   })
 }
 
 export function formatReference(seq: number, createdAt: Date | string): string {
-  const year = new Date(createdAt).getFullYear()
+  // The hotel's year. Built on the server, so getFullYear() would read UTC on a
+  // UTC host — and a request placed at 00:30 on 1 January in Kigali would be
+  // stamped with the previous year for the rest of its life.
+  const { year } = hotelParts(new Date(createdAt))
   return `LDY-${year}-${String(seq).padStart(4, '0')}`
 }
 
@@ -41,10 +52,15 @@ export function secondsAgoLabel(date: Date, nowMs: number): string {
 
 export function formatEventTimestamp(date: Date | string): string {
   const d = new Date(date)
-  const time = d.toLocaleTimeString('en-RW', { hour: '2-digit', minute: '2-digit' })
-  const isToday = d.toDateString() === new Date().toDateString()
-  if (isToday) return `Today, ${time}`
-  const day = d.toLocaleDateString('en-RW', { day: 'numeric', month: 'short' })
+  const time = d.toLocaleTimeString('en-RW', {
+    hour: '2-digit', minute: '2-digit', timeZone: HOTEL_TIMEZONE,
+  })
+  // "Today" means the hotel's today, so an event at 00:30 Kigali still reads as
+  // today to the person looking at it rather than as yesterday.
+  if (isSameHotelDay(d, new Date())) return `Today, ${time}`
+  const day = d.toLocaleDateString('en-RW', {
+    day: 'numeric', month: 'short', timeZone: HOTEL_TIMEZONE,
+  })
   return `${day}, ${time}`
 }
 

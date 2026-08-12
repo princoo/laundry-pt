@@ -31,17 +31,28 @@ export function useBellNotifications() {
 
   const [notifications, setNotifications] = useState<StaffNotification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
+  const [loadedKey, setLoadedKey] = useState<string | null>(null)
   const dedupeKey = (n: StaffNotification) => `${n.id}:${n.kind}:${n.timestamp}`
   const seenKeys = useRef(new Set<string>())
 
-  // Load this user's own stored notifications once we know who they are.
-  useEffect(() => {
-    if (!storageKey) return
+  // Load this user's own stored notifications once we know who they are, and
+  // again if the account in this tab changes.
+  //
+  // Adjusted during render rather than in an effect — the same loadedKey idiom
+  // as useStaffDashboard and useRequestDetail. An effect would paint one frame
+  // of an empty bell before the stored notifications appeared, and React treats
+  // setting state while rendering the same component as the supported way to
+  // react to a changed input. loadStoredState is guarded, so the server pass —
+  // where there is no sessionStorage and no session id — simply skips it.
+  // seenKeys is deliberately not rebuilt here: the persist effect below already
+  // derives it from `notifications` on every change, including this one, and a
+  // ref must not be written during render.
+  if (storageKey && storageKey !== loadedKey) {
     const stored = loadStoredState(storageKey)
+    setLoadedKey(storageKey)
     setNotifications(stored.notifications)
     setUnreadCount(stored.unreadCount)
-    seenKeys.current = new Set(stored.notifications.map(dedupeKey))
-  }, [storageKey])
+  }
 
   useEffect(() => {
     if (!storageKey) return

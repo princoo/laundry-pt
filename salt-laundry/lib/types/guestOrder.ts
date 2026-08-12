@@ -25,12 +25,13 @@ export interface ItemSelection {
 // Keyed by item id. Only entries with quantity > 0 are in the order.
 export type Selections = Record<string, ItemSelection>
 
-// The request form serves two jobs: a guest placing an order, and the same guest
-// changing one that hasn't been collected yet.
-export type RequestFormMode = 'create' | 'edit'
+// The request form serves three jobs: a guest placing an order, the same guest
+// changing one that hasn't been collected yet, and staff correcting one that
+// was flagged for changes after collection.
+export type RequestFormMode = 'create' | 'edit' | 'staff-edit'
 
 // Why a room is shown rather than asked for: the guest scanned that room's QR
-// code, or they're editing a request that already belongs to a room.
+// code, or the request already belongs to a room and no edit may move it.
 export type RoomLockReason = 'scan' | 'edit'
 
 export interface LockedRoom {

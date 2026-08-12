@@ -49,7 +49,11 @@ export function resolveLockedRoom(
   draft: GuestOrderDraft,
   scannedRoom?: string
 ): LockedRoom | undefined {
-  if (mode === 'edit') return { number: draft.roomNumber, reason: 'edit' }
+  // Staff corrections lock it for the same reason a guest edit does — a
+  // correction fixes what was ordered, never whose order it is.
+  if (mode === 'edit' || mode === 'staff-edit') {
+    return { number: draft.roomNumber, reason: 'edit' }
+  }
   return scannedRoom ? { number: scannedRoom, reason: 'scan' } : undefined
 }
 

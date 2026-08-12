@@ -35,6 +35,30 @@ export const MY_TASK_STATUS_FILTERS = [
 // the laundry's hands the order it's working from has to stay fixed.
 export const GUEST_EDITABLE_STATUS: RequestStatus = 'PENDING'
 
+// Where a request can be flagged for changes. DELIVERED is out because the
+// amount is already on the guest's room bill, and CANCELLED because there is
+// nothing left to correct. Clearing a flag is deliberately NOT limited to these
+// — a flag that somehow outlived its request must always be withdrawable.
+export const FLAG_ELIGIBLE_STATUSES: RequestStatus[] = [
+  'PENDING', 'COLLECTED', 'IN_PROGRESS', 'READY',
+]
+
+// Told to staff when they try to flag a request that has moved beyond it.
+export const FLAG_LOCKED_REASONS: Partial<Record<RequestStatus, string>> = {
+  DELIVERED: 'This request has been delivered and billed, so it can no longer be flagged for changes.',
+  CANCELLED: 'This request was cancelled, so there is nothing to correct.',
+}
+
+// Blocked at the last hop only: the clothes still get washed while the
+// paperwork is corrected, but delivering settles the bill.
+export const DELIVER_WHILE_FLAGGED =
+  'Resolve the changes this request was flagged for before delivering it.'
+
+// What a guest is told when their request is awaiting changes. Deliberately
+// fixed copy — flagReason is staff shorthand written for other staff.
+export const NEEDS_CHANGES_GUEST_MESSAGE =
+  'Our team found a difference between your list and the items collected.'
+
 // Why an edit is closed off, in the guest's terms — keyed by where the request
 // has got to. PENDING is empty because nothing is locked there.
 export const EDIT_LOCKED_REASONS: Record<RequestStatus, string> = {

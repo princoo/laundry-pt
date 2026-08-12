@@ -6,8 +6,8 @@
 // them. A "corrected" string simply never matches, which fails closed and is
 // very hard to spot.
 //
-// Three of these gate features that do not exist yet — marked below. They are
-// deliberate, not mistakes: defined so the set matches SOA exactly, left
+// One of these gates a feature that does not exist yet — marked below. That is
+// deliberate, not a mistake: defined so the set matches SOA exactly, left
 // unused, and wired up when the feature lands. See docs/soa-migration.md.
 export const PERMISSIONS = [
   'LAUNDRY_REQUEST_VIEW',
@@ -16,9 +16,11 @@ export const PERMISSIONS = [
   'LAUNDRY_REQUESTS_INVOICES_PRINT',
   'LAUNDRY_REQUESTS_SEARCH',
   'LAUNDRY_REQUEST_PROCESS',
-  // Awaiting its feature: staff editing a request at any status. This is NOT
+  // Staff correcting a request that has been flagged for changes:
+  // /api/staff/requests/[id]/edit, and clearing the flag. This is NOT
   // /api/requests/[id]/edit, which is the public guest flow — do not gate that
-  // route with it.
+  // route with it. Raising the flag is LAUNDRY_REQUEST_PROCESS, since the
+  // person who collects the bag is the one who spots the mismatch.
   'LAUNDRY_REQUEST_EDIT',
   'LAUNDRY_REQUEST_HOUSEKEEPER_ASSIGN',
   'LAUNDRY_REQUEST_ITEMS_CATALOGUE_VIEW',
@@ -28,7 +30,7 @@ export const PERMISSIONS = [
   'LAUNDRY_REPORTS_VIEW',
   // Awaiting its feature: PDF export on the reports page.
   'LAUNDRY_REPORTS_EXPORT',
-  // Awaiting its feature: a QR code page, not yet specified.
+  // /staff/qrcode — printable room QR codes.
   'QR_CODE_GENERATION',
 ] as const
 

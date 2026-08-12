@@ -46,6 +46,15 @@ export async function authorizeSoa(
     return null
   }
 
+  // The laundry session may not outlive SOA's token, so an expiry it cannot
+  // read is a refusal rather than a default — the parameter arrives in a URL
+  // the holder can edit, and a missing one must not buy a full hour.
+  const expiry = sessionExpiry(expiresAt)
+  if (expiry === null) {
+    console.warn(`[soa] refused ${profile.id}: missing or already-past expiresAt`)
+    return null
+  }
+
   try {
     const { user } = await upsertFromSoa(toProvisionPayload(profile))
     return {
@@ -56,7 +65,7 @@ export async function authorizeSoa(
       departmentName: user.departmentName,
       roleNames: roleNames(profile.roles),
       permissions,
-      expiresAt: sessionExpiry(expiresAt),
+      expiresAt: expiry,
     }
   } catch (error) {
     const why = error instanceof EmailBelongsToAnotherUserError

@@ -3,8 +3,11 @@
 import { useState } from 'react'
 import { QUICK_RANGES, type QuickRange } from '@/lib/utils/dateRange'
 
+// Local rather than INPUT_CLASSES: these two sit inline in a filter row, so
+// they are tighter (py-2) and not full-width. The text sizing must still match
+// it — under 16px makes iOS Safari zoom the viewport on focus.
 const inputClasses =
-  'border border-[0.5px] border-salt-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-salt-navy bg-white'
+  'border border-[0.5px] border-salt-border rounded-lg px-3 py-2 text-base sm:text-sm focus:outline-none focus:border-salt-navy bg-white'
 
 interface Props {
   from: string

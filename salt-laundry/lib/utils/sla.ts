@@ -1,4 +1,5 @@
 import type { RequestStatus, ServiceType } from '@prisma/client'
+import { hotelDateAtHour } from '@/lib/utils/hotelTime'
 
 const PICKUP_LIMIT_MINUTES = 45   // PENDING threshold — someone must collect
 const RETURN_LIMIT_MINUTES = 30   // READY threshold — clean clothes must go back
@@ -21,18 +22,19 @@ export function getReturnDeadline(
   createdAt: Date | string = new Date()
 ): Date {
   const created = new Date(createdAt)
-  const base = new Date(
-    created.getFullYear(), created.getMonth(), created.getDate(), 0, 0, 0
-  )
 
   const deadlineHour =
     isExpress                             ? 15 :
     serviceTypes.includes('DRY_CLEAN')    ? 20 :
     19  // NORMAL + PRESSING
 
-  const deadline = new Date(base.getTime() + deadlineHour * 60 * 60 * 1000)
+  // Hotel time, not the server's. "Back by 7:00 p.m." is a promise made at the
+  // front desk, so on a UTC container this must still resolve to 19:00 in
+  // Kigali — otherwise every deadline silently slips two hours and requests
+  // read as on-time when they are late.
+  const deadline = hotelDateAtHour(created, deadlineHour)
   if (deadline.getTime() <= created.getTime()) {
-    return new Date(deadline.getTime() + 24 * 60 * 60 * 1000)
+    return hotelDateAtHour(created, deadlineHour, 1)
   }
   return deadline
 }

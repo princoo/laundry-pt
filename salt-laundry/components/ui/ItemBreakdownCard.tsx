@@ -1,4 +1,5 @@
 import { formatCurrency } from '@/lib/utils/formatting'
+import { vatLabel } from '@/lib/utils/pricing'
 import { SERVICE_TYPE_LABELS } from '@/lib/constants/services'
 import type { RequestDetail } from '@/lib/types/request'
 
@@ -44,7 +45,7 @@ export function ItemBreakdownCard({ request }: Props) {
           <span>{formatCurrency(grossAmount)}</span>
         </div>
         <div className="flex justify-between text-salt-text-muted">
-          <span>VAT 15%</span>
+          <span>{vatLabel(grossAmount, vatAmount)}</span>
           <span>{formatCurrency(vatAmount)}</span>
         </div>
         <div className="flex justify-between pt-2 text-[18px] font-medium text-salt-navy">

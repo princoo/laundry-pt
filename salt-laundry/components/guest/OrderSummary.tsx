@@ -1,6 +1,5 @@
 import { ShoppingBag } from 'lucide-react'
 import { ExpressToggle } from '@/components/guest/ExpressToggle'
-import { HandlingToggle } from '@/components/guest/HandlingToggle'
 import { NoteField } from '@/components/guest/NoteField'
 import { PriceBreakdown } from '@/components/guest/PriceBreakdown'
 import { SubmitSection, type SubmissionProps } from '@/components/guest/SubmitSection'
@@ -43,8 +42,6 @@ export function OrderSummary({
       </p>
 
       <PriceBreakdown selectedLines={selectedLines} gross={gross} vat={vat} total={total} />
-
-      <HandlingToggle />
 
       {/* The only express control on the form — it applies to the whole order. */}
       <ExpressToggle isExpress={isExpress} onChange={onIsExpressChange} />

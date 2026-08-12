@@ -22,7 +22,12 @@ export const SOA_PROVIDER_ID = 'soa'
 export const AUTHENTICATE_PATH = '/authenticate'
 export const REDIRECT_PARAM = 'callbackUrl'
 export const TOKEN_PARAM = 'token'
-export const EXPIRES_AT_PARAM = 'expiresAt'
+// SOA spells this `expiredAt`, not the `expiresAt` its written contract and
+// docs/soa-migration.md both describe. Reading the wrong name meant the expiry
+// was always absent, which the old sessionExpiry() masked by falling back to a
+// full hour — so the session never actually tracked SOA's token. Overridable
+// because the name is SOA's to change, not ours.
+export const EXPIRES_AT_PARAM = process.env.NEXT_PUBLIC_SOA_EXPIRES_AT_PARAM ?? 'expiredAt'
 
 // Where a session with no requested path lands, and the outer bound on the
 // cookie. A SOA token shorter than an hour shortens the session further.

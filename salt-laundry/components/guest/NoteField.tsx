@@ -2,6 +2,7 @@
 
 import { useFormContext } from 'react-hook-form'
 import type { GuestDetailsValues } from '@/lib/validations/guestRequest.schema'
+import { INPUT_CLASSES } from '@/lib/constants/formStyles'
 
 export function NoteField() {
   const { register } = useFormContext<GuestDetailsValues>()
@@ -15,7 +16,7 @@ export function NoteField() {
         id="note"
         rows={3}
         placeholder="e.g. delicate, no starch"
-        className="w-full border border-[0.5px] border-salt-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-salt-navy bg-white"
+        className={INPUT_CLASSES}
         {...register('note')}
       />
     </div>

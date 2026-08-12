@@ -5,6 +5,7 @@ import {
   updateRequestStatus,
   InvalidStatusTransitionError,
   ForbiddenRequestAccessError,
+  RequestFlaggedError,
 } from '@/services/requestStatus.service'
 import { updateStatusSchema } from '@/lib/validations/statusUpdate.schema'
 
@@ -58,6 +59,9 @@ export async function PATCH(
         { error: 'You can only update requests assigned to you' },
         { status: 403 }
       )
+    }
+    if (error instanceof RequestFlaggedError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
     }
     if (error instanceof InvalidStatusTransitionError) {
       return NextResponse.json({ error: 'Invalid status transition' }, { status: 400 })
