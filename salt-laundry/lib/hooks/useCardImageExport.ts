@@ -3,8 +3,6 @@
 import { useCallback, useState } from "react";
 import type { RefObject } from "react";
 
-// Captures a card element as a PNG image (the whole branded card, not just the
-// bare QR) using html2canvas- the same library the invoice PDF export uses.
 export function useCardImageExport(targetRef: RefObject<HTMLElement | null>) {
   const [exporting, setExporting] = useState(false);
 
@@ -15,17 +13,16 @@ export function useCardImageExport(targetRef: RefObject<HTMLElement | null>) {
 
       setExporting(true);
       try {
-        const { default: html2canvas } = await import("html2canvas");
-        const canvas = await html2canvas(node, {
+        const { domToPng } = await import("modern-screenshot");
+        const dataUrl = await domToPng(node, {
           scale: 3, // sharp enough for the QR to stay scannable when printed
           backgroundColor: "#ffffff",
-          useCORS: true,
         });
         const link = document.createElement("a");
         link.download = filename.endsWith(".png")
           ? filename
           : `${filename}.png`;
-        link.href = canvas.toDataURL("image/png");
+        link.href = dataUrl;
         link.click();
       } finally {
         setExporting(false);

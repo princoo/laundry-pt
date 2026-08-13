@@ -3,7 +3,9 @@ import type { RefObject } from "react";
 interface Props {
   room: string;
   url: string | null;
-  containerRef: RefObject<HTMLDivElement | null>;
+  // The rasterised QR as a PNG data URL (null while it's building or when there's
+  // no room yet). Rendered in an <img> so it prints and exports whole.
+  qrSrc: string | null;
   // Set on the outer element so the whole card can be captured as an image.
   cardRef?: RefObject<HTMLDivElement | null>;
   // Smaller variant used on the bulk sheet; same layout, tighter sizing.
@@ -16,7 +18,7 @@ interface Props {
 export function RoomQrCard({
   room,
   url,
-  containerRef,
+  qrSrc,
   cardRef,
   compact = false,
 }: Props) {
@@ -31,7 +33,8 @@ export function RoomQrCard({
           : "qr-print-card mx-auto w-full max-w-[340px] bg-white flex flex-col items-center text-center rounded-2xl border border-[0.5px] border-salt-border shadow-sm px-8 py-7 print:border-0 print:shadow-none"
       }
     >
-      {/* Plain <img> (not next/image) so html2canvas captures it reliably. */}
+      {/* Plain <img> (not next/image) so the screenshot exporter captures it
+          reliably. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/salt-logo.png"
@@ -59,23 +62,26 @@ export function RoomQrCard({
         </p>
       </div>
 
-      {/* QR sits below the branding. The fixed box reserves layout while empty,
-          and the container is always mounted so qr-code-styling has a stable
-          node to render into. */}
+      {/* QR sits below the branding. The fixed box reserves layout while empty
+          so nothing jumps when the code finishes rasterising. */}
       <div
         className={`qr-code-box relative flex items-center justify-center ${
           compact ? "mt-1 w-[150px] h-[150px]" : "mt-3 w-[260px] h-[260px]"
         }`}
       >
-        <div
-          ref={containerRef}
-          className={hasRoom ? "" : "hidden"}
-          aria-hidden={!hasRoom}
-        />
-        {!hasRoom && (
+        {qrSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={qrSrc}
+            alt={`QR code for room ${room}`}
+            className="w-full h-full object-contain"
+          />
+        ) : (
           <div className="w-full h-full rounded-xl border-2 border-dashed border-salt-border flex items-center justify-center px-6">
             <span className="text-sm text-salt-text-muted">
-              Enter a room number to generate its code
+              {hasRoom
+                ? "Generating code…"
+                : "Enter a room number to generate its code"}
             </span>
           </div>
         )}

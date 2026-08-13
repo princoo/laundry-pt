@@ -53,7 +53,9 @@ body {
     width: 360px !important;
     height: 360px !important;
   }
-  .qr-print-card .qr-code-box svg {
+  /* The code is a raster <img>. This more specific rule beats the logo's
+     `.qr-print-card img { height: 48px }` above, so the code prints full size. */
+  .qr-print-card .qr-code-box img {
     width: 360px !important;
     height: 360px !important;
   }

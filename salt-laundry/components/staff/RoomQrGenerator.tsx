@@ -26,7 +26,7 @@ export function RoomQrGenerator() {
   // would just send a guest to a dead form.
   const url = allowed ? buildGuestRoomUrl(trimmed) : null;
 
-  const { containerRef, ready } = useRoomQrCode(url);
+  const { pngUrl, ready } = useRoomQrCode(url);
   const { exportPng, exporting } = useCardImageExport(cardRef);
   const canAct = !!url && ready;
 
@@ -116,7 +116,7 @@ export function RoomQrGenerator() {
         <RoomQrCard
           room={trimmed}
           url={url}
-          containerRef={containerRef}
+          qrSrc={pngUrl}
           cardRef={cardRef}
         />
       </div>

@@ -12,11 +12,13 @@ export function usePdfDownload(targetRef: RefObject<HTMLElement | null>, filenam
 
     setIsGenerating(true)
     try {
-      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-        import('html2canvas'),
+      // modern-screenshot (not html2canvas): it renders through the browser's own
+      // engine, so Tailwind v4's oklch/lab colours don't crash the capture.
+      const [{ domToCanvas }, { jsPDF }] = await Promise.all([
+        import('modern-screenshot'),
         import('jspdf'),
       ])
-      const canvas = await html2canvas(node, { scale: 2, backgroundColor: '#ffffff' })
+      const canvas = await domToCanvas(node, { scale: 2, backgroundColor: '#ffffff' })
       const imgData = canvas.toDataURL('image/png')
 
       const pdf = new jsPDF('p', 'pt', 'a4')
