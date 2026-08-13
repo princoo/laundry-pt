@@ -6,6 +6,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { PermissionGate } from "@/components/ui/PermissionGate";
 import { ExpressBadge } from "@/components/ui/ExpressBadge";
 import { OverdueBadge } from "@/components/staff/OverdueBadge";
+import { FlagBadge } from "@/components/staff/FlagBadge";
 import { getServiceLabel } from "@/lib/utils/serviceSummary";
 import { timeAgo, summarizeItemNames } from "@/lib/utils/formatting";
 import { assignmentSummary } from "@/lib/utils/assignmentSummary";
@@ -34,6 +35,7 @@ export function RequestCard({ request, isMyTask, onReassign }: Props) {
     itemNames,
     assignedTo,
     assignedAt,
+    needsChanges,
   } = request;
   const assignmentLabel = assignmentSummary(!!isMyTask, assignedTo, assignedAt);
   const goToDetail = () => router.push(`/staff/requests/${id}`);
@@ -75,6 +77,7 @@ export function RequestCard({ request, isMyTask, onReassign }: Props) {
           )}
         </div>
         <div className="flex items-center gap-1.5 flex-wrap justify-end shrink-0">
+          {needsChanges && <FlagBadge />}
           <OverdueBadge request={request} />
           <StatusBadge status={status} />
         </div>

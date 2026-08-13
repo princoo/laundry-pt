@@ -4,7 +4,6 @@ interface RawItemFormValues {
   priceNormal: string
   priceDryClean: string
   pricePressing: string
-  sortOrder: string
 }
 
 function toNullableInt(value: string): number | null {
@@ -13,6 +12,8 @@ function toNullableInt(value: string): number | null {
   return parsed === 0 ? null : parsed
 }
 
+// sortOrder is never in the payload: create appends it server-side and the
+// reorder endpoint owns it thereafter.
 export function buildItemPayload(values: RawItemFormValues) {
   return {
     nameEn: values.nameEn,
@@ -20,6 +21,5 @@ export function buildItemPayload(values: RawItemFormValues) {
     priceNormal: toNullableInt(values.priceNormal),
     priceDryClean: toNullableInt(values.priceDryClean),
     pricePressing: toNullableInt(values.pricePressing),
-    sortOrder: values.sortOrder.trim() === '' ? 0 : Number.parseInt(values.sortOrder, 10),
   }
 }

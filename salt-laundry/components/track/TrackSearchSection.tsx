@@ -7,6 +7,7 @@ import { TrackResultsList } from "@/components/track/TrackResultsList";
 import { SearchStatus } from "@/components/track/SearchStatus";
 import { useRoomRequests } from "@/lib/hooks/useRoomRequests";
 import { useTrackRequest } from "@/lib/hooks/useTrackRequest";
+import { isAllowedRoom } from "@/lib/constants/rooms";
 import type { TrackedRequest } from "@/lib/types/request";
 
 interface Props {
@@ -26,11 +27,18 @@ export function TrackSearchSection({
   const room = useRoomRequests();
   const exact = useTrackRequest();
 
+  // A real room that arrived in the URL (a scanned link) is fixed to that door-
+  // show it, but don't let it be edited. A param that isn't a real room is left
+  // editable so the guest can correct it rather than being stuck.
+  const lockRoom = isAllowedRoom(initialRoom);
+
   // A room alone is enough to run the lookup- that's how a saved edit returns.
+  // Only auto-run when the URL's room is a real room; a bad param stays in the
+  // (editable) field to be fixed, never searched.
   useEffect(() => {
-    if (initialRoom && initialReference)
-      exact.search(initialRoom, initialReference);
-    else if (initialRoom) room.search(initialRoom);
+    if (!isAllowedRoom(initialRoom)) return;
+    if (initialReference) exact.search(initialRoom, initialReference);
+    else room.search(initialRoom);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -56,6 +64,7 @@ export function TrackSearchSection({
             roomNumber: initialRoom,
             reference: initialReference,
           }}
+          lockRoom={lockRoom}
           isSubmitting={exact.isLoading}
           onSubmit={(values) =>
             exact.search(values.roomNumber, values.reference)
@@ -82,6 +91,7 @@ export function TrackSearchSection({
     <>
       <RoomLookupForm
         defaultRoom={initialRoom}
+        lockRoom={lockRoom}
         isSubmitting={room.isLoading}
         onSubmit={(v) => room.search(v.roomNumber)}
       />

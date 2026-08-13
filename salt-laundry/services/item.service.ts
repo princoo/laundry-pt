@@ -1,7 +1,7 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getPriceForService } from "@/lib/utils/pricing";
 import { SERVICE_TYPES } from "@/lib/constants/services";
-import { pageSlice, type PageParams } from "@/lib/utils/pagination";
 import type {
   CreateItemInput,
   UpdateItemInput,
@@ -36,13 +36,14 @@ export async function getActiveItemsByIds(ids: string[]) {
   });
 }
 
-// sortOrder isn't unique, so it alone can hand the same row to two pages-
-// id breaks the tie and makes the ordering total.
-export async function getAllItems(pageParams: PageParams) {
+// The whole catalogue in one shot — the admin page is a single drag-to-reorder
+// list, not paged. sortOrder isn't unique, so id breaks the tie and keeps the
+// order total (two items that were dragged to adjacent positions can briefly
+// share a value between the drop and the reorder write landing).
+export async function getAllItems() {
   const [items, total, activeCount] = await Promise.all([
     prisma.laundryItem.findMany({
       orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
-      ...pageSlice(pageParams),
     }),
     prisma.laundryItem.count(),
     prisma.laundryItem.count({ where: { isActive: true } }),
@@ -68,8 +69,36 @@ export async function getItemById(id: string) {
   };
 }
 
+// A new item lands at the end of the list. sortOrder is managed entirely here
+// and by reorderItems- never typed by an admin- so it is derived rather than
+// taken from the request.
 export async function createItem(data: CreateItemInput) {
-  return prisma.laundryItem.create({ data });
+  const { _max } = await prisma.laundryItem.aggregate({
+    _max: { sortOrder: true },
+  });
+  return prisma.laundryItem.create({
+    data: { ...data, sortOrder: (_max.sortOrder ?? 0) + 1 },
+  });
+}
+
+// Rewrites the whole ordering from a list of ids in their new positions.
+//
+// One bulk UPDATE rather than N per-row updates in a transaction: at ~30 items
+// that transaction is 30 round-trips to the database and blows past Prisma's 5s
+// interactive-transaction timeout. A single `UPDATE ... FROM (VALUES …)` is one
+// round-trip and atomic on its own- a statement either applies wholly or not
+// at all- so a half-applied order can never be read. Parameterised, so the ids
+// are never interpolated into SQL text.
+export async function reorderItems(orderedIds: string[]) {
+  const rows = orderedIds.map(
+    (id, index) => Prisma.sql`(${id}::text, ${index + 1}::int)`,
+  );
+  await prisma.$executeRaw`
+    UPDATE "laundry_items" AS t
+    SET "sortOrder" = v.pos
+    FROM (VALUES ${Prisma.join(rows)}) AS v(id, pos)
+    WHERE t.id = v.id
+  `;
 }
 
 export async function updateItem(id: string, data: UpdateItemInput) {

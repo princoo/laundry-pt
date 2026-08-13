@@ -16,6 +16,58 @@ body {
   body {
     background-color: #ffffff;
   }
+
+  /* Room QR cards print one per page, large. break-before rather than
+     break-after so there's no trailing blank page- a page break at the very
+     start of the printout is ignored, so the first card still starts page 1.
+     The code is SVG (has a viewBox), so scaling it up stays crisp. */
+  .qr-print-card {
+    break-before: page;
+    page-break-before: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    width: 100% !important;
+    max-width: 460px !important;
+    margin: 0 auto !important;
+    padding: 24px !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    /* Fill the page and centre the card on it- the flex column already centres
+       horizontally, justify-center adds the vertical centring. Just under 100vh
+       so sub-pixel rounding can't spill a card onto a second, blank page. */
+    min-height: 96vh;
+    justify-content: center;
+  }
+  .qr-print-card img {
+    height: 48px !important;
+  }
+  .qr-print-card .qr-brand-en {
+    margin-top: 22px !important;
+    font-size: 15px !important;
+  }
+  .qr-print-card .qr-brand-fr {
+    font-size: 12px !important;
+  }
+  .qr-print-card .qr-code-box {
+    margin-top: 22px !important;
+    width: 360px !important;
+    height: 360px !important;
+  }
+  .qr-print-card .qr-code-box svg {
+    width: 360px !important;
+    height: 360px !important;
+  }
+  .qr-print-card .qr-scan-en {
+    margin-top: 18px !important;
+    font-size: 17px !important;
+  }
+  .qr-print-card .qr-scan-fr {
+    font-size: 13px !important;
+  }
+  .qr-print-card .qr-room {
+    margin-top: 16px !important;
+    font-size: 30px !important;
+  }
 }
 
 .modal-scroll {

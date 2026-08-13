@@ -5,11 +5,11 @@ import { Check, Copy, Download, Printer } from "lucide-react";
 import { SectionCard } from "@/components/ui/SectionCard";
 import { LabeledField } from "@/components/ui/LabeledField";
 import { RoomQrCard } from "@/components/staff/RoomQrCard";
+import { RoomNumberInput } from "@/components/ui/RoomNumberInput";
 import { useRoomQrCode } from "@/lib/hooks/useRoomQrCode";
 import { useCardImageExport } from "@/lib/hooks/useCardImageExport";
 import { buildGuestRoomUrl, MAX_ROOM_LENGTH } from "@/lib/utils/roomParam";
-import { isAllowedRoom, ALLOWED_ROOMS } from "@/lib/constants/rooms";
-import { INPUT_CLASSES } from "@/lib/constants/formStyles";
+import { isAllowedRoom } from "@/lib/constants/rooms";
 
 const BUTTON =
   "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
@@ -48,24 +48,14 @@ export function RoomQrGenerator() {
           description="Enter a room number to generate its QR code. Guests scan it to open the laundry form with the room already filled in."
         >
           <LabeledField label="Room number">
-            <input
+            <RoomNumberInput
               id="qr-room"
-              type="text"
-              inputMode="numeric"
-              autoComplete="off"
-              autoFocus
-              list="allowed-rooms"
-              maxLength={MAX_ROOM_LENGTH}
               value={room}
-              onChange={(e) => setRoom(e.target.value)}
-              placeholder="e.g. 131"
-              className={INPUT_CLASSES}
+              onChange={setRoom}
+              autoFocus
+              maxLength={MAX_ROOM_LENGTH}
+              invalid={invalid}
             />
-            <datalist id="allowed-rooms">
-              {ALLOWED_ROOMS.map((r) => (
-                <option key={r} value={r} />
-              ))}
-            </datalist>
           </LabeledField>
 
           {invalid && (

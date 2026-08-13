@@ -14,11 +14,24 @@ export function SoaSignInCard() {
 
   if (!error) {
     return (
-      <div className="flex flex-col gap-2" aria-live="polite">
-        <p className="text-sm font-medium text-salt-text">Signing you in…</p>
-        <p className="text-sm text-salt-text-sec leading-relaxed">
-          Keep this page open. The dashboard opens on its own.
-        </p>
+      <div
+        className="flex flex-col items-center text-center gap-5 py-6"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        {/* Big centred spinner while the two-system exchange is in flight, the
+            same reassurance a Google sign-in shows. */}
+        <span
+          role="status"
+          aria-label="Signing in"
+          className="w-14 h-14 border-4 border-salt-border border-t-salt-navy rounded-full animate-spin"
+        />
+        <div className="flex flex-col gap-1">
+          <p className="text-sm font-medium text-salt-text">Signing you in…</p>
+          <p className="text-sm text-salt-text-sec leading-relaxed">
+            Keep this page open. The dashboard opens on its own.
+          </p>
+        </div>
       </div>
     )
   }

@@ -26,7 +26,6 @@ export function ItemFormModal({ item, onClose, onSaved }: Props) {
       priceNormal: item?.priceNormal?.toString() ?? '',
       priceDryClean: item?.priceDryClean?.toString() ?? '',
       pricePressing: item?.pricePressing?.toString() ?? '',
-      sortOrder: item ? String(item.sortOrder) : '0',
     },
   })
 

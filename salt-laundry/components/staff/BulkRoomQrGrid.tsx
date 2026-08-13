@@ -79,25 +79,22 @@ export function BulkRoomQrGrid() {
         </div>
       </div>
 
-      {/* Print-only sheet header. */}
-      <div className="hidden print:block mb-4">
-        <h2 className="text-base font-bold text-salt-text">
-          SALT of Akagera- Room QR codes
-        </h2>
-      </div>
-
       {totalRooms === 0 ? (
         <p className="print:hidden text-sm text-salt-text-muted py-10 text-center">
           Select at least one room range to print.
         </p>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-8 print:space-y-0">
           {activeRanges.map(({ range, i }) => (
-            <section key={i} className="break-inside-avoid">
-              <h3 className="text-[11px] uppercase tracking-wide text-salt-text-muted mb-3">
+            <section key={i} className="break-inside-avoid print:break-inside-auto">
+              {/* Screen-only range heading- in print each card is its own page,
+                  self-labelled with the room, so no grouping header is needed. */}
+              <h3 className="print:hidden text-[11px] uppercase tracking-wide text-salt-text-muted mb-3">
                 Rooms {rangeLabel(range)}
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 print:grid-cols-3 gap-3 sm:gap-4">
+              {/* Grid on screen, a plain stack in print so each card paginates
+                  reliably as its own block. */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 print:block print:gap-0">
                 {roomsInRange(range).map((room) => (
                   <BulkRoomQrCard
                     key={room}

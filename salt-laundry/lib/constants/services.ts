@@ -10,7 +10,7 @@ export const SERVICE_TYPES = [
 ] as const satisfies readonly ServiceType[];
 
 export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
-  NORMAL: "Normal",
+  NORMAL: "Normal / Washing",
   DRY_CLEAN: "Dry-cleaning",
   PRESSING: "Pressing",
 };
@@ -18,11 +18,12 @@ export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
 // Shown wherever one request spans more than one service type.
 export const MIXED_SERVICE_LABEL = "Mixed";
 
+// What each service actually does to the clothes — not when it comes back.
+// Turnaround is the same for every service and lives on the express control.
 export const SERVICE_TYPE_DESCRIPTIONS: Record<ServiceType, string> = {
   NORMAL:
-    "Items collected before 10:00 a.m., returned same day before 7:00 p.m.",
-  DRY_CLEAN:
-    "Items collected before 10:00 a.m., returned same day before 8:00 p.m.",
+    "Cleans clothes using water and detergent, usually in a washing machine.",
+  DRY_CLEAN: "Cleans clothes using chemical solvents instead of water.",
   PRESSING:
-    "Items collected before 10:00 a.m., returned same day- ironing only.",
+    "Removes wrinkles and gives garments a neat finish using heat, steam and/or pressure.",
 };

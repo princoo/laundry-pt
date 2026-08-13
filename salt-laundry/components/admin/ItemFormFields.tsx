@@ -45,15 +45,6 @@ export function ItemFormFields() {
           />
         </div>
       ))}
-
-      <div>
-        <label className="block text-sm text-salt-text mb-1">Sort order</label>
-        <input
-          type="number"
-          className={INPUT_CLASSES}
-          {...register("sortOrder")}
-        />
-      </div>
     </>
   );
 }

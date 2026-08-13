@@ -13,9 +13,10 @@ import { useStaffDashboard } from '@/lib/hooks/useStaffDashboard'
 import { MY_METRICS } from '@/lib/constants/dashboardMetrics'
 
 export function HousekeeperDashboard() {
-  const { status, sort, page, setStatus, setSort, setPage } = useQueueControls()
+  const { status, sort, flagged, page, setStatus, setSort, setFlagged, setPage } =
+    useQueueControls()
   const { requests, stats, total, totalPages, isLoading, error, lastUpdated, refetch } =
-    useStaffDashboard({ status, sort, page })
+    useStaffDashboard({ status, sort, flagged, page })
   useClampPage(page, totalPages, setPage)
 
   return (
@@ -24,6 +25,7 @@ export function HousekeeperDashboard() {
       <MyTasksFilterBar
         status={status} onStatusChange={setStatus}
         sort={sort} onSortChange={setSort}
+        flagged={flagged} onFlaggedChange={setFlagged}
         total={total}
         deliveredToday={stats?.deliveredToday ?? 0} lastUpdated={lastUpdated}
         onRefresh={refetch}

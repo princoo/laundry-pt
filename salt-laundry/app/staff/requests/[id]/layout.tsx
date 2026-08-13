@@ -13,7 +13,6 @@ export async function generateMetadata({
 
   if (!request) return { title: "Request not found" };
 
-  // Example output: "Room 214- J. Okafor- Collected | SALT Staff"
   return {
     title: `Room ${request.roomNumber}- ${
       request.guestName ? request.guestName + "- " : ""

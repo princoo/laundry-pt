@@ -3,6 +3,7 @@
 import type { KeyboardEvent } from 'react'
 import { Search } from 'lucide-react'
 import { Select } from '@/components/ui/Select'
+import { RoomNumberInput } from '@/components/ui/RoomNumberInput'
 import { STATUS_LABELS } from '@/lib/constants/statuses'
 import { SERVICE_TYPE_LABELS } from '@/lib/constants/services'
 import { INPUT_CLASSES } from '@/lib/constants/formStyles'
@@ -35,13 +36,13 @@ export function SearchFilterBar({ filters, onChange, onSearch, onClear, isLoadin
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <div>
           <label className="block text-xs text-salt-text-muted mb-1">Room</label>
-          <input value={filters.room} onChange={(e) => set('room', e.target.value)} onKeyDown={onEnter}
-            placeholder="e.g. 214" className={INPUT_CLASSES} />
+          <RoomNumberInput id="search-room" value={filters.room}
+            onChange={(v) => set('room', v)} onKeyDown={onEnter} />
         </div>
         <div>
           <label className="block text-xs text-salt-text-muted mb-1">Guest name</label>
           <input value={filters.name} onChange={(e) => set('name', e.target.value)} onKeyDown={onEnter}
-            placeholder="e.g. J. Okafor" className={INPUT_CLASSES} />
+            placeholder="e.g. Jean Okafor" className={INPUT_CLASSES} />
         </div>
         <div>
           <label className="block text-xs text-salt-text-muted mb-1">Status</label>

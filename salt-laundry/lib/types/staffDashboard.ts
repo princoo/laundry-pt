@@ -8,6 +8,7 @@ export interface QueueRequest {
   serviceTypes: ServiceType[]
   isExpress: boolean
   status: RequestStatus
+  needsChanges: boolean
   totalAmount: number
   createdAt: string
   totalItems: number

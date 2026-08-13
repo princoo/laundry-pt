@@ -1,20 +1,23 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Search } from 'lucide-react'
 import { trackByRoomSchema, type TrackByRoomValues } from '@/lib/validations/trackRequest.schema'
 import { FieldError } from '@/components/ui/FieldError'
-import { INPUT_CLASSES } from '@/lib/constants/formStyles'
+import { RoomNumberInput } from '@/components/ui/RoomNumberInput'
 
 interface Props {
   defaultRoom?: string
+  // The room arrived pre-filled from the URL (a scanned link): show it, but
+  // don't let it be changed.
+  lockRoom?: boolean
   isSubmitting: boolean
   onSubmit: (values: TrackByRoomValues) => void
 }
 
-export function RoomLookupForm({ defaultRoom, isSubmitting, onSubmit }: Props) {
-  const { register, handleSubmit, formState: { errors } } = useForm<TrackByRoomValues>({
+export function RoomLookupForm({ defaultRoom, lockRoom, isSubmitting, onSubmit }: Props) {
+  const { control, handleSubmit, formState: { errors } } = useForm<TrackByRoomValues>({
     resolver: zodResolver(trackByRoomSchema),
     defaultValues: { roomNumber: defaultRoom ?? '' },
   })
@@ -27,11 +30,20 @@ export function RoomLookupForm({ defaultRoom, isSubmitting, onSubmit }: Props) {
     >
       <div className="flex-1">
         <label htmlFor="roomNumber" className="block text-sm text-salt-text mb-1.5">Room</label>
-        <input
-          id="roomNumber"
-          placeholder="214"
-          className={INPUT_CLASSES}
-          {...register('roomNumber')}
+        <Controller
+          control={control}
+          name="roomNumber"
+          render={({ field, fieldState }) => (
+            <RoomNumberInput
+              id="roomNumber"
+              value={field.value ?? ''}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              invalid={!!fieldState.error}
+              hideDropdown
+              disabled={lockRoom}
+            />
+          )}
         />
         <FieldError message={errors.roomNumber?.message} />
       </div>

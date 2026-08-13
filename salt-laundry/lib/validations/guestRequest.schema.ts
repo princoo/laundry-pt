@@ -1,14 +1,12 @@
 import { z } from "zod";
 import { SERVICE_TYPES } from "@/lib/constants/services";
-import { ROOM_RANGES, isAllowedRoom, rangeLabel } from "@/lib/constants/rooms";
+import { roomNumberSchema } from "@/lib/validations/room.schema";
 
 // Letters in any script- the hotel takes guests from everywhere- plus the two
 // marks real names carry, an apostrophe and a hyphen, and only ever between
 // letters. So "Jean-Pierre", "O'Brien" and "Aimé" pass; "Room 214", "J", "--"
 // and anything with a digit or symbol do not.
 const NAME_PATTERN = /^\p{L}+(?:[ '’-]\p{L}+)*$/u;
-
-const ROOM_HELP = `Rooms run ${ROOM_RANGES.map(rangeLabel).join(", ")}.`;
 
 export const guestNameSchema = z
   // The message is set here too, so a payload that omits the field entirely
@@ -18,14 +16,6 @@ export const guestNameSchema = z
   .min(2, "Please enter your name")
   .max(60, "That name is too long")
   .regex(NAME_PATTERN, "Letters only- no numbers or symbols");
-
-// The hotel's real rooms, from lib/constants/rooms.ts- the same list the QR
-// codes are generated from, so a scanned code can never fail this.
-export const roomNumberSchema = z
-  .string()
-  .trim()
-  .min(1, "Room number is required")
-  .refine(isAllowedRoom, `We have no such room. ${ROOM_HELP}`);
 
 // Shared by both modes. roomNumber is only loosely checked here because an edit
 // cannot change it: the form renders it read-only and editGuestRequestSchema

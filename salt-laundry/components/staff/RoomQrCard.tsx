@@ -39,19 +39,31 @@ export function RoomQrCard({
         className={compact ? "h-8 w-auto" : "h-11 w-auto"}
       />
 
-      <p
-        className={`uppercase tracking-[0.18em] text-salt-text-muted ${
-          compact ? "mt-2.5 text-[9px]" : "mt-5 text-[11px]"
-        }`}
-      >
-        Laundry Service
-      </p>
+      {/* English on top, French tucked under it in a lighter, smaller line- a
+          printed card in a room serves guests of both languages at once, so it
+          shows both rather than following the app's language toggle. */}
+      <div className={compact ? "mt-2.5" : "mt-5"}>
+        <p
+          className={`qr-brand-en uppercase tracking-[0.18em] text-salt-text-muted ${
+            compact ? "text-[9px]" : "text-[11px]"
+          }`}
+        >
+          Laundry Service
+        </p>
+        <p
+          className={`qr-brand-fr uppercase tracking-[0.15em] text-salt-text-muted/70 ${
+            compact ? "mt-px text-[7px]" : "mt-0.5 text-[9px]"
+          }`}
+        >
+          Service de blanchisserie
+        </p>
+      </div>
 
       {/* QR sits below the branding. The fixed box reserves layout while empty,
           and the container is always mounted so qr-code-styling has a stable
           node to render into. */}
       <div
-        className={`relative flex items-center justify-center ${
+        className={`qr-code-box relative flex items-center justify-center ${
           compact ? "mt-1 w-[150px] h-[150px]" : "mt-3 w-[260px] h-[260px]"
         }`}
       >
@@ -68,17 +80,24 @@ export function RoomQrCard({
           </div>
         )}
       </div>
+      <div className={compact ? "mt-0.5" : "mt-1"}>
+        <p
+          className={`qr-scan-en text-salt-text-sec ${compact ? "text-[10px]" : "text-sm"}`}
+        >
+          Scan to request laundry
+        </p>
+        <p
+          className={`qr-scan-fr text-salt-text-muted ${compact ? "text-[8px]" : "text-[11px]"}`}
+        >
+          Scannez pour votre blanchisserie
+        </p>
+      </div>
       <p
-        className={`text-salt-text-sec ${compact ? "mt-0.5 text-[10px]" : "mt-1 text-sm"}`}
-      >
-        Scan to request laundry
-      </p>
-      <p
-        className={`font-bold text-salt-navy leading-tight ${
+        className={`qr-room font-bold text-salt-navy leading-tight ${
           compact ? "mt-1 text-base" : "mt-3 text-2xl"
         }`}
       >
-        {hasRoom ? `Room ${room}` : "Room-"}
+        {hasRoom ? `Room / Chambre ${room}` : "Room / Chambre —"}
       </p>
     </div>
   );

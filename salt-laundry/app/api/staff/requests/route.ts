@@ -26,6 +26,7 @@ export async function GET(request: Request) {
   const pageParams = parsePageParams(searchParams)
   const sort: SortOrder = searchParams.get('sort') === 'asc' ? 'asc' : DEFAULT_SORT
   const assignedToFilter = searchParams.get('assignedTo') ?? undefined
+  const flagged = searchParams.get('flagged') === '1'
 
   const { requests, total } = await getRequestsQueue({
     status: statusParam as RequestStatus | undefined,
@@ -34,6 +35,7 @@ export async function GET(request: Request) {
     actorId: user?.id,
     actorPermissions: user?.permissions,
     assignedToFilter,
+    flagged,
   })
 
   return NextResponse.json({ requests, ...buildPageMeta(total, pageParams) })

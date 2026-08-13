@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { ChevronDown, FileText, SlidersHorizontal } from 'lucide-react'
 import { LabeledField } from '@/components/ui/LabeledField'
 import { RoomInvoiceFilterFields } from '@/components/staff/RoomInvoiceFilterFields'
-import { INPUT_CLASSES } from '@/lib/constants/formStyles'
+import { RoomNumberInput } from '@/components/ui/RoomNumberInput'
 import { countActiveFilters } from '@/lib/utils/invoiceScope'
 import type { RoomInvoiceFilters } from '@/lib/types/roomInvoice'
 
@@ -37,9 +37,8 @@ export function RoomInvoiceFilterPanel({ filters, onChange, onSearch, onReset, i
 
       <div className="p-4 sm:p-5 space-y-4">
         <LabeledField label="Room number" htmlFor="invoice-room">
-          <input id="invoice-room" value={filters.room} autoComplete="off"
-            onChange={(e) => onChange({ ...filters, room: e.target.value })}
-            placeholder="e.g. 204" className={INPUT_CLASSES} />
+          <RoomNumberInput id="invoice-room" value={filters.room}
+            onChange={(v) => onChange({ ...filters, room: v })} />
         </LabeledField>
 
         <button type="button" onClick={() => setShowMore((v) => !v)} aria-expanded={showMore}

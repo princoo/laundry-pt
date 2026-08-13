@@ -1,6 +1,5 @@
 import type { ServiceType } from '@prisma/client'
 import { SERVICE_TYPES, SERVICE_TYPE_LABELS, SERVICE_TYPE_DESCRIPTIONS } from '@/lib/constants/services'
-import { NextDayNotice } from '@/components/guest/NextDayNotice'
 
 interface Props {
   serviceType: ServiceType
@@ -50,8 +49,6 @@ export function ServiceTypeSelector({ serviceType, onChange }: Props) {
           )
         })}
       </div>
-
-      <NextDayNotice serviceTypes={[serviceType]} />
     </div>
   )
 }

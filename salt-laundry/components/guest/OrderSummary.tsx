@@ -1,5 +1,5 @@
 import { ShoppingBag } from "lucide-react";
-import { ExpressToggle } from "@/components/guest/ExpressToggle";
+import { ReturnSpeedSelector } from "@/components/guest/ReturnSpeedSelector";
 import { NoteField } from "@/components/guest/NoteField";
 import { PriceBreakdown } from "@/components/guest/PriceBreakdown";
 import {
@@ -53,8 +53,8 @@ export function OrderSummary({
         total={total}
       />
 
-      {/* The only express control on the form- it applies to the whole order. */}
-      <ExpressToggle isExpress={isExpress} onChange={onIsExpressChange} />
+      {/* The only return-speed control on the form- it applies to the whole order. */}
+      <ReturnSpeedSelector isExpress={isExpress} onChange={onIsExpressChange} />
 
       <NoteField />
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { GuestFormFields } from "@/components/guest/GuestFormFields";
@@ -94,6 +94,25 @@ export function RequestForm({
     save({ ...details, isExpress, selections }),
   );
 
+  // On mobile the submit bar is fixed to the bottom of the screen, so a guest
+  // can pick items at the top and submit without ever seeing the total, the
+  // return time or the note. The first tap brings the order summary into view
+  // instead; once it is on screen, the tap goes through and submits.
+  const reviewRef = useRef<HTMLDivElement>(null);
+  const submitFromMobileBar = () => {
+    const el = reviewRef.current;
+    if (el) {
+      const BAR_HEIGHT = 96; // the fixed MobileSubmitBar, roughly
+      const summaryOnScreen =
+        el.getBoundingClientRect().top < window.innerHeight - BAR_HEIGHT;
+      if (!summaryOnScreen) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+    }
+    onSubmit();
+  };
+
   return (
     <FormProvider {...methods}>
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
@@ -113,23 +132,27 @@ export function RequestForm({
           {/* Its own card: handling is a choice about the order, not part of
               the bill, and it stands whether or not any item is picked yet. */}
           <HandlingToggle />
-          <OrderSummary
-            selectedLines={selectedLines}
-            gross={gross}
-            vat={vat}
-            total={total}
-            isExpress={isExpress}
-            onIsExpressChange={setIsExpress}
-            canSubmit={canSubmit}
-            submission={{
-              mode,
-              isRoomLocked: Boolean(lockedRoom),
-              isSaving,
-              saveError,
-              onDismissError: dismissError,
-              onSubmit,
-            }}
-          />
+          {/* scroll-mt clears the sticky nav when the mobile submit bar scrolls
+              this into view. */}
+          <div ref={reviewRef} className="scroll-mt-20">
+            <OrderSummary
+              selectedLines={selectedLines}
+              gross={gross}
+              vat={vat}
+              total={total}
+              isExpress={isExpress}
+              onIsExpressChange={setIsExpress}
+              canSubmit={canSubmit}
+              submission={{
+                mode,
+                isRoomLocked: Boolean(lockedRoom),
+                isSaving,
+                saveError,
+                onDismissError: dismissError,
+                onSubmit,
+              }}
+            />
+          </div>
         </div>
       </div>
       <MobileSubmitBar
@@ -137,7 +160,7 @@ export function RequestForm({
         total={total}
         canSubmit={canSubmit}
         isSaving={isSaving}
-        onSubmit={onSubmit}
+        onSubmit={submitFromMobileBar}
       />
     </FormProvider>
   );

@@ -20,9 +20,10 @@ export function SupervisorDashboard() {
   const { page, setPage, withPageReset } = usePagedList()
   const [activeFilter, setActiveFilter] = useState('ALL')
   const [assignedTo, setAssignedTo] = useState<string | undefined>(undefined)
+  const [flaggedOnly, setFlaggedOnly] = useState(false)
   const [reassignTarget, setReassignTarget] = useState<QueueRequest | null>(null)
   const { requests, stats, totalPages, isLoading, error, lastUpdated, refetch } =
-    useStaffDashboard({ status: activeFilter, assignedTo, page })
+    useStaffDashboard({ status: activeFilter, assignedTo, flagged: flaggedOnly, page })
   useClampPage(page, totalPages, setPage)
 
   return (
@@ -34,6 +35,7 @@ export function SupervisorDashboard() {
       <QueueFilterBar
         status={activeFilter} onStatusChange={withPageReset(setActiveFilter)}
         assignedTo={assignedTo} onAssignedToChange={withPageReset(setAssignedTo)}
+        flagged={flaggedOnly} onFlaggedChange={withPageReset(setFlaggedOnly)}
         deliveredToday={stats?.deliveredToday ?? 0} lastUpdated={lastUpdated}
         onRefresh={refetch}
       />
