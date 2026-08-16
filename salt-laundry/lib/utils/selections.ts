@@ -1,5 +1,6 @@
 import type { ServiceType } from "@prisma/client";
 import { lineKey } from "@/lib/utils/pricing";
+import { SERVICE_TYPE_LABELS } from "@/lib/constants/services";
 import type {
   ItemSelection,
   LaundryItemOption,
@@ -44,6 +45,19 @@ export function supportsService(
   serviceType: ServiceType,
 ): boolean {
   return item.services.some((service) => service.type === serviceType);
+}
+
+// Explains a row that can't be added under the selected service. When the item
+// is priced for exactly one service the note names it- that tells the guest
+// what to switch to- and only falls back to naming what's missing when the
+// item offers several.
+export function serviceAvailabilityNote(
+  item: LaundryItemOption,
+  defaultServiceType: ServiceType,
+): string {
+  return item.services.length === 1
+    ? `${SERVICE_TYPE_LABELS[item.services[0].type]} only`
+    : `Not available for ${SERVICE_TYPE_LABELS[defaultServiceType]}`;
 }
 
 // The service an item starts on: the guest's default when the item offers it,

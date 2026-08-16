@@ -6,7 +6,12 @@ import {
   ItemSearchOption,
   OPTION_ID_PREFIX,
 } from "@/components/guest/ItemSearchOption";
-import { getUnitPrice, serviceForSelection } from "@/lib/utils/selections";
+import {
+  getUnitPrice,
+  serviceAvailabilityNote,
+  serviceForSelection,
+  supportsService,
+} from "@/lib/utils/selections";
 import { useItemSearch } from "@/lib/hooks/useItemSearch";
 import type { LaundryItemOption, Selections } from "@/lib/types/guestOrder";
 
@@ -28,6 +33,13 @@ export function ItemSearch({
   defaultServiceType,
   onAdd,
 }: Props) {
+  // Same rule as the rows below: an item the selected service can't take can't
+  // be added, unless it's already in the order- then a pick is "one more" of
+  // the service it rode in on.
+  const isAvailable = (item: LaundryItemOption) =>
+    (selections[item.id]?.quantity ?? 0) > 0 ||
+    supportsService(item, defaultServiceType);
+
   const {
     query,
     changeQuery,
@@ -38,7 +50,7 @@ export function ItemSearch({
     pick,
     onKeyDown,
     containerRef,
-  } = useItemSearch(items, onAdd);
+  } = useItemSearch(items, onAdd, isAvailable);
 
   return (
     <div ref={containerRef} className="relative mb-3">
@@ -83,6 +95,8 @@ export function ItemSearch({
               )}
               inOrder={selections[item.id]?.quantity ?? 0}
               isHighlighted={index === highlight}
+              disabled={!isAvailable(item)}
+              note={serviceAvailabilityNote(item, defaultServiceType)}
               onHighlight={() => setHighlight(index)}
               onPick={() => pick(item)}
             />

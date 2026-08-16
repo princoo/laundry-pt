@@ -11,23 +11,20 @@ async function main() {
   // stand-in would only be a fake row to reconcile against the real one later.
   //
   // Items have no natural key to upsert on, so a catalogue that already exists
-  // is left alone rather than duplicated. Each item carries one price from the
-  // hotel's form; it is written to all three service columns because the hotel
-  // charges the same whichever service is chosen. Prices can still be adjusted
-  // per service afterwards in the admin UI.
+  // is left alone rather than duplicated. Prices come per service from the
+  // hotel's sheet; a service the sheet doesn't price stays null, which every
+  // reader treats as "not offered". No item gets a dry-clean price — the sheet
+  // has no dry-cleaning section — so that service is offered only once an
+  // admin prices something for it.
   if ((await prisma.laundryItem.count()) === 0) {
-    for (const [index, { price, ...item }] of items.entries()) {
-      await prisma.laundryItem.create({
-        data: {
-          ...item,
-          priceNormal: price,
-          priceDryClean: price,
-          pricePressing: price,
-          isActive: true,
-          sortOrder: index + 1,
-        },
-      });
-    }
+    await prisma.laundryItem.createMany({
+      data: items.map((item, index) => ({
+        ...item,
+        priceDryClean: null,
+        isActive: true,
+        sortOrder: index + 1,
+      })),
+    });
   }
 }
 

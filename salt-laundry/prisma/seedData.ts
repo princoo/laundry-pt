@@ -1,38 +1,42 @@
-export const items = [
-  // ── Men's ──
-  { nameEn: "Men's sport shirt", nameFr: "Chemise de sport (homme)", price: 1000 },
-  { nameEn: "Men's shirt", nameFr: "Chemise (homme)", price: 1000 },
-  { nameEn: "Men's undershort", nameFr: "Caleçon (homme)", price: 500 },
-  { nameEn: "Men's jacket (washable)", nameFr: "Veston lavable (homme)", price: 1500 },
-  { nameEn: "Men's suit (washable)", nameFr: "Complet lavable (homme)", price: 3000 },
-  { nameEn: "Men's vest (singlet)", nameFr: "Maillot de corps (homme)", price: 500 },
+// The hotel's price sheet: one bilingual list with two priced sections,
+// washing and pressing. An item missing from a section has no price for that
+// service, stored as null — the API, the request form and the server-side
+// re-price all read null (and 0) as "not offered". Dry-cleaning has no section
+// on the sheet at all, so the seed prices no item for it; giving an item a
+// dry-clean price in the admin UI is all it takes to start offering it.
+//
+// Order follows the sheet's washing section; "Polo shirt" only exists in the
+// pressing section, where it sits next to "T-Shirt", so it keeps that spot.
+export interface SeedItem {
+  nameEn: string;
+  nameFr: string;
+  priceNormal: number | null;
+  pricePressing: number | null;
+}
 
-  // ── Ladies' ──
-  { nameEn: "Ladies' blouse", nameFr: "Corsage (dame)", price: 1000 },
-  { nameEn: "Ladies' dress", nameFr: "Robe (dame)", price: 1000 },
-  { nameEn: "Ladies' skirt", nameFr: "Jupe (dame)", price: 1000 },
-  { nameEn: "Ladies' nightgown", nameFr: "Chemise de nuit (dame)", price: 1000 },
-  { nameEn: "Ladies' slip", nameFr: "Combinaison (dame)", price: 1000 },
-  { nameEn: "Ladies' panties", nameFr: "Culotte-slip (dame)", price: 500 },
-  { nameEn: "Ladies' bra", nameFr: "Soutien-gorge (dame)", price: 500 },
-  { nameEn: "Ladies' tunic", nameFr: "Tunique (dame)", price: 500 },
-  { nameEn: "Ladies' dressing gown", nameFr: "Peignoir (dame)", price: 2500 },
-
-  // ── Children's ──
-  { nameEn: "Children's dress", nameFr: "Robe (enfant)", price: 1500 },
-  { nameEn: "Children's shirt", nameFr: "Chemise (enfant)", price: 500 },
-  { nameEn: "Children's underpants", nameFr: "Culotte-slip (enfant)", price: 500 },
-  { nameEn: "Children's nightgown", nameFr: "Chemise de nuit (enfant)", price: 500 },
-
-  // ── Any guest (same price in every section, or not garment-specific) ──
-  { nameEn: "Trousers", nameFr: "Pantalon", price: 1000 },
-  { nameEn: "Pyjamas", nameFr: "Pyjama", price: 1000 },
-  { nameEn: "Shorts", nameFr: "Short", price: 1000 },
-  { nameEn: "Socks", nameFr: "Chaussettes", price: 500 },
-  { nameEn: "Undershirt", nameFr: "Tricot de corps", price: 500 },
-  { nameEn: "Handkerchief", nameFr: "Mouchoir", price: 500 },
-  { nameEn: "Towel", nameFr: "Essuie-main", price: 1500 },
-  { nameEn: "Face towel", nameFr: "Serviette de toilette", price: 500 },
-  { nameEn: "Umukenyero (wrapper)", nameFr: "Pagne / umukenyero", price: 1500 },
-  { nameEn: "Shoe cleaning", nameFr: "Nettoyage de chaussures", price: 2000 },
+export const items: SeedItem[] = [
+  { nameEn: "Shirt", nameFr: "Chemise", priceNormal: 5000, pricePressing: 2000 },
+  { nameEn: "Blouse", nameFr: "Chemisier", priceNormal: 5000, pricePressing: 2000 },
+  { nameEn: "Trousers", nameFr: "Pantalon", priceNormal: 5000, pricePressing: 2000 },
+  { nameEn: "Skirt", nameFr: "Jupe", priceNormal: 5000, pricePressing: 2000 },
+  { nameEn: "Dress", nameFr: "Robe", priceNormal: 5000, pricePressing: 2000 },
+  { nameEn: "Shorts", nameFr: "Short", priceNormal: 5000, pricePressing: null },
+  { nameEn: "Suit", nameFr: "Complet", priceNormal: 15000, pricePressing: 10000 },
+  { nameEn: "Jacket", nameFr: "Veste", priceNormal: 8000, pricePressing: 4000 },
+  { nameEn: "Tie", nameFr: "Cravate", priceNormal: 4000, pricePressing: 2000 },
+  { nameEn: "Silk shirt", nameFr: "Chemise en soie", priceNormal: 5000, pricePressing: null },
+  { nameEn: "Silk blouse", nameFr: "Chemisier en soie", priceNormal: 5000, pricePressing: null },
+  { nameEn: "Silk dress", nameFr: "Robe en soie", priceNormal: 5000, pricePressing: null },
+  { nameEn: "Lady's suit", nameFr: "Tailleur", priceNormal: 15000, pricePressing: 10000 },
+  { nameEn: "Polo shirt", nameFr: "Polo", priceNormal: null, pricePressing: 2000 },
+  { nameEn: "T-Shirt", nameFr: "T-Shirt", priceNormal: 5000, pricePressing: 2000 },
+  { nameEn: "Tank top", nameFr: "Débardeur", priceNormal: 4000, pricePressing: 2000 },
+  { nameEn: "Socks", nameFr: "Chaussettes", priceNormal: 3000, pricePressing: 1000 },
+  { nameEn: "Slip", nameFr: "Caleçon", priceNormal: 2000, pricePressing: null },
+  { nameEn: "Panties", nameFr: "Culotte", priceNormal: 2000, pricePressing: 1000 },
+  { nameEn: "Bra", nameFr: "Soutien-gorge", priceNormal: 2000, pricePressing: 1000 },
+  { nameEn: "Pyjamas", nameFr: "Pyjama", priceNormal: 5000, pricePressing: 2000 },
+  { nameEn: "Night dress", nameFr: "Chemise de nuit", priceNormal: 5000, pricePressing: 2000 },
+  { nameEn: "Swim shorts", nameFr: "Maillot de bain", priceNormal: 4000, pricePressing: 2000 },
+  { nameEn: "Shoes", nameFr: "Chaussures", priceNormal: 10000, pricePressing: null },
 ];
