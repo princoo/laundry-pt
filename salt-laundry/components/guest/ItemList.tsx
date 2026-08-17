@@ -10,8 +10,12 @@ interface Props {
   items: LaundryItemOption[]
   selections: Selections
   defaultServiceType: ServiceType
-  onQuantityChange: (item: LaundryItemOption, quantity: number) => void
-  onServiceChange: (itemId: string, serviceType: ServiceType) => void
+  onAdd: (item: LaundryItemOption) => void
+  onLineQuantityChange: (
+    item: LaundryItemOption,
+    serviceType: ServiceType,
+    quantity: number
+  ) => void
   isLoading: boolean
   error: string | null
   onRetry: () => void
@@ -19,9 +23,11 @@ interface Props {
 
 export function ItemList({
   items, selections, defaultServiceType,
-  onQuantityChange, onServiceChange, isLoading, error, onRetry,
+  onAdd, onLineQuantityChange, isLoading, error, onRetry,
 }: Props) {
-  const totalCount = Object.values(selections).reduce((sum, s) => sum + s.quantity, 0)
+  // Garments, not lines: a shirt washed and a shirt pressed is two of the
+  // guest's clothes, which is what this count is answering.
+  const totalCount = Object.values(selections).reduce((sum, line) => sum + line.quantity, 0)
 
   return (
     <div className="bg-white rounded-xl border border-[0.5px] border-salt-border shadow-sm p-5">
@@ -51,8 +57,7 @@ export function ItemList({
             items={items}
             selections={selections}
             defaultServiceType={defaultServiceType}
-            // A pick means "one more of this", so it stacks on what's there.
-            onAdd={(item) => onQuantityChange(item, (selections[item.id]?.quantity ?? 0) + 1)}
+            onAdd={onAdd}
           />
           {/* Pulled out past the card padding so a picked row's tint reads as a
               band in the list rather than a floating block inside it. */}
@@ -61,10 +66,12 @@ export function ItemList({
               <ItemRow
                 key={item.id}
                 item={item}
-                selection={selections[item.id]}
+                selections={selections}
                 defaultServiceType={defaultServiceType}
-                onQuantityChange={(quantity) => onQuantityChange(item, quantity)}
-                onServiceChange={(serviceType) => onServiceChange(item.id, serviceType)}
+                onAdd={() => onAdd(item)}
+                onLineQuantityChange={(serviceType, quantity) =>
+                  onLineQuantityChange(item, serviceType, quantity)
+                }
               />
             ))}
           </div>

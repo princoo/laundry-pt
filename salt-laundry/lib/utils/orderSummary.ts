@@ -1,10 +1,12 @@
 import type { ServiceType } from "@prisma/client";
-import { calculateOrder } from "@/lib/utils/pricing";
-import { getUnitPrice } from "@/lib/utils/selections";
+import { calculateOrder, lineKey } from "@/lib/utils/pricing";
+import { lineQuantity } from "@/lib/utils/selections";
 import { SERVICE_TYPES } from "@/lib/constants/services";
 import type { LaundryItemOption, Selections } from "@/lib/types/guestOrder";
 
 export interface SelectedLine {
+  // lineKey, not the item id: an item split across services is two lines, and
+  // they have to be tellable apart.
   id: string;
   nameEn: string;
   serviceType: ServiceType;
@@ -23,22 +25,25 @@ export function buildOrderSummary(
   selections: Selections,
   isExpress: boolean,
 ) {
-  const selectedLines: SelectedLine[] = items.flatMap((item) => {
-    const selection = selections[item.id];
-    if (!selection || selection.quantity < 1) return [];
+  // Item order comes from the catalogue and service order from SERVICE_TYPES,
+  // so a split item's two lines always list in the same order.
+  const selectedLines: SelectedLine[] = items.flatMap((item) =>
+    item.services.flatMap((service) => {
+      const quantity = lineQuantity(selections, item.id, service.type);
+      if (quantity < 1) return [];
 
-    const unitPrice = getUnitPrice(item, selection.serviceType);
-    return [
-      {
-        id: item.id,
-        nameEn: item.nameEn,
-        serviceType: selection.serviceType,
-        quantity: selection.quantity,
-        unitPrice,
-        subtotal: unitPrice * selection.quantity,
-      },
-    ];
-  });
+      return [
+        {
+          id: lineKey(item.id, service.type),
+          nameEn: item.nameEn,
+          serviceType: service.type,
+          quantity,
+          unitPrice: service.price,
+          subtotal: service.price * quantity,
+        },
+      ];
+    }),
+  );
 
   // Express is applied once to the summed gross- it's request-level urgency,
   // not a per-line treatment.

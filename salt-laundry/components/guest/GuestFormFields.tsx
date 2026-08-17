@@ -11,8 +11,12 @@ interface Props {
   onDefaultServiceTypeChange: (serviceType: ServiceType) => void
   items: LaundryItemOption[]
   selections: Selections
-  onQuantityChange: (item: LaundryItemOption, quantity: number) => void
-  onServiceChange: (itemId: string, serviceType: ServiceType) => void
+  onAdd: (item: LaundryItemOption) => void
+  onLineQuantityChange: (
+    item: LaundryItemOption,
+    serviceType: ServiceType,
+    quantity: number
+  ) => void
   isLoading: boolean
   itemsError: string | null
   onRetryItems: () => void
@@ -25,8 +29,8 @@ export function GuestFormFields({
   onDefaultServiceTypeChange,
   items,
   selections,
-  onQuantityChange,
-  onServiceChange,
+  onAdd,
+  onLineQuantityChange,
   isLoading,
   itemsError,
   onRetryItems,
@@ -59,8 +63,8 @@ export function GuestFormFields({
         items={items}
         selections={selections}
         defaultServiceType={defaultServiceType}
-        onQuantityChange={onQuantityChange}
-        onServiceChange={onServiceChange}
+        onAdd={onAdd}
+        onLineQuantityChange={onLineQuantityChange}
         isLoading={isLoading}
         error={itemsError}
         onRetry={onRetryItems}

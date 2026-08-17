@@ -7,15 +7,9 @@ import type { LaundryItemOption } from "@/lib/types/guestOrder";
 // Type-ahead over the catalogue. Focus never leaves the input- the arrow keys
 // move a highlight instead, so the guest can keep typing, and picking clears the
 // field so the next item can be typed straight away.
-//
-// `canPick` marks results that only inform- items the current service can't
-// take stay listed so a search explains itself instead of coming up empty, but
-// the highlight walks past them and picking one is refused everywhere: Enter,
-// click, and the seeded highlight all go through the same gate.
 export function useItemSearch(
   items: readonly LaundryItemOption[],
   onPick: (item: LaundryItemOption) => void,
-  canPick: (item: LaundryItemOption) => boolean = () => true,
 ) {
   const [query, setQuery] = useState("");
   const [highlight, setHighlight] = useState(0);
@@ -26,9 +20,7 @@ export function useItemSearch(
 
   const changeQuery = (value: string) => {
     setQuery(value);
-    // Seed the highlight on the first result Enter could actually take.
-    const first = searchItems(items, value).findIndex(canPick);
-    setHighlight(Math.max(first, 0));
+    setHighlight(0);
   };
 
   useEffect(() => {
@@ -41,20 +33,8 @@ export function useItemSearch(
   }, [isOpen]);
 
   const pick = (item: LaundryItemOption) => {
-    if (!canPick(item)) return;
     onPick(item);
     setQuery("");
-  };
-
-  // Steps to the nearest pickable result in `dir`, or stays put if there is
-  // none- the highlight never lands on a result Enter would refuse.
-  const moveHighlight = (dir: 1 | -1) => {
-    setHighlight((index) => {
-      for (let i = index + dir; i >= 0 && i < results.length; i += dir) {
-        if (canPick(results[i])) return i;
-      }
-      return index;
-    });
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -65,11 +45,11 @@ export function useItemSearch(
     if (!isOpen) return;
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      moveHighlight(1);
+      setHighlight((index) => Math.min(index + 1, results.length - 1));
     }
     if (event.key === "ArrowUp") {
       event.preventDefault();
-      moveHighlight(-1);
+      setHighlight((index) => Math.max(index - 1, 0));
     }
     if (event.key === "Enter") {
       // Stop the form from submitting- Enter here means "add this item".

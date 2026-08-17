@@ -17,11 +17,12 @@ interface SaveInput {
 
 const GENERIC_ERROR = "Something went wrong. Try again or call reception.";
 
-// Each line carries its own service; isExpress stays request-level.
+// The form's lines are already the payload's shape- one item under one service,
+// so a split item sends two lines. isExpress stays request-level.
 function toItems(selections: Selections) {
-  return Object.entries(selections)
-    .filter(([, selection]) => selection.quantity > 0)
-    .map(([laundryItemId, { serviceType, quantity }]) => ({
+  return Object.values(selections)
+    .filter((line) => line.quantity > 0)
+    .map(({ laundryItemId, serviceType, quantity }) => ({
       laundryItemId,
       serviceType,
       quantity,

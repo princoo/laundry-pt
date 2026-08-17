@@ -8,8 +8,9 @@ import {
 } from "@/components/guest/ItemSearchOption";
 import {
   getUnitPrice,
+  initialServiceFor,
+  itemQuantity,
   serviceAvailabilityNote,
-  serviceForSelection,
   supportsService,
 } from "@/lib/utils/selections";
 import { useItemSearch } from "@/lib/hooks/useItemSearch";
@@ -33,12 +34,13 @@ export function ItemSearch({
   defaultServiceType,
   onAdd,
 }: Props) {
-  // Same rule as the rows below: an item the selected service can't take can't
-  // be added, unless it's already in the order- then a pick is "one more" of
-  // the service it rode in on.
-  const isAvailable = (item: LaundryItemOption) =>
-    (selections[item.id]?.quantity ?? 0) > 0 ||
-    supportsService(item, defaultServiceType);
+  // Same rule as the rows below: an item the default doesn't apply to is still
+  // addable- it enters under its own service- but gets a note naming that
+  // service, so its price can't read as belonging to the default.
+  const noteFor = (item: LaundryItemOption) =>
+    supportsService(item, defaultServiceType)
+      ? undefined
+      : serviceAvailabilityNote(item, defaultServiceType);
 
   const {
     query,
@@ -50,7 +52,7 @@ export function ItemSearch({
     pick,
     onKeyDown,
     containerRef,
-  } = useItemSearch(items, onAdd, isAvailable);
+  } = useItemSearch(items, onAdd);
 
   return (
     <div ref={containerRef} className="relative mb-3">
@@ -85,18 +87,15 @@ export function ItemSearch({
             <ItemSearchOption
               key={item.id}
               item={item}
+              // Priced at the service a pick would add on, which is the same
+              // one the collapsed row's stepper uses.
               unitPrice={getUnitPrice(
                 item,
-                serviceForSelection(
-                  item,
-                  selections[item.id],
-                  defaultServiceType,
-                ),
+                initialServiceFor(item, defaultServiceType),
               )}
-              inOrder={selections[item.id]?.quantity ?? 0}
+              inOrder={itemQuantity(selections, item)}
               isHighlighted={index === highlight}
-              disabled={!isAvailable(item)}
-              note={serviceAvailabilityNote(item, defaultServiceType)}
+              note={noteFor(item)}
               onHighlight={() => setHighlight(index)}
               onPick={() => pick(item)}
             />

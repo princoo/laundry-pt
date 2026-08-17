@@ -9,6 +9,12 @@ export const SERVICE_TYPES = [
   "PRESSING",
 ] as const satisfies readonly ServiceType[];
 
+// Where the form's default service starts before the guest touches anything.
+// Washing is what most guests want most of the time. It is only a starting
+// point- the selector moves it, and an item not priced for the current default
+// still enters on the service it does have (see initialServiceFor).
+export const DEFAULT_SERVICE_TYPE: ServiceType = "NORMAL";
+
 export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
   NORMAL: "Normal / Washing",
   DRY_CLEAN: "Dry-cleaning",

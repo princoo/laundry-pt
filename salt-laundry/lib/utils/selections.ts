@@ -1,11 +1,7 @@
 import type { ServiceType } from "@prisma/client";
 import { lineKey } from "@/lib/utils/pricing";
 import { SERVICE_TYPE_LABELS } from "@/lib/constants/services";
-import type {
-  ItemSelection,
-  LaundryItemOption,
-  Selections,
-} from "@/lib/types/guestOrder";
+import type { LaundryItemOption, Selections } from "@/lib/types/guestOrder";
 
 export function getUnitPrice(
   item: LaundryItemOption,
@@ -47,19 +43,6 @@ export function supportsService(
   return item.services.some((service) => service.type === serviceType);
 }
 
-// Explains a row that can't be added under the selected service. When the item
-// is priced for exactly one service the note names it- that tells the guest
-// what to switch to- and only falls back to naming what's missing when the
-// item offers several.
-export function serviceAvailabilityNote(
-  item: LaundryItemOption,
-  defaultServiceType: ServiceType,
-): string {
-  return item.services.length === 1
-    ? `${SERVICE_TYPE_LABELS[item.services[0].type]} only`
-    : `Not available for ${SERVICE_TYPE_LABELS[defaultServiceType]}`;
-}
-
 // The service an item starts on: the guest's default when the item offers it,
 // otherwise the item's only/first available service.
 export function initialServiceFor(
@@ -71,69 +54,68 @@ export function initialServiceFor(
     : item.services[0].type;
 }
 
-// The service to price an item at wherever it's listed: the guest's own choice
-// once it's in the order, otherwise the service it would enter on.
-export function serviceForSelection(
+// The note on a row that doesn't enter on the default. The row is still
+// orderable- a guest washing most things can add a pressing-only garment to the
+// same order- so the note names the service the item rides on, which is also
+// what its shown price belongs to. "only" is claimed just when it's true.
+export function serviceAvailabilityNote(
   item: LaundryItemOption,
-  selection: ItemSelection | undefined,
   defaultServiceType: ServiceType,
-): ServiceType {
-  return selection?.serviceType ?? initialServiceFor(item, defaultServiceType);
+): string {
+  const entering =
+    SERVICE_TYPE_LABELS[initialServiceFor(item, defaultServiceType)];
+  return item.services.length === 1 ? `${entering} only` : entering;
 }
 
-// An item entering the order (0 → 1) seeds its service from the current default.
-export function setQuantity(
+export function lineQuantity(
+  selections: Selections,
+  laundryItemId: string,
+  serviceType: ServiceType,
+): number {
+  return selections[lineKey(laundryItemId, serviceType)]?.quantity ?? 0;
+}
+
+// Everything the guest ordered of one item, however it's split across services.
+// This is the number a single count belongs on- the list's item tally, and the
+// "already in your order" mark in search.
+export function itemQuantity(
   selections: Selections,
   item: LaundryItemOption,
+): number {
+  return item.services.reduce(
+    (sum, service) => sum + lineQuantity(selections, item.id, service.type),
+    0,
+  );
+}
+
+export function setLineQuantity(
+  selections: Selections,
+  laundryItemId: string,
+  serviceType: ServiceType,
   quantity: number,
-  defaultServiceType: ServiceType,
 ): Selections {
+  const key = lineKey(laundryItemId, serviceType);
   if (quantity <= 0) {
     return Object.fromEntries(
-      Object.entries(selections).filter(([id]) => id !== item.id),
+      Object.entries(selections).filter(([k]) => k !== key),
     );
   }
-
-  const serviceType =
-    selections[item.id]?.serviceType ??
-    initialServiceFor(item, defaultServiceType);
-  return { ...selections, [item.id]: { quantity, serviceType } };
+  return { ...selections, [key]: { laundryItemId, serviceType, quantity } };
 }
 
-export function setServiceType(
+// One more of an item from somewhere that has no service of its own to offer-
+// the collapsed row's stepper, or a search result. It lands on the service the
+// item would enter on, which is the guest's default whenever the item takes it.
+export function addOne(
   selections: Selections,
-  itemId: string,
-  serviceType: ServiceType,
-): Selections {
-  const existing = selections[itemId];
-  if (!existing) return selections;
-  return { ...selections, [itemId]: { ...existing, serviceType } };
-}
-
-// Changing the default service resets every item already in the order to it,
-// discarding per-item overrides- the default is a bulk "set everything to this",
-// and individual items can be changed again afterwards.
-//
-// Items that aren't priced for the new service keep what they have: bouncing a
-// dry-clean-only silk blouse to some unrelated third service because the guest
-// picked "Pressing" would be a change they never asked for.
-export function applyDefaultService(
-  selections: Selections,
-  items: readonly LaundryItemOption[],
+  item: LaundryItemOption,
   defaultServiceType: ServiceType,
 ): Selections {
-  const itemsById = new Map(items.map((item) => [item.id, item]));
-
-  return Object.fromEntries(
-    Object.entries(selections).map(([id, selection]) => {
-      const item = itemsById.get(id);
-      const canApply = item && supportsService(item, defaultServiceType);
-      return [
-        id,
-        canApply
-          ? { ...selection, serviceType: defaultServiceType }
-          : selection,
-      ];
-    }),
+  const serviceType = initialServiceFor(item, defaultServiceType);
+  return setLineQuantity(
+    selections,
+    item.id,
+    serviceType,
+    lineQuantity(selections, item.id, serviceType) + 1,
   );
 }

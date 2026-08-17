@@ -15,15 +15,19 @@ export interface LaundryItemOption {
   services: ItemServiceOption[];
 }
 
-// The guest's choice for one item. Service is per item; express is not here-
-// it's request-level and lives on the form, not on any line.
-export interface ItemSelection {
-  quantity: number;
+// One line of the order: an item under one service. Express is not here- it's
+// request-level and lives on the form, not on any line.
+export interface SelectionLine {
+  laundryItemId: string;
   serviceType: ServiceType;
+  quantity: number;
 }
 
-// Keyed by item id. Only entries with quantity > 0 are in the order.
-export type Selections = Record<string, ItemSelection>;
+// Keyed by lineKey(itemId, serviceType), so one item can be in the order under
+// more than one service at once- two shirts washed and one pressed is two
+// lines, not a single line that has to pick a service for all three. Only
+// entries with quantity > 0 are in the order.
+export type Selections = Record<string, SelectionLine>;
 
 // The request form serves three jobs: a guest placing an order, the same guest
 // changing one that hasn't been collected yet, and staff correcting one that

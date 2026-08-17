@@ -55,9 +55,9 @@ export function RequestForm({
     defaultServiceType,
     changeDefaultService,
     selections,
-    changeQuantity,
-    changeService,
-  } = useOrderSelections(items, draft.selections);
+    changeLineQuantity,
+    addItem,
+  } = useOrderSelections(draft.selections);
 
   // onChange mode so formState.isValid tracks the schema live- the submit gate
   // is the schema itself, not a hand-rolled field check that drifts from it.
@@ -121,8 +121,8 @@ export function RequestForm({
           onDefaultServiceTypeChange={changeDefaultService}
           items={items}
           selections={selections}
-          onQuantityChange={changeQuantity}
-          onServiceChange={changeService}
+          onAdd={addItem}
+          onLineQuantityChange={changeLineQuantity}
           isLoading={isLoading}
           itemsError={itemsError}
           onRetryItems={refetchItems}

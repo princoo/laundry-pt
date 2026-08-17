@@ -1,5 +1,7 @@
 import type { ServiceType } from "@prisma/client";
+import { lineKey } from "@/lib/utils/pricing";
 import { uniqueServiceTypes } from "@/lib/utils/serviceSummary";
+import { DEFAULT_SERVICE_TYPE } from "@/lib/constants/services";
 import type {
   GuestOrderDraft,
   LockedRoom,
@@ -30,8 +32,9 @@ export const EMPTY_DRAFT: GuestOrderDraft = {
   selections: {},
 };
 
-// Turns a saved request back into the form's working shape. One line per item-
-// the form keys selections by item id, so it can't produce two lines for one item.
+// Turns a saved request back into the form's working shape. Saved lines are
+// already one per item-and-service, which is exactly how the form keys them, so
+// an order split across services reopens split.
 export function toGuestOrderDraft(request: EditableRequest): GuestOrderDraft {
   return {
     roomNumber: request.roomNumber,
@@ -40,9 +43,9 @@ export function toGuestOrderDraft(request: EditableRequest): GuestOrderDraft {
     isHanger: request.isHanger,
     isExpress: request.isExpress,
     selections: Object.fromEntries(
-      request.items.map(({ laundryItemId, serviceType, quantity }) => [
-        laundryItemId,
-        { quantity, serviceType },
+      request.items.map((line) => [
+        lineKey(line.laundryItemId, line.serviceType),
+        line,
       ]),
     ),
   };
@@ -64,10 +67,11 @@ export function resolveLockedRoom(
   return scannedRoom ? { number: scannedRoom, reason: "scan" } : undefined;
 }
 
-// Where the bulk service control starts. On an order whose lines all agree it
-// opens on that service- showing "Normal" over a dry-clean-only order would
-// misrepresent it, and one stray click would then wipe the guest's choices.
+// Where the default-service control opens. On an order whose lines all agree it
+// opens on that service- showing "Normal" over a pressing-only order would
+// misrepresent what the guest is looking at. A mixed order has no one service
+// to name, so it falls back to the starting default.
 export function defaultServiceFor(selections: Selections): ServiceType {
   const types = uniqueServiceTypes(Object.values(selections));
-  return types.length === 1 ? types[0] : "NORMAL";
+  return types.length === 1 ? types[0] : DEFAULT_SERVICE_TYPE;
 }

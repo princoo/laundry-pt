@@ -9,10 +9,9 @@ interface Props {
   unitPrice: number;
   inOrder: number;
   isHighlighted: boolean;
-  // Set when the current service can't take this item. The option stays in the
-  // list- a search that silently dropped it would read as "we don't have it"-
-  // but it can't be picked, and `note` says what the item is available for.
-  disabled?: boolean;
+  // Same rider as the list rows: set when the item would enter the order under
+  // a service other than the current default, so the price alongside can't
+  // read as belonging to the wrong service.
   note?: string;
   onHighlight: () => void;
   onPick: () => void;
@@ -23,7 +22,6 @@ export function ItemSearchOption({
   unitPrice,
   inOrder,
   isHighlighted,
-  disabled = false,
   note,
   onHighlight,
   onPick,
@@ -34,25 +32,19 @@ export function ItemSearchOption({
       role="option"
       id={`${OPTION_ID_PREFIX}${item.id}`}
       aria-selected={isHighlighted}
-      aria-disabled={disabled}
-      disabled={disabled}
-      onMouseEnter={disabled ? undefined : onHighlight}
-      onClick={disabled ? undefined : onPick}
+      onMouseEnter={onHighlight}
+      onClick={onPick}
       className={`w-full flex items-center justify-between gap-3 px-3 py-2 text-left transition-colors ${
-        isHighlighted && !disabled ? "bg-salt-cream" : ""
-      } ${disabled ? "cursor-not-allowed" : ""}`}
+        isHighlighted ? "bg-salt-cream" : ""
+      }`}
     >
       <span className="min-w-0">
-        <span
-          className={`block text-sm truncate ${
-            disabled ? "text-salt-text-muted" : "text-salt-text"
-          }`}
-        >
+        <span className="block text-sm text-salt-text truncate">
           {item.nameEn}
         </span>
         <span className="block text-xs text-salt-text-muted truncate">
           {item.nameFr}
-          {disabled && note && ` · ${note}`}
+          {note && ` · ${note}`}
         </span>
       </span>
 
@@ -64,13 +56,10 @@ export function ItemSearchOption({
             ×{inOrder}
           </span>
         )}
-        {/* Same rule as the list rows: no price and no plus on an option the
-            current service can't take- both would promise an add that won't
-            happen. */}
         <span className="text-xs text-salt-text-sec whitespace-nowrap">
-          {disabled ? "—" : formatCurrency(unitPrice)}
+          {formatCurrency(unitPrice)}
         </span>
-        {!disabled && <Plus className="w-4 h-4 text-salt-green" />}
+        <Plus className="w-4 h-4 text-salt-green" />
       </span>
     </button>
   );
