@@ -5,8 +5,10 @@ import { Printer } from "lucide-react";
 import { BulkRoomQrCard } from "@/components/staff/BulkRoomQrCard";
 import { ROOM_RANGES, roomsInRange, rangeLabel } from "@/lib/constants/rooms";
 import { buildGuestRoomUrl } from "@/lib/utils/roomParam";
+import { useBrand } from "@/components/BrandProvider";
 
 export function BulkRoomQrGrid() {
+  const { appUrl } = useBrand();
   // Which ranges are included, by index into ROOM_RANGES. All on by default.
   const [selected, setSelected] = useState<Set<number>>(
     () => new Set(ROOM_RANGES.map((_, i) => i)),
@@ -99,7 +101,7 @@ export function BulkRoomQrGrid() {
                   <BulkRoomQrCard
                     key={room}
                     room={room}
-                    url={buildGuestRoomUrl(room)!}
+                    url={buildGuestRoomUrl(room, appUrl)!}
                   />
                 ))}
               </div>

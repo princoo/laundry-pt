@@ -1,9 +1,9 @@
 "use client";
 
 // Every hook fetches through here. A 401 means the session lapsed mid-visit-
-// SOA's token has a hard hour on it- and a generic "failed to load" would
+// Keycloak refused to refresh it- and a generic "failed to load" would
 // leave someone re-clicking a dead page. Reloading the current URL as a
-// document request puts it in front of proxy.ts, which owns the SOA redirect,
+// document request puts it in front of proxy.ts, which owns the sign-in redirect,
 // so the sign-in URL never has to be handed to the browser.
 //
 // It is a fetch, so it cannot live in lib/utils/- that layer stays pure.

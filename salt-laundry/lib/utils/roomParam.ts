@@ -1,4 +1,3 @@
-import { GUEST_BASE_URL } from "@/lib/constants/qrCode";
 import { isAllowedRoom } from "@/lib/constants/rooms";
 
 // Each room's QR code points at the form with ?room=<number>. The value lands in
@@ -16,13 +15,11 @@ export function readRoomParam(
   return isAllowedRoom(room) ? room : undefined;
 }
 
-// The inverse of readRoomParam- builds the URL a room's QR code encodes. Returns
-// null for anything readRoomParam would reject, so the two can never disagree:
-// a code this refuses to build is one the form would refuse to read.
-export function buildGuestRoomUrl(
-  room: string,
-  base: string = GUEST_BASE_URL,
-): string | null {
+// The inverse of readRoomParam- builds the URL a room's QR code encodes, on
+// the deployment's public origin (Brand.appUrl). Returns null for anything
+// readRoomParam would reject, so the two can never disagree: a code this
+// refuses to build is one the form would refuse to read.
+export function buildGuestRoomUrl(room: string, base: string): string | null {
   const trimmed = room.trim();
   if (!trimmed || trimmed.length > MAX_ROOM_LENGTH) return null;
   if (!isAllowedRoom(trimmed)) return null;

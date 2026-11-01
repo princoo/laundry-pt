@@ -1,4 +1,4 @@
-import { SIGNED_IN_HOME } from "@/lib/constants/soa";
+import { SIGNED_IN_HOME } from "@/lib/constants/auth";
 
 // Only a path with a single leading slash is a safe place to send someone
 // after sign-in. `//evil.example` and `/\evil.example` are both protocol

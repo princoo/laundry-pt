@@ -1,12 +1,15 @@
-// app/opengraph-image.tsx
 import { ImageResponse } from "next/og";
+import { getBrand } from "@/lib/brand";
 
-export const runtime = "edge";
-export const alt = "SALT of Akagera- Laundry Service";
+// Rendered on the Node runtime at request time, so the words come from the
+// deployment's environment rather than from the build.
+export const dynamic = "force-dynamic";
+export const alt = "Laundry Service";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default function Image() {
+  const { orgName, address } = getBrand();
   return new ImageResponse(
     <div
       style={{
@@ -18,29 +21,30 @@ export default function Image() {
         alignItems: "center",
         justifyContent: "center",
         padding: "0 80px",
+        textAlign: "center",
       }}
     >
       <p
         style={{
           color: "#ffffff",
-          fontSize: 96,
+          fontSize: 80,
           fontWeight: 500,
           margin: 0,
           letterSpacing: "-2px",
         }}
       >
-        salt
+        {orgName}
       </p>
       <p
         style={{
           color: "#ffffff",
-          fontSize: 36,
+          fontSize: 34,
           fontWeight: 400,
           margin: "8px 0 0",
           opacity: 0.7,
         }}
       >
-        of Akagera, Rwanda
+        {address}
       </p>
       <p
         style={{

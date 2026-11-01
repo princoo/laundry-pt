@@ -1,4 +1,4 @@
-// Monogram for the profile avatar. Falls back to the email for SOA accounts
+// Monogram for the profile avatar. Falls back to the email for accounts
 // that arrive without a name on them.
 export function getInitials(name: string | null, email: string): string {
   const trimmed = name?.trim();
@@ -22,7 +22,7 @@ export function openTasksWarning(
   return `${lead}. Their ${tasks} stay assigned- reassign them if someone else should take over.`;
 }
 
-// SOA sends the two halves of a name separately; the laundry stores the joined
+// The token carries the two halves of a name separately; the laundry stores the joined
 // form as well so the fifteen or so selects and components that read `name`
 // keep working. Null rather than an empty string when neither half is sent, so
 // "no name" stays a single representable state.

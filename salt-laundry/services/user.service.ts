@@ -1,14 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import { pageSlice, type PageParams } from "@/lib/utils/pagination";
 
-// Everything here is mirrored from SOA- writes live in soaUser.service.ts.
+// Everything here is mirrored from Keycloak- writes live in
+// keycloakUser.service.ts.
 const PUBLIC_USER_SELECT = {
   id: true,
-  staffId: true,
   email: true,
   name: true,
   phoneNumber: true,
-  departmentName: true,
   roleNames: true,
   isHousekeeper: true,
   isActive: true,
@@ -16,18 +15,16 @@ const PUBLIC_USER_SELECT = {
   createdAt: true,
 } as const;
 
-// The signed-in user's own record, for the profile page. Read only- SOA owns
-// every field on it, so there is no matching write.
+// The signed-in user's own record, for the profile page. Read only- the
+// Netiiv Account owns every field on it, so there is no matching write.
 export async function getOwnProfile(userId: string) {
   return prisma.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
-      staffId: true,
       name: true,
       email: true,
       phoneNumber: true,
-      departmentName: true,
       roleNames: true,
     },
   });

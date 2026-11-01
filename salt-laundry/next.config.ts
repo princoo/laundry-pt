@@ -1,16 +1,14 @@
 import type { NextConfig } from "next";
-import { AUTHENTICATE_PATH } from "./lib/constants/soa";
 
 const nextConfig: NextConfig = {
-  // The sign-in token rides in this page's URL. no-referrer keeps it out of
-  // the Referer header of anything the page goes on to request.
-  async headers() {
-    return [
-      {
-        source: AUTHENTICATE_PATH,
-        headers: [{ key: "Referrer-Policy", value: "no-referrer" }],
-      },
-    ];
+  // The Docker image copies .next/standalone: the server plus only the files
+  // it was traced to need (Dockerfile, "runner").
+  output: "standalone",
+  // The only images are the two logos, rendered as plain <img> so the runtime
+  // needs neither the optimizer nor sharp (kept out of the trace below).
+  images: { unoptimized: true },
+  outputFileTracingExcludes: {
+    "*": ["./node_modules/.pnpm/sharp@*/**", "./node_modules/.pnpm/@img+*/**"],
   },
 };
 

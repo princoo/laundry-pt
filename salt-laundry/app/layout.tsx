@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Nunito } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/lib/auth";
+import { getBrand } from "@/lib/brand";
+import { BrandProvider } from "@/components/BrandProvider";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -9,51 +11,54 @@ const nunito = Nunito({
   variable: "--font-nunito",
 });
 
-export const metadata: Metadata = {
-  // Absolute base for the Open Graph image URL- without it Next.js falls back
-  // to localhost, and the shared preview breaks in production.
-  metadataBase: new URL(process.env.APP_URL ?? "http://localhost:3000"),
+// Every route renders at request time: the brand, the Keycloak client and the
+// public origin come from the environment of the running container, and one
+// image is built for every organization. Nothing here is worth prerendering
+// against build-time values that would be wrong for the next deployment.
+export const dynamic = "force-dynamic";
 
-  // %s is replaced by each page's own title; pages with no title get the default
-  title: {
-    template: "%s | SALT of Akagera",
-    default: "SALT of Akagera- Laundry Service",
-  },
+export function generateMetadata(): Metadata {
+  const { orgName, appName, appUrl, locale } = getBrand();
+  return {
+    // Absolute base for the Open Graph image URL- without it Next.js falls
+    // back to localhost, and the shared preview breaks in production.
+    metadataBase: new URL(appUrl),
 
-  description:
-    "Submit your hotel laundry request at SALT of Akagera. " +
-    "We collect, clean, and return items to your room.",
+    // %s is replaced by each page's own title; pages with no title get the default
+    title: {
+      template: `%s | ${orgName}`,
+      default: `${orgName}- Laundry Service`,
+    },
 
-  // Staff pages override this with a stronger noindex in app/staff/layout.tsx
-  robots: {
-    index: true,
-    follow: true,
-  },
+    description:
+      `Submit your hotel laundry request at ${orgName}. ` +
+      "We collect, clean, and return items to your room.",
 
-  // Controls how the link looks when shared on WhatsApp, etc.
-  // The image itself comes from app/opengraph-image.tsx- file-based metadata
-  // always wins over an images array declared here, so it is not repeated.
-  openGraph: {
-    type: "website",
-    locale: "en_RW",
-    siteName: "SALT of Akagera",
-    title: "SALT of Akagera- Laundry Service",
-    description: "Hotel laundry request service at SALT of Akagera, Rwanda.",
-  },
+    // Staff pages override this with a stronger noindex in app/staff/layout.tsx
+    robots: {
+      index: true,
+      follow: true,
+    },
 
-  // Shown in browser bookmarks and history
-  applicationName: "SALT Laundry",
+    // Controls how the link looks when shared on WhatsApp, etc.
+    // The image itself comes from app/opengraph-image.tsx- file-based metadata
+    // always wins over an images array declared here, so it is not repeated.
+    openGraph: {
+      type: "website",
+      locale,
+      siteName: orgName,
+      title: `${orgName}- Laundry Service`,
+      description: `Hotel laundry request service at ${orgName}.`,
+    },
 
-  keywords: [
-    "SALT of Akagera",
-    "hotel laundry",
-    "Akagera",
-    "Rwanda",
-    "laundry service",
-  ],
+    // Shown in browser bookmarks and history
+    applicationName: appName,
 
-  authors: [{ name: "SALT of Akagera" }],
-};
+    keywords: [orgName, "hotel laundry", "laundry service"],
+
+    authors: [{ name: orgName }],
+  };
+}
 
 // Viewport is a separate export in Next.js 16 (not part of metadata)
 export const viewport: Viewport = {
@@ -73,7 +78,9 @@ export default async function RootLayout({
   return (
     <html lang="en" className={nunito.variable} suppressHydrationWarning>
       <body className="bg-salt-cream font-sans">
-        <SessionProvider session={session}>{children}</SessionProvider>
+        <BrandProvider brand={getBrand()}>
+          <SessionProvider session={session}>{children}</SessionProvider>
+        </BrandProvider>
       </body>
     </html>
   );

@@ -16,7 +16,7 @@ interface SavedLine {
 }
 
 // The staff-side twin of useEditableRequest. Same shape, but through apiFetch so
-// a lapsed SOA session redirects to sign-in instead of reading as a load
+// a lapsed session redirects to sign-in instead of reading as a load
 // failure, and it carries the flag reason back so the editor can see what they
 // are being asked to fix.
 export function useStaffEditableRequest(requestId: string) {

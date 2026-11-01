@@ -1,4 +1,7 @@
+"use client";
+
 import type { RefObject } from "react";
+import { useBrand } from "@/components/BrandProvider";
 
 interface Props {
   room: string;
@@ -23,6 +26,7 @@ export function RoomQrCard({
   compact = false,
 }: Props) {
   const hasRoom = !!url;
+  const { logoSrc, orgName } = useBrand();
 
   return (
     <div
@@ -37,8 +41,8 @@ export function RoomQrCard({
           reliably. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/salt-logo.png"
-        alt="Salt of Akagera"
+        src={logoSrc}
+        alt={orgName}
         className={compact ? "h-8 w-auto" : "h-11 w-auto"}
       />
 

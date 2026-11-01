@@ -1,5 +1,5 @@
 import { getCurrentUser, requirePermission } from "@/lib/utils/guards";
-import { isExpired } from "@/lib/utils/soaSignIn";
+import { isExpired } from "@/lib/utils/sessionExpiry";
 import { getOpenAssignments } from "@/services/notification.service";
 import {
   collectNotifications,
@@ -58,7 +58,10 @@ export async function GET(request: Request) {
         .catch(() => {});
 
       intervalId = setInterval(async () => {
-        // Ends with the SOA session rather than outliving it.
+        // Ends when the access token does. The browser's EventSource
+        // reconnects on its own, through proxy.ts, which refreshes the
+        // session- so a role change or a revoked account reaches an open
+        // stream within one token lifetime instead of never.
         if (closed || isExpired(user.expiresAt)) return stop();
 
         let batch;

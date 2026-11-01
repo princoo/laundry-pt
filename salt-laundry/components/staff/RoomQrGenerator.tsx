@@ -9,6 +9,7 @@ import { RoomNumberInput } from "@/components/ui/RoomNumberInput";
 import { useRoomQrCode } from "@/lib/hooks/useRoomQrCode";
 import { useCardImageExport } from "@/lib/hooks/useCardImageExport";
 import { buildGuestRoomUrl, MAX_ROOM_LENGTH } from "@/lib/utils/roomParam";
+import { useBrand } from "@/components/BrandProvider";
 import { isAllowedRoom } from "@/lib/constants/rooms";
 
 const BUTTON =
@@ -24,7 +25,8 @@ export function RoomQrGenerator() {
   const invalid = trimmed.length > 0 && !allowed;
   // Only a real, bookable room gets a code- a QR for a room that doesn't exist
   // would just send a guest to a dead form.
-  const url = allowed ? buildGuestRoomUrl(trimmed) : null;
+  const { appUrl } = useBrand();
+  const url = allowed ? buildGuestRoomUrl(trimmed, appUrl) : null;
 
   const { pngUrl, ready } = useRoomQrCode(url);
   const { exportPng, exporting } = useCardImageExport(cardRef);

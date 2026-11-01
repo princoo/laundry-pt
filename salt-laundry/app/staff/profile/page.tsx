@@ -1,17 +1,23 @@
 import type { Metadata } from "next";
 import { getCurrentUser } from "@/lib/utils/guards";
 import { getOwnProfile } from "@/services/user.service";
-import { SOA_PROFILE_URL } from "@/lib/constants/soa";
+import { hasPermission } from "@/lib/utils/permissions";
+import { accountConsoleUrl, adminConsoleUrl } from "@/lib/utils/keycloakUrls";
+import { KEYCLOAK_CLIENT_ID } from "@/lib/constants/auth";
 import { ProfileHeaderCard } from "@/components/staff/ProfileHeaderCard";
 import { ProfileDetailsList } from "@/components/staff/ProfileDetailsList";
+import { ProfileConsoleLinks } from "@/components/staff/ProfileConsoleLinks";
 
 export const metadata: Metadata = { title: "Your profile" };
 
 // Read only, and a server component because of it- there is nothing to fetch
-// on the client and nothing to submit. SOA owns every field here.
+// on the client and nothing to submit. The Netiiv Account owns every field
+// here; the two consoles are reached from this page and nowhere else, as in
+// the other Netiiv applications.
 export default async function ProfilePage() {
   const current = await getCurrentUser();
-  const profile = current ? await getOwnProfile(current.id) : null;
+  const profile = current?.id ? await getOwnProfile(current.id) : null;
+  const canReview = hasPermission(current?.permissions, "USER_ADMIN");
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
@@ -25,12 +31,17 @@ export default async function ProfilePage() {
       {profile ? (
         <div className="flex flex-col gap-4 sm:gap-5">
           <ProfileHeaderCard profile={profile} />
-          <ProfileDetailsList profile={profile} manageUrl={SOA_PROFILE_URL} />
+          <ProfileDetailsList profile={profile} />
+          <ProfileConsoleLinks
+            accountUrl={accountConsoleUrl()}
+            adminUrl={canReview ? adminConsoleUrl() : null}
+            clientId={KEYCLOAK_CLIENT_ID}
+          />
         </div>
       ) : (
         <p className="text-sm text-salt-text-sec">
-          Your account could not be loaded. Sign in again, or ask SOA to check
-          it.
+          Your account could not be loaded. Sign in again, or ask an
+          administrator to check it.
         </p>
       )}
     </div>

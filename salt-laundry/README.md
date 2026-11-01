@@ -5,327 +5,203 @@ Guests submit laundry requests from their room; laundry staff receive and manage
 live dashboard. No payment processing- costs are tracked and added to the room bill at
 checkout.
 
-Built with Next.js 16 (App Router), TypeScript, Prisma on PostgreSQL, Tailwind, and
-Auth.js v5.
+Built with Next.js 16 (App Router), React 19, TypeScript, Prisma 7 on PostgreSQL, Tailwind,
+and Auth.js v5 against the shared Netiiv Keycloak.
 
-`CLAUDE.md` is the working reference for architecture and conventions.
-`docs/soa-migration.md` records how authentication got to be the way it is.
+`docs/keycloak-migration.md` is the plan of record for authentication and the Keycloak client;
+`docs/soa-migration.md` records the SOA token handoff it replaced.
+
+## What it does
+
+**Guests** (public, no login) fill in a room number, pick items from a catalogue with a service
+per item (Normal, Dry-cleaning, Pressing), optionally mark the order Express or ask for hanging
+delivery, see the price (items, express uplift, 15% VAT) and an estimated return time, then
+track or edit the request while it is still `PENDING`.
+
+**Staff** sign in with their Netiiv Account at `/staff`. What each person sees is decided by
+the `LAUNDRY_*` permissions their account carries (below): housekeepers see their own tasks and
+move requests through `PENDING → COLLECTED → IN_PROGRESS → READY → DELIVERED`; supervisors
+see the whole queue, assign work, correct flagged requests, manage shifts and read reports;
+the front desk searches requests and prints room invoices. Real-time notifications (SSE), SLA
+alerts, PDF invoices and revenue reports round it out.
 
 ## Getting started
 
 ```bash
 pnpm install
-pnpm prisma migrate dev     # create the schema
-pnpm prisma db seed         # catalogue items and SOA-shaped staff accounts
+pnpm prisma migrate deploy   # create or update the schema
+pnpm prisma db seed          # the item catalogue (no accounts: those are Netiiv Accounts)
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) for the guest form. The staff
-dashboard is at `/staff` and requires a SOA session- see below.
+Open [http://localhost:3000](http://localhost:3000) for the guest form; the staff dashboard is
+at `/staff` and needs the local Keycloak:
+
+```bash
+cd ../../../netiiv/admin/keycloak && docker compose up -d
+```
+
+That stack (Keycloak 26 on `:8180`, realm `netiiv`, Mailpit on `:8025`) imports the
+`soa.laundry` client on first start. A local test account with every laundry permission is
+described in `docs/keycloak/local-test-user.json`; create it with the admin console or the
+Admin REST API, then sign in with it.
 
 ## Sign-in
 
-The laundry has no login page and stores no passwords. Staff authenticate against SOA
-(the hotel's staff platform) and the laundry mirrors their account.
+The laundry has no login page and stores no passwords. Staff authenticate against the Netiiv
+Account (Keycloak, realm `netiiv`, client `soa.laundry`) and the laundry mirrors what the token
+says about them.
 
-1. An unauthenticated request to any `/staff` page is caught by `proxy.ts` and redirected
-   to `SOA_SIGNIN_URL`, carrying a return URL that points back at the laundry's
-   `/authenticate` page with the originally requested path folded inside it.
-2. SOA signs the person in, checks they hold `LAUNDRY_REQUEST_VIEW`, and redirects to
-   `/authenticate?redirect=<path>&token=<jwt>&expiresAt=<unix ms>`.
-3. `/authenticate` calls `GET {SOA_API_URL}/api/auth/me` with that bearer token, upserts
-   the laundry's copy of the user, builds the session, discards the token, and replaces
-   the URL with the original path.
+1. An unauthenticated request to any `/staff` page is caught by `proxy.ts` and sent to
+   `/authenticate`, which starts the OpenID Connect authorization-code flow (PKCE, public client)
+   through Auth.js and lands on Keycloak's login page.
+2. Keycloak comes back to `/api/auth/callback/keycloak`. The access token's
+   `resource_access["soa.laundry"].roles` become the session's `permissions` (the strings in
+   `lib/constants/permissions.ts`) and `roleNames` (the business roles: Super Admin,
+   Housekeeping Chief, Front Officer, ...). The person's mirror row (`users`) is created or
+   updated from the token claims (`services/keycloakUser.service.ts`).
+3. The access token lives 5 minutes, but the laundry trusts its cookie for only
+   `SESSION_REVALIDATE_SECONDS` (10 by default) before refreshing it with Keycloak and re-reading
+   the roles, so a role a reviewer assigns or removes lands on the next request after that
+   window, without a sign-out. When Keycloak refuses the refresh (session deleted in the admin
+   console, signed out elsewhere, idle too long, account disabled) the session ends.
+4. An account with no `soa.laundry` role yet sees "No access yet" on `/staff`, with a button that
+   refreshes the token after a reviewer has assigned one.
+5. Sign out ends the Keycloak session too, for every Netiiv application, and returns to the
+   guest form.
 
-The session expires at exactly the moment SOA's token does, capped at one hour. What each
-person can see and do is decided by the `LAUNDRY_*` permissions SOA returns- the laundry
-has no roles of its own.
+Accounts are created by self-registration on Keycloak's login page. A reviewer (`USER_ADMIN`,
+which every Super Admin holds) assigns roles in the realm's admin console, reached from
+`/staff/profile` next to the account console. No screen in the laundry creates or edits a user;
+the only laundry-owned fields are the housekeeper and on-shift flags on `/staff/users`.
 
-Accounts are created, updated and deactivated only by SOA, calling
-`POST /api/integrations/soa/users` and `PATCH /api/integrations/soa/users/[soaId]` with an
-`X-SOA-Api-Key` header. No screen in the laundry creates or edits a user.
+### Permissions
 
-Guest pages (`/`, `/track`, `/confirmation`) and their APIs are fully public.
+| Permission | Laundry surface |
+| --- | --- |
+| `LAUNDRY_REQUEST_VIEW` | Dashboard, own assigned tasks, request detail, notes. The baseline for `/staff` |
+| `LAUNDRY_REQUESTS_VIEW_ALL` | Whole queue instead of own tasks; SLA alert history; new-request notifications |
+| `LAUNDRY_REQUEST_PROCESS` | Status transitions; flagging a request for changes |
+| `LAUNDRY_REQUEST_EDIT` | Correcting a flagged request; clearing the flag |
+| `LAUNDRY_REQUEST_HOUSEKEEPER_ASSIGN` | Assign and reassign |
+| `LAUNDRY_REQUESTS_SEARCH` | `/staff/search` |
+| `LAUNDRY_REQUESTS_INVOICES_VIEW` | `/staff/invoices`, `/staff/requests/[id]/invoice` |
+| `LAUNDRY_REQUESTS_INVOICES_PRINT` | Print and PDF download on those pages |
+| `LAUNDRY_REQUEST_ITEMS_CATALOGUE_VIEW` | `/staff/items` read |
+| `LAUNDRY_REQUEST_ITEMS_CATALOGUE_MANAGE` | Create, edit, reorder, deactivate items |
+| `LAUNDRY_HOUSEKEEPERS_VIEW` | Staff roster, shift panel, assignee filter |
+| `LAUNDRY_HOUSEKEEPERS_SHIFTS_MANAGE` | Availability toggle and the housekeeper flag |
+| `LAUNDRY_REPORTS_VIEW` | `/staff/reports` |
+| `LAUNDRY_REPORTS_EXPORT` | Planned: PDF export on the reports page |
+| `QR_CODE_GENERATION` | `/staff/qrcode`, printable room QR codes |
+| `USER_ADMIN` | The admin console link on `/staff/profile` |
+
+The same names are the permission roles of the `soa.laundry` client; the business roles are
+composites of them (`docs/keycloak-migration.md`, section 5).
 
 ## Environment variables
 
-Copy these into `.env.local`.
+Copy these into `.env` (or `.env.local`).
 
-| Variable                | What it is                                                                                       |
-| ----------------------- | ------------------------------------------------------------------------------------------------ |
-| `DATABASE_URL`          | PostgreSQL connection string                                                                     |
-| `NEXTAUTH_SECRET`       | Secret Auth.js signs the session cookie with                                                     |
-| `NEXTAUTH_URL`          | This app's own origin, for Auth.js                                                               |
-| `APP_URL`               | This app's public origin, used to build the return URL sent to SOA                               |
-| `SOA_API_URL`           | Base URL of the SOA API- `/api/auth/me` is appended to it                                        |
-| `SOA_SIGNIN_URL`        | SOA's sign-in page, where an unauthenticated visitor is sent                                     |
-| `SOA_REDIRECT_PARAM`    | Name of the query parameter SOA reads the return URL from                                        |
-| `SOA_PROFILE_URL`       | Where staff manage their own details; linked from `/staff/profile`. Leave empty to hide the link |
-| `SOA_PROVISION_API_KEY` | Shared key the provisioning endpoints check `X-SOA-Api-Key` against                              |
+| Variable | What it is |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `NEXTAUTH_SECRET` (or `AUTH_SECRET`) | Secret Auth.js signs the session cookie with |
+| `NEXTAUTH_URL` | This app's own origin, for Auth.js |
+| `APP_URL` | This app's public origin: post-logout and account-console return addresses are built from it and must match the client's redirect URIs |
+| `KEYCLOAK_URL` | Base address of Keycloak: `http://localhost:8180` locally, `https://account.netiiv.com` in production |
+| `KEYCLOAK_REALM` | `netiiv` (default) |
+| `KEYCLOAK_CLIENT_ID` | `soa.laundry` (default) |
+| `SESSION_REVALIDATE_SECONDS` | How long a session is trusted before Keycloak is asked again (default 10). A session deleted or a role changed in Keycloak lands on the next request after that; 0 re-checks only when the access token nears expiry |
 
-No SOA URL or parameter name is hardcoded anywhere, so pointing the app at the real SOA
-instance is a config change and nothing more.
+One image, one configuration per organization. Everything that names the hotel is read from the
+environment at request time, never baked into the build:
 
-## Scripts
+| Variable | Default | What it is |
+| --- | --- | --- |
+| `ORG_NAME` | `SALT of Akagera` | The organization. Page titles, invoices, footers, the share image |
+| `ORG_SHORT_NAME` | `SALT` | Its short form: "SALT Laundry", "SALT Staff" |
+| `APP_NAME` | `<short name> Laundry` | The product name as the organization calls it |
+| `ORG_ADDRESS` | `Akagera National Park, Rwanda` | On invoices and the share image |
+| `GUEST_HELP_LINE` | `Need help? Dial 0 for the front desk.` | The guest footer's help line |
+| `BRAND_LOGO_URL` | `/salt-logo.png` | Logo in the nav bars, status pages and printed room cards: a path under `public/` or an absolute URL |
+| `BRAND_QR_LOGO_URL` | `/qrcode-logo.png` | Square logo in the centre of every room QR code |
+| `APP_LOCALE` | `en_RW` | Open Graph locale |
+| `SKIP_MIGRATIONS` | `0` | `1` skips `prisma migrate deploy` at container start |
 
-| Command               | What it does                              |
-| --------------------- | ----------------------------------------- |
-| `pnpm dev`            | Development server                        |
-| `pnpm build`          | `prisma generate` then a production build |
-| `pnpm start`          | Serve the production build                |
-| `pnpm lint`           | ESLint                                    |
-| `pnpm prisma db seed` | Reseed the catalogue and staff accounts   |
+A second hotel is therefore a second deployment of the same image with its own database, its own
+Keycloak client (`<organization>.laundry`, created from `docs/keycloak/` as `soa.laundry` was) and
+these variables, for example `ORG_NAME="Kimironko Guest House"`, `ORG_SHORT_NAME=KGH`,
+`KEYCLOAK_CLIENT_ID=kgh.laundry`, `APP_URL=https://kgh.laundry.netiiv.com`. The hotel timezone
+(`lib/constants/timezone.ts`, `Africa/Kigali`) and the currency and VAT rate
+(`lib/constants/pricing.ts`, `lib/utils/formatting.ts`) are still constants.
 
-# SALT Laundry
+## Deploying with Docker
 
-A hotel laundry management system for **SALT of Akagera** (Rwanda). Guests submit
-laundry requests from their room with no login; staff collect, clean, track, and
-return the items through a role-based operations dashboard.
-
-Built with **Next.js 16 (App Router)**, **React 19**, **Prisma 7 / PostgreSQL**,
-**NextAuth 5**, and **Tailwind CSS 4**.
-
----
-
-## Table of contents
-
-- [What it does](#what-it-does)
-- [Tech stack](#tech-stack)
-- [Quick start](#quick-start)
-- [Environment variables](#environment-variables)
-- [Scripts](#scripts)
-- [Project structure](#project-structure)
-- [Core concepts](#core-concepts)
-- [Documentation](#documentation)
-
----
-
-## What it does
-
-There are two audiences, split at the app level.
-
-### Guests (public, no login)
-
-- Fill in a room number, pick items from a catalogue, and choose a service per
-  item- **Normal**, **Dry-cleaning**, or **Pressing**.
-- Optionally mark the whole order **Express** (+30%) or request **hanging** delivery.
-- See a live price breakdown (items → express uplift → 15% VAT → total) and an
-  estimated same-day return time.
-- Track an order later by its ID or by room number, and edit it while it is still
-  `PENDING` (before pickup).
-
-### Staff (authenticated dashboard at `/staff`)
-
-Three roles, each seeing progressively more:
-
-| Role            | Can do                                                                                                      |
-| --------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Housekeeper** | See the request queue and their assigned tasks, advance a request through its lifecycle, add notes.         |
-| **Supervisor**  | Everything a housekeeper can, plus reassign requests, view the live staff overview, and see reports.        |
-| **Admin**       | Everything, plus manage the item catalogue and user accounts (create users, reset passwords, toggle roles). |
-
-Operational features include real-time notifications (Server-Sent Events),
-automatic load-balanced assignment to housekeepers, SLA/overdue alerting, PDF
-invoices, and revenue/service reporting.
-
----
-
-## Tech stack
-
-| Layer      | Choice                                                             |
-| ---------- | ------------------------------------------------------------------ |
-| Framework  | Next.js 16 (App Router, React Server Components)                   |
-| Language   | TypeScript 5                                                       |
-| UI         | React 19, Tailwind CSS 4, `lucide-react` icons, Nunito font        |
-| Auth       | NextAuth 5 (Credentials provider, JWT sessions)                    |
-| ORM / DB   | Prisma 7 with the `@prisma/adapter-pg` driver adapter → PostgreSQL |
-| Validation | Zod 4 + `react-hook-form`                                          |
-| Email      | Nodemailer (Gmail SMTP) for password-reset links                   |
-| PDF        | `jspdf` + `html2canvas` for invoice downloads                      |
-
----
-
-## Quick start
-
-**Prerequisites:** Node.js 20+, a PostgreSQL database, and npm.
+The image is built once and configured per deployment:
 
 ```bash
-# 1. Install dependencies (runs `prisma generate` via postinstall)
-npm install
-
-# 2. Create your .env (see the next section) then apply migrations
-npx prisma migrate deploy
-
-# 3. Seed the catalogue and the three demo accounts
-npx prisma db seed
-
-# 4. Start the dev server
-npm run dev
+docker buildx build --platform linux/amd64,linux/arm64 -t aimelive/laundry-service:latest --push .
 ```
 
-Open [http://localhost:3000](http://localhost:3000) for the guest form, or
-[http://localhost:3000/staff/login](http://localhost:3000/staff/login) for staff.
+```bash
+docker run --rm -p 3000:3000 --env-file .env.production aimelive/laundry-service:latest
+```
 
-**Seeded accounts** (from [`prisma/seed.ts`](prisma/seed.ts)):
-
-| Role        | Email                 | Password           |
-| ----------- | --------------------- | ------------------ |
-| Admin       | `admin@salt.rw`       | `Admin1234!`       |
-| Supervisor  | `supervisor@salt.rw`  | `Supervisor1234!`  |
-| Housekeeper | `housekeeper@salt.rw` | `Housekeeper1234!` |
-
-> The seed creates the 23 laundry items **with null prices**- an admin sets
-> per-service prices in the catalogue before orders can be priced.
-
----
-
-## Environment variables
-
-Create a `.env` (and `.env.local` for demo flags) in the project root:
-
-| Variable                | Purpose                                                                    |
-| ----------------------- | -------------------------------------------------------------------------- |
-| `DATABASE_URL`          | PostgreSQL connection string.                                              |
-| `NEXTAUTH_SECRET`       | Secret used to sign NextAuth JWTs.                                         |
-| `NEXTAUTH_URL`          | Base URL of the app for NextAuth callbacks.                                |
-| `APP_URL`               | Absolute base URL, used for Open Graph images and reset-link emails.       |
-| `GMAIL_USER`            | Gmail address used to send password-reset emails.                          |
-| `GMAIL_APP_PASSWORD`    | Gmail app password for SMTP.                                               |
-| `DEMO_MODE`             | **Testing only.** `true` bypasses the password check server-side.          |
-| `NEXT_PUBLIC_DEMO_MODE` | **Testing only.** `true` enables `?email=` auto-login and the demo banner. |
-
-> ⚠️ **Never set `DEMO_MODE` / `NEXT_PUBLIC_DEMO_MODE` in production**- they
-> disable password verification. See [Demo mode](docs/DEVELOPMENT.md#demo-mode).
-
----
+- Multi-stage `Dockerfile`: pnpm install, `next build` with `output: "standalone"`, the Prisma CLI
+  in its own folder, and an Alpine runtime that runs as `nextjs` (uid 1001) with only the traced
+  files. No image optimizer and no `sharp`: the logos are plain `<img>`.
+- At start the entrypoint runs `prisma migrate deploy` against `DATABASE_URL`, then starts the
+  server on `PORT` (3000). It retries the migration step (`MIGRATE_ATTEMPTS`, default 5, every
+  `MIGRATE_RETRY_SECONDS`, default 5) because a serverless database such as Neon takes a few
+  seconds to wake from idle and Prisma reports that as P1002. Set `SKIP_MIGRATIONS=1` to run
+  migrations elsewhere.
+- Size: about 226 MB unpacked, 73 MB to download, for both `linux/amd64` and `linux/arm64`. Of
+  that, the Node binary is 120 MB, the application 40 MB and the migration tooling 46 MB.
+- `GET /api/health` answers `200 {"status":"ok"}` when the database is reachable and `503`
+  otherwise; the image's `HEALTHCHECK` and Coolify's health check both use it.
+- Keycloak side of a deployment: either the partial import of `docs/keycloak/*.json` on the
+  `netiiv` realm or `scripts/laundry-client.py` in the Keycloak repository (for another hotel:
+  `KC_ORG=kgh`), then `delegated-user-admin.py` for the reviewers' console.
+- Coolify: a Docker-image resource pointing at `aimelive/laundry-service:latest`, the variables
+  above plus `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `APP_URL`, `KEYCLOAK_URL`,
+  `KEYCLOAK_CLIENT_ID`, port 3000, health check path `/api/health`.
 
 ## Scripts
 
-| Command                  | Description                                |
-| ------------------------ | ------------------------------------------ |
-| `npm run dev`            | Start the Next.js dev server.              |
-| `npm run build`          | `prisma generate` then production build.   |
-| `npm start`              | Serve the production build.                |
-| `npm run lint`           | Run ESLint.                                |
-| `npx prisma migrate dev` | Create/apply a migration in development.   |
-| `npx prisma db seed`     | Seed catalogue items and demo users.       |
-| `npx prisma studio`      | Open Prisma Studio to browse the database. |
-
----
+| Command | What it does |
+| --- | --- |
+| `pnpm dev` | Development server |
+| `pnpm build` | `prisma generate` then a production build |
+| `pnpm start` | Serve the production build |
+| `pnpm lint` | ESLint |
+| `pnpm prisma db seed` | Reseed the catalogue |
 
 ## Project structure
 
 ```
 salt-laundry/
-├── app/                    # Next.js App Router- routes, layouts, API handlers
-│   ├── (guest)/            # Public guest request form (route group)
-│   ├── track/              # Order tracking + guest edit
-│   ├── confirmation/       # Post-submit confirmation
-│   ├── staff/              # Authenticated dashboard (login, queue, admin, etc.)
-│   └── api/                # Route handlers (guest, staff, admin, supervisor, auth)
-├── components/             # React components, grouped by audience
-│   ├── guest/  staff/  admin/  track/  ui/
+├── app/                    # App Router: routes, layouts, API handlers
+│   ├── (guest)/ track/ confirmation/   # public guest pages
+│   ├── authenticate/       # starts the Keycloak sign-in
+│   ├── staff/              # authenticated dashboard
+│   └── api/                # route handlers (requests, items, staff, admin, supervisor, auth)
+├── components/             # guest/ staff/ admin/ track/ ui/
 ├── lib/
-│   ├── auth.ts             # NextAuth configuration
-│   ├── prisma.ts           # Prisma client singleton
-│   ├── constants/          # Roles, statuses, services, pricing, navigation…
-│   ├── hooks/              # Client-side data-fetching & UI hooks
-│   ├── types/              # Shared TypeScript types
-│   ├── utils/              # Pure helpers (pricing, SLA, formatting…)
-│   └── validations/        # Zod schemas (shared client + server)
-├── services/               # Server-side business logic (DB access lives here)
-├── prisma/
-│   ├── schema.prisma       # Data model
-│   ├── migrations/         # SQL migration history
-│   └── seed.ts             # Catalogue + demo user seed
-├── proxy.ts                # Auth middleware (route protection)
-└── public/                 # Static assets
+│   ├── auth.ts             # Auth.js: Keycloak provider, token refresh, session shape
+│   ├── actions/auth.ts     # server actions: start sign-in, sign out everywhere
+│   ├── keycloakClient.ts   # refresh-token call
+│   ├── constants/          # permissions, roles (display), auth, navigation, ...
+│   ├── hooks/ types/ utils/ validations/
+├── services/               # all Prisma access; keycloakUser.service.ts is the mirror
+├── prisma/                 # schema, migrations, catalogue seed
+├── proxy.ts                # session gate for /staff and the staff APIs
+├── Dockerfile              # production image (see "Deploying with Docker")
+├── docker-entrypoint.sh    # migrate deploy, then node server.js
+├── docker/                 # build-time helpers for the image
+└── docs/                   # keycloak-migration.md, keycloak/ (client import files)
 ```
 
-**The layering rule:** `app/api/*` route handlers stay thin- they authenticate
-(via [`lib/utils/guards.ts`](lib/utils/guards.ts)), validate input with a Zod
-schema, then delegate to a function in `services/`. All Prisma access lives in
-`services/`. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-
----
-
-## Architecture at a glance
-
-```mermaid
-flowchart TB
-    subgraph clients["Clients"]
-        Guest["🧺 Guest<br/>(public, no login)"]
-        Staff["👤 Staff<br/>(Housekeeper / Supervisor / Admin)"]
-    end
-
-    subgraph next["Next.js 16 App Router"]
-        subgraph pages["Pages & Components"]
-            GuestUI["Guest form · Track / Edit<br/>app/(guest), app/track"]
-            StaffUI["Dashboard · Queue · Reports · Admin<br/>app/staff"]
-            Hooks["Client hooks<br/>lib/hooks"]
-        end
-
-        MW["proxy.ts- auth middleware<br/>gates /staff & /api/staff · /api/admin"]
-
-        subgraph api["Route handlers · app/api"]
-            direction TB
-            Handlers["thin handlers"]
-            Guards["guards<br/>lib/utils/guards"]
-            Zod["Zod schemas<br/>lib/validations"]
-        end
-
-        Services["Services- business logic<br/>services/**  (all Prisma access)"]
-        NextAuth["NextAuth 5<br/>lib/auth.ts · JWT sessions"]
-    end
-
-    Prisma["Prisma 7 client<br/>lib/prisma.ts"]
-    DB[("PostgreSQL")]
-    Email["✉️ Nodemailer<br/>password-reset email"]
-
-    Guest --> GuestUI
-    Staff --> StaffUI
-    GuestUI --> Hooks
-    StaffUI --> Hooks
-    Hooks -->|"fetch()"| MW
-    GuestUI -->|"public API"| api
-    MW --> api
-    Handlers --> Guards
-    Handlers --> Zod
-    Handlers --> Services
-    StaffUI -. "SSE: /api/staff/notifications/stream" .-> Services
-    Guards --> NextAuth
-    Services --> Prisma
-    Services --> Email
-    NextAuth --> Prisma
-    Prisma --> DB
-```
-
----
-
-## Core concepts
-
-- **Request lifecycle:** `PENDING → COLLECTED → IN_PROGRESS → READY → DELIVERED`,
-  with `CANCELLED` reachable from any active state. Transitions are enforced
-  server-side.
-- **Money is stored in integer minor units** (Rwandan francs, no decimals). VAT
-  is 15%, the express surcharge is 30%.
-- **Assignment:** new requests are auto-assigned to the least-busy available
-  housekeeper; only a supervisor can reassign afterward.
-- **SLA alerts:** requests are flagged `at_risk`, `pickup_overdue`,
-  `return_overdue`, or `deadline_missed` based on service-type return deadlines.
-- **Auth gating:** [`proxy.ts`](proxy.ts) protects `/staff/**` and the staff/admin
-  APIs, and forces users on a temporary password to the change-password screen.
-
-Full detail on each lives in [docs/DOMAIN.md](docs/DOMAIN.md).
-
----
-
-## Documentation
-
-| Doc                                          | Contents                                                                          |
-| -------------------------------------------- | --------------------------------------------------------------------------------- |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | App layering, request flow, directory conventions, real-time notifications.       |
-| [docs/DOMAIN.md](docs/DOMAIN.md)             | Roles, request statuses & transitions, services, pricing, SLA alerts, assignment. |
-| [docs/DATABASE.md](docs/DATABASE.md)         | Prisma models, relations, enums, and migration history.                           |
-| [docs/API.md](docs/API.md)                   | Every API route, its method, auth requirement, and purpose.                       |
-| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)   | Local setup, env vars, demo mode, seeding, coding conventions.                    |
+Route handlers stay thin: `requirePermission()` from `lib/utils/guards.ts`, a Zod schema, then a
+function in `services/`. Hiding a control is not access control- every page gate has a matching
+API gate.

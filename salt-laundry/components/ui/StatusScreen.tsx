@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 
 interface Props {
   // A large, faded number behind the title- "404", "500". Decorative.
@@ -13,25 +12,13 @@ interface Props {
 
 // The full-screen frame every status page shares- 404, error, and the
 // last-resort global error all sit inside it, so a broken page still feels like
-// part of SALT. Plain (no hooks), so both the server not-found page and the
-// client error boundary can render it.
+// part of the hotel's app. Plain (no hooks of its own), so both the server
+// not-found page and the client error boundary can render it.
 export function StatusScreen({ code, title, message, children }: Props) {
   return (
     <div className="min-h-[100dvh] bg-salt-cream flex flex-col">
       <header className="px-4 sm:px-6 py-4">
-        <Link
-          href="/"
-          aria-label="Salt of Akagera- home"
-          className="inline-block"
-        >
-          <Image
-            src="/salt-logo.png"
-            alt="Salt of Akagera"
-            width={80}
-            height={34}
-            priority
-          />
-        </Link>
+        <BrandLogo />
       </header>
 
       <main className="flex-1 flex items-center justify-center px-4 py-10">

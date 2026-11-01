@@ -33,7 +33,7 @@ function toItems(selections: Selections) {
 // room, which only a new request carries- no edit can change it.
 //
 // The staff correction differs in three places and no more: it PATCHes the
-// staff route, it goes through apiFetch so a lapsed SOA session redirects to
+// staff route, it goes through apiFetch so a lapsed session redirects to
 // sign-in rather than looking like a save failure, and it lands back on the
 // staff detail page where the authoritative total is shown.
 export function useSaveRequest(mode: RequestFormMode, requestId?: string) {

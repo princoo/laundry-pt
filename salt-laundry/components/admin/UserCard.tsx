@@ -26,11 +26,6 @@ export function UserCard({
               {isCurrentUser && <span className="text-salt-text-muted"> (You)</span>}
             </div>
             <UserContact email={user.email} phoneNumber={user.phoneNumber} />
-            <div className="text-xs text-salt-text-muted truncate">
-              {[user.departmentName, user.staffId && `Staff no. ${user.staffId}`]
-                .filter(Boolean)
-                .join(' · ')}
-            </div>
           </div>
         </div>
         <RoleBadge roleNames={user.roleNames} shape="pill" />

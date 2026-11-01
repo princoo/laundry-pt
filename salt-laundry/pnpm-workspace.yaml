@@ -1,9 +1,10 @@
+# Lifecycle scripts pnpm may run (pnpm 10+ blocks them by default). Prisma's
+# are needed: engine download and client generation. The rest ship prebuilt
+# binaries and work without theirs.
 allowBuilds:
-  '@prisma/engines': set this to true or false
-  core-js: set this to true or false
-  prisma: set this to true or false
-  sharp: set this to true or false
-  unrs-resolver: set this to true or false
-ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
+  '@prisma/client': true
+  '@prisma/engines': true
+  prisma: true
+  core-js: false
+  sharp: false
+  unrs-resolver: false

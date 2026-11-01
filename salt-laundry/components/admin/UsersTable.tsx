@@ -12,7 +12,6 @@ interface Props {
 const HEADERS = [
   "Name",
   "Contact",
-  "Department",
   "Roles",
   "Status",
   "Housekeeper",

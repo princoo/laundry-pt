@@ -25,16 +25,12 @@ export function UserRow({
               {user.name || user.email}
               {isCurrentUser && <span className="text-salt-text-muted"> (You)</span>}
             </div>
-            {user.staffId && (
-              <div className="text-xs text-salt-text-muted">Staff no. {user.staffId}</div>
-            )}
           </div>
         </div>
       </td>
       <td className="py-4 px-5">
         <UserContact email={user.email} phoneNumber={user.phoneNumber} />
       </td>
-      <td className="py-4 px-5 text-sm text-salt-text-sec">{user.departmentName || '—'}</td>
       <td className="py-4 px-5">
         <RoleBadge roleNames={user.roleNames} shape="pill" />
       </td>

@@ -7,7 +7,7 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
   // Only the catalogue is seeded. Staff accounts are never seeded — every user
-  // is provisioned by SOA through app/api/integrations/soa/users, so a seeded
+  // is a Netiiv Account mirrored from its own token at sign-in, so a seeded
   // stand-in would only be a fake row to reconcile against the real one later.
   //
   // Items have no natural key to upsert on, so a catalogue that already exists

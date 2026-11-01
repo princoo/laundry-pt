@@ -3,7 +3,7 @@ interface Props {
   phoneNumber: string | null;
 }
 
-// Both arrive from SOA and neither is editable here. Phone sits under the
+// Both arrive from the Netiiv Account and neither is editable here. Phone sits under the
 // email rather than in a column of its own- it is often blank, and an empty
 // column reads as a missing feature.
 export function UserContact({ email, phoneNumber }: Props) {

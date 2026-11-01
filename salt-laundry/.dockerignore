@@ -1,0 +1,20 @@
+# Only what the build needs. The runtime image copies the traced output, so
+# nothing listed here can end up in the final image anyway.
+node_modules
+.next
+.pnpm-store
+.git
+.gitignore
+.env
+.env.*
+.claude
+.vercel
+coverage
+docs
+*.md
+*.tsbuildinfo
+.DS_Store
+npm-debug.log*
+pnpm-debug.log*
+Dockerfile
+.dockerignore

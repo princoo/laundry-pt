@@ -1,16 +1,21 @@
 import type { Options } from "qr-code-styling";
-import { QR_LOGO_SRC, QR_SIZE, QR_BRAND_COLOR } from "@/lib/constants/qrCode";
+import { QR_SIZE, QR_BRAND_COLOR } from "@/lib/constants/qrCode";
 
 // One source of truth for how every code is styled- the single generator and
-// the bulk sheet both build from this, so they can never drift apart. `size` is
-// the only thing that varies (the bulk sheet renders smaller cards).
-export function buildQrOptions(data: string, size: number = QR_SIZE): Options {
+// the bulk sheet both build from this, so they can never drift apart. `size`
+// varies (the bulk sheet renders smaller cards); `logoSrc` is the deployment's
+// square logo (Brand.qrLogoSrc).
+export function buildQrOptions(
+  data: string,
+  logoSrc: string,
+  size: number = QR_SIZE,
+): Options {
   return {
     width: size,
     height: size,
     type: "svg",
     data,
-    image: QR_LOGO_SRC,
+    image: logoSrc,
     margin: 6,
     // Highest error correction- the centre logo covers part of the code, so the
     // extra redundancy keeps it scannable.

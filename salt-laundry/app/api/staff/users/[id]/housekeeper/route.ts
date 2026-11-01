@@ -5,7 +5,7 @@ import { housekeeperUpdateSchema } from '@/lib/validations/staffFlags.schema'
 import { openTasksWarning } from '@/lib/utils/user'
 
 // Sits beside the availability route because it is the same screen and the
-// same gate: SOA has no permission for the housekeeper flag, so shift
+// same gate: there is no separate permission for the housekeeper flag, so shift
 // management carries it.
 export async function PATCH(
   req: Request,

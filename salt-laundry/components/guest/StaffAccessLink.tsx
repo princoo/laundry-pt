@@ -22,7 +22,7 @@ export function StaffAccessLink() {
   }
 
   return (
-    // No laundry sign-in page: /staff with no session is what redirects to SOA.
+    // No laundry sign-in page: /staff with no session is what starts the Netiiv Account sign-in.
     <Link
       href="/staff"
       aria-label="Staff sign in"

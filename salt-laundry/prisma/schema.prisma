@@ -6,13 +6,17 @@ datasource db {
   provider = "postgresql"
 }
 
-// A thin mirror of an SOA staff profile, written only by the provisioning
-// endpoints in app/api/integrations/soa/. SOA owns every field above
-// isHousekeeper; the laundry owns the two below it. Names only- no
-// department id, no role ids. roleNames is display; permissions decide access.
+// A thin mirror of a Netiiv Account (Keycloak, realm netiiv), written only
+// from the claims of the person's own token at sign-in and token refresh
+// (services/keycloakUser.service.ts). Keycloak owns every field above
+// isHousekeeper; the laundry owns the two below it. Names only- no role ids.
+// roleNames is display; permissions (client roles on soa.laundry) decide
+// access and are never stored. keycloakId is the token subject (`sub`).
+// staffId and departmentName are no longer written- Keycloak has neither-
+// but the columns stay so old rows keep their values.
 model User {
   id                 String        @id @default(cuid())
-  soaId              String        @unique
+  keycloakId         String        @unique
   staffId            String?
   firstName          String?
   secondName         String?

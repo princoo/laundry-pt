@@ -35,7 +35,7 @@ export async function setHousekeeperAvailability(
   return { isAvailable, name: user.name, openTasks };
 }
 
-// Who counts as a housekeeper is the laundry's own decision- SOA has no such
+// Who counts as a housekeeper is the laundry's own decision- Keycloak has no such
 // flag and no permission for it, so it is gated with shift management and set
 // on the same screen.
 export async function setHousekeeperFlag(

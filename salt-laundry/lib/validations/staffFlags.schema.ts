@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 // The two booleans on a staff record the laundry owns. Every other field
-// arrives from SOA and is never written here, so these are the only staff
+// arrives from the Netiiv Account and is never written here, so these are the only staff
 // payloads there are.
 export const availabilityUpdateSchema = z.object({
   isAvailable: z.boolean({ error: 'isAvailable must be true or false' }),

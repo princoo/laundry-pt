@@ -13,7 +13,7 @@ interface Props {
 
 // "Jean Baptiste · Housekeeper · 3 Jul, 09:15"- author is null for notes
 // written before authorship existed and for the automatic guest-edit note.
-// A user can hold several SOA roles; the first one is enough to place them in
+// A user can hold several Keycloak business roles; the first one is enough to place them in
 // a list of notes, and the rest would crowd the line.
 export function NoteMeta({ author, createdAt }: Props) {
   const roleName = author?.roleNames[0];

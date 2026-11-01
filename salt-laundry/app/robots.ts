@@ -1,4 +1,8 @@
 import type { MetadataRoute } from 'next'
+import { getBrand } from '@/lib/brand'
+
+// Read at request time: the origin comes from the deployment's environment.
+export const dynamic = 'force-dynamic'
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -13,6 +17,6 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: `${process.env.APP_URL}/sitemap.xml`,
+    sitemap: `${getBrand().appUrl}/sitemap.xml`,
   }
 }

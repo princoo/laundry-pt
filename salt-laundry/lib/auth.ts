@@ -1,58 +1,157 @@
-import NextAuth from 'next-auth'
-import Credentials from 'next-auth/providers/credentials'
-import { authorizeSoa, type SoaSessionUser } from '@/lib/soaAuthorize'
-import { isExpired } from '@/lib/utils/soaSignIn'
+import NextAuth from "next-auth";
+import type { JWT } from "next-auth/jwt";
+import Keycloak from "next-auth/providers/keycloak";
+import { decodeJwtPayload } from "@/lib/utils/jwt";
 import {
-  AUTHENTICATE_PATH, SESSION_MAX_AGE_SECONDS, SOA_PROVIDER_ID,
-} from '@/lib/constants/soa'
+  clientRoles,
+  splitRoles,
+  type KeycloakAccessClaims,
+} from "@/lib/utils/keycloakRoles";
+import { isExpired } from "@/lib/utils/sessionExpiry";
+import { refreshAccessToken, type RefreshedTokens } from "@/lib/keycloakClient";
+import { upsertFromToken } from "@/services/keycloakUser.service";
+import {
+  AUTHENTICATE_PATH,
+  KEYCLOAK_CLIENT_ID,
+  KEYCLOAK_ISSUER,
+  KEYCLOAK_PROVIDER_ID,
+  REFRESH_LEEWAY_SECONDS,
+  SESSION_MAX_AGE_SECONDS,
+  SESSION_REVALIDATE_SECONDS,
+} from "@/lib/constants/auth";
+
+const nowSeconds = () => Math.floor(Date.now() / 1000);
+
+// Reads one set of tokens into the session JWT: who the person is, which
+// soa.laundry roles they hold (permissions decide access, the rest is
+// display), and the credentials needed to refresh. Runs at sign-in and after
+// every refresh, so a role a reviewer assigns or removes in Keycloak lands
+// within one access-token lifetime (5 minutes) without a sign-out.
+//
+// Returns null to refuse: Auth.js drops the session. The reason goes to the
+// server log, never to the browser.
+async function applyTokens(
+  token: JWT,
+  tokens: RefreshedTokens,
+): Promise<JWT | null> {
+  const claims = decodeJwtPayload<KeycloakAccessClaims>(tokens.accessToken);
+  if (!claims?.sub) {
+    console.error("[keycloak] access token carries no subject");
+    return null;
+  }
+
+  const roles = clientRoles(claims, KEYCLOAK_CLIENT_ID);
+  const { permissions, roleNames } = splitRoles(roles);
+
+  let userId: string | null = null;
+  try {
+    const user = await upsertFromToken({
+      keycloakId: claims.sub,
+      email: claims.email ?? null,
+      emailVerified: claims.email_verified === true,
+      firstName: claims.given_name ?? null,
+      lastName: claims.family_name ?? null,
+      phoneNumber: claims.phone_number ?? null,
+      roleNames,
+      hasAccess: roles.length > 0,
+    });
+    userId = user?.id ?? null;
+  } catch (error) {
+    console.error(
+      `[keycloak] could not mirror ${claims.sub}: ${(error as Error)?.message}`,
+    );
+    return null;
+  }
+
+  return Object.assign(token, {
+    id: userId,
+    keycloakId: claims.sub,
+    email: claims.email ?? token.email,
+    name: claims.name ?? token.name,
+    roleNames,
+    permissions,
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+    idToken: tokens.idToken,
+    // The access token's own expiry, in seconds. The stream route reads it.
+    expiresAt: tokens.expiresAt,
+    // When Keycloak last confirmed this session and these roles.
+    verifiedAt: nowSeconds(),
+  });
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
-    // Not a password check any more: the credential is the short-lived token
-    // SOA hands back on the return leg, and SOA is what verifies it.
-    Credentials({
-      id: SOA_PROVIDER_ID,
-      name: 'SOA',
-      credentials: { token: {}, expiresAt: {} },
-      authorize: (credentials) => authorizeSoa(credentials?.token, credentials?.expiresAt),
+    Keycloak({
+      id: KEYCLOAK_PROVIDER_ID,
+      clientId: KEYCLOAK_CLIENT_ID,
+      issuer: KEYCLOAK_ISSUER,
+      // A public client with PKCE, the shape of every client in the netiiv
+      // realm (full scope off, no secret). Auth.js's Keycloak provider
+      // assumes a confidential client unless told otherwise.
+      client: { token_endpoint_auth_method: "none" },
+      checks: ["pkce", "state"],
     }),
   ],
-  session: { strategy: 'jwt', maxAge: SESSION_MAX_AGE_SECONDS },
+  session: { strategy: "jwt", maxAge: SESSION_MAX_AGE_SECONDS },
+  // Behind Coolify's proxy in production, and NEXTAUTH_URL locally.
+  trustHost: true,
   callbacks: {
-    jwt({ token, user }) {
-      if (user) {
-        const soa = user as SoaSessionUser
-        Object.assign(token, {
-          id: soa.id, soaId: soa.soaId, departmentName: soa.departmentName,
-          roleNames: soa.roleNames, permissions: soa.permissions, expiresAt: soa.expiresAt,
-        })
+    async jwt({ token, account, trigger }) {
+      // Sign-in: Auth.js has just exchanged the code.
+      if (account) {
+        if (!account.access_token || typeof account.expires_at !== "number") {
+          console.error("[keycloak] token response without an access token");
+          return null;
+        }
+        return applyTokens(token, {
+          accessToken: account.access_token,
+          refreshToken: account.refresh_token,
+          idToken: account.id_token,
+          expiresAt: account.expires_at,
+        });
       }
-      // Nothing refreshes the token mid-session: SOA owns every field on it and
-      // an edit there reaches the laundry on the next sign-in, which is at most
-      // an hour away.
-      //
-      // Auth.js re-signs the cookie on every read with its own maxAge, so the
-      // JWT's `exp` claim always rolls forward and cannot hold SOA's. Keeping
-      // the SOA expiry in a field of our own and dropping the token here is
-      // what ends the session at the same moment SOA's ends.
-      // A cookie with no soaId was minted by the old password sign-in, before
-      // SOA owned this. It is not a session any more.
-      if (!token.soaId || isExpired(token.expiresAt as number | undefined)) return null
-      return token
+
+      // A cookie with no subject was minted before Keycloak owned sign-in.
+      // It is not a session any more.
+      if (!token.keycloakId) return null;
+
+      // Refresh when the access token is about to run out, when Keycloak has
+      // not been asked for SESSION_REVALIDATE_SECONDS, or when the browser asks
+      // (useSession().update() from the no-access screen). Keycloak refusing
+      // is the end of the session; a role change rides in on the new token.
+      const expiring = isExpired(
+        ((token.expiresAt as number | undefined) ?? 0) - REFRESH_LEEWAY_SECONDS,
+      );
+      const unverified =
+        SESSION_REVALIDATE_SECONDS > 0 &&
+        isExpired(
+          ((token.verifiedAt as number | undefined) ?? 0) +
+            SESSION_REVALIDATE_SECONDS,
+        );
+      if (trigger !== "update" && !expiring && !unverified) return token;
+      if (typeof token.refreshToken !== "string") return null;
+
+      const refreshed = await refreshAccessToken(token.refreshToken);
+      if (!refreshed) return null;
+      return applyTokens(token, refreshed);
     },
     session({ session, token }) {
       if (session.user) {
+        // The tokens themselves stay in the cookie and never reach the browser
+        // through here: useSession() receives exactly this object.
         Object.assign(session.user, {
-          id: token.id,
-          soaId: token.soaId,
-          departmentName: token.departmentName ?? null,
+          id: token.id ?? null,
+          keycloakId: token.keycloakId,
           roleNames: token.roleNames ?? [],
           permissions: token.permissions ?? [],
           expiresAt: token.expiresAt ?? null,
-        })
+        });
       }
-      return session
+      return session;
     },
   },
+  // Where Auth.js sends an OAuth error: the page shows it and offers a retry
+  // instead of starting another round trip.
   pages: { signIn: AUTHENTICATE_PATH },
-})
+});

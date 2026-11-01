@@ -6,7 +6,8 @@ interface Props {
 
 // Counts come from the server rather than the loaded rows- with pagination,
 // users.length is only ever the current page. There is no "add" control:
-// accounts arrive from SOA, they are not created here.
+// accounts are Netiiv Accounts, reviewed and given roles in the Keycloak
+// admin console, never created here.
 export function UsersPageHeader({ total, activeCount, showCount }: Props) {
   return (
     <div className="mb-6">
@@ -17,7 +18,7 @@ export function UsersPageHeader({ total, activeCount, showCount }: Props) {
         </p>
       )}
       <p className="text-sm text-salt-text-muted mt-1">
-        Managed in SOA. Shift availability is set here.
+        Accounts and roles are managed in the Netiiv Account console. Shift availability is set here.
       </p>
     </div>
   );
